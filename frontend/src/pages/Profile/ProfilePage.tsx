@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, User, MessageCircle, Globe, Calendar, Shield, Home, Grid3X3 } from 'lucide-react';
+import { ArrowLeft, User, MessageCircle, Calendar, Shield, Home, Grid3X3 } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
+import { getTelegramAuth } from '@/lib/telegram-auth';
 import { GlassCard } from '@/components/ui';
 
 export function ProfilePage() {
@@ -16,11 +17,11 @@ export function ProfilePage() {
   const tgUsername = String(backendUser?.username || '');
   const isAdmin = auth?.isAdmin ?? false;
 
-  // Try to also read from Telegram directly for additional data
-  const tg = (typeof window !== 'undefined') ? (window as any).Telegram?.WebApp : null;
-  const tgUser = tg?.initDataUnsafe?.user;
-  const displayName = firstName || tgUser?.first_name || 'Telegram Explorer';
-  const username = tgUsername || tgUser?.username || '';
+  // Fallback: данные из telegram-auth.ts (спарсены при загрузке страницы)
+  const localAuth = getTelegramAuth();
+  const displayName = firstName || localAuth.firstName || 'Telegram Explorer';
+  const displayUsername = tgUsername || localAuth.username || '';
+  const displayUserId = userId || localAuth.userId;
 
   return (
     <div className="min-h-dvh safe-top safe-bottom pb-24">
@@ -33,21 +34,17 @@ export function ProfilePage() {
       </header>
 
       <section className="mx-4 mt-2 glass-card p-6 text-center">
-        {/* Avatar — try to show Telegram userpic, fallback to icon */}
-        {tgUser?.photo_url ? (
-          <div className="w-20 h-20 mx-auto rounded-full overflow-hidden">
-            <img src={tgUser.photo_url} alt="" className="w-full h-full object-cover" />
-          </div>
-        ) : (
-          <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center" style={{ background: 'var(--emerald)' }}>
+        {/* Avatar — из telegram-auth если есть */}
+        <div className="w-20 h-20 mx-auto rounded-full overflow-hidden" style={{ background: 'var(--emerald)', border: '2px solid rgba(212,175,116,0.3)' }}>
+          <div className="w-full h-full flex items-center justify-center">
             <User size={36} style={{ color: 'var(--gold)' }} />
           </div>
-        )}
+        </div>
         <h2 className="text-xl font-bold mt-4" style={{ color: 'var(--text)' }}>
           {displayName}
         </h2>
-        {username && (
-          <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>@{username}</p>
+        {displayUsername && (
+          <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>@{displayUsername}</p>
         )}
         {isAdmin && (
           <span className="inline-flex items-center gap-1 mt-3 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider"
@@ -55,7 +52,7 @@ export function ProfilePage() {
             <Shield size={12} /> Admin
           </span>
         )}
-        {!isAdmin && userId && (
+        {!isAdmin && displayUserId && (
           <span className="inline-flex items-center gap-1 mt-3 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider"
             style={{ background: 'rgba(76,208,127,0.15)', color: 'var(--success)', border: '1px solid rgba(76,208,127,0.3)' }}>
             Member
@@ -69,32 +66,11 @@ export function ProfilePage() {
             <MessageCircle size={18} style={{ color: 'var(--gold)' }} />
             <div>
               <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--muted)' }}>Telegram ID</p>
-              <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{userId || '—'}</p>
+              <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{displayUserId || '—'}</p>
             </div>
           </div>
         </GlassCard>
-        {tgUser?.language_code && (
-          <GlassCard className="p-4">
-            <div className="flex items-center gap-3">
-              <Globe size={18} style={{ color: 'var(--gold)' }} />
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--muted)' }}>Language</p>
-                <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{tgUser.language_code.toUpperCase()}</p>
-              </div>
-            </div>
-          </GlassCard>
-        )}
-        {tgUser?.is_premium && (
-          <GlassCard className="p-4">
-            <div className="flex items-center gap-3">
-              <Shield size={18} style={{ color: 'var(--gold)' }} />
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--muted)' }}>Telegram Premium</p>
-                <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>Active</p>
-              </div>
-            </div>
-          </GlassCard>
-        )}
+
         <GlassCard className="p-4">
           <div className="flex items-center gap-3">
             <Calendar size={18} style={{ color: 'var(--gold)' }} />
