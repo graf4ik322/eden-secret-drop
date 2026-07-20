@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Search, Edit3, Share2, Archive, BarChart3, Package, DollarSign, Eye, TrendingUp, Home, User, Trash2, X } from 'lucide-react';
 import { getTrpcQueryOptions, trpcMutate } from '@/lib/trpc';
+import { useIsAdmin } from '@/lib/useIsAdmin';
 import { useActivityStore } from '@/store/auth';
 import { GlassCard, StatusDot } from '@/components/ui';
 import type { StatusType } from '@/components/ui';
@@ -262,12 +263,8 @@ function CategoryManager() {
 /* ===== Main Studio Page ===== */
 export function StudioPage() {
   const { activities, addActivity } = useActivityStore();
-  // Admin check — redirect non-admins
-  const { data: adminCheck } = useQuery({
-    ...getTrpcQueryOptions('auth.checkAdmin'),
-    retry: false,
-  });
-  const isAdmin = (adminCheck as Record<string, unknown> | null)?.isAdmin === true;
+  // Admin check via Telegram initData (TZ 2.7)
+  const isAdmin = useIsAdmin();
   
   if (!isAdmin) {
     return (
@@ -277,22 +274,7 @@ export function StudioPage() {
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.5"><polygon points="12,2 22,8 22,18 12,24 2,18 2,8" /></svg>
           </div>
           <h2 className="text-lg font-semibold mb-2" style={{ color: 'var(--text)' }}>Drop Studio</h2>
-          <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>Admin access required.</p>
-          <p className="text-xs mb-4" style={{ color: 'var(--muted)' }}>Add <code style={{ background: 'var(--surface)', padding: '2px 6px', borderRadius: '4px' }}>?admin_id=YOUR_TG_ID</code> to the URL for dev access.</p>
-          <div className="flex gap-2 justify-center">
-            <input id="dev-admin-id" placeholder="Enter TG ID" className="h-12 px-4 rounded-xl text-sm outline-none w-40"
-              style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.08)' }} />
-            <button onClick={() => {
-              const input = document.getElementById('dev-admin-id') as HTMLInputElement;
-              if (input?.value) {
-                localStorage.setItem('eden_admin_id', input.value);
-                window.location.reload();
-              }
-            }} className="h-12 px-6 rounded-xl font-semibold text-sm"
-              style={{ background: 'linear-gradient(135deg, var(--gold), var(--gold-light))', color: '#071A17' }}>
-              Login
-            </button>
-          </div>
+          <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>Admin access required. Open from Telegram to verify.</p>
         </div>
       </div>
     );

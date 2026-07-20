@@ -8,50 +8,57 @@ interface FetchOptions {
 }
 
 async function trpcCall(path: string, options: FetchOptions = {}) {
-  const url = `${BASE_URL}/trpc/${path}`;
-  // Attach Telegram initData for admin auth
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (typeof window !== 'undefined') {
     const tg = (window as any).Telegram?.WebApp;
     if (tg?.initData) {
       headers['x-telegram-init-data'] = tg.initData;
     }
-    // Dev mode: use admin ID from URL param or localStorage
     const urlParams = new URLSearchParams(window.location.search);
     const adminId = urlParams.get('admin_id') || localStorage.getItem('eden_admin_id');
     if (adminId) {
       headers['x-admin-id'] = adminId;
     }
   }
+
+  let url = `${BASE_URL}/trpc/${path}`;
+  
+  if (options.method === 'GET' && options.body) {
+    // tRPC GET: encode input as JSON query param
+    const input = encodeURIComponent(JSON.stringify(options.body));
+    url += `?input=${input}`;
+  }
+
   const res = await fetch(url, {
     method: options.method || 'GET',
     headers,
-    body: options.body ? JSON.stringify(options.body) : undefined,
+    body: options.method === 'POST' && options.body
+      ? JSON.stringify(options.body)
+      : undefined,
   });
+
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`tRPC error ${res.status}: ${text}`);
   }
+
   const json = await res.json();
-  // tRPC v11 batch responses wrap in [{ result: { data } }]
+  // Handle both batch and single response formats
   if (Array.isArray(json)) return json[0]?.result?.data ?? json;
   return json?.result?.data ?? json;
 }
 
-// Query: GET based
+// Query: GET with tRPC-compatible input encoding
 export function trpcQuery(path: string, input?: Record<string, unknown>) {
-  const params = input ? '?' + new URLSearchParams(
-    Object.entries(input).map(([k, v]) => [k, String(v)])
-  ).toString() : '';
-  return trpcCall(`${path}${params}`, { method: 'GET' });
+  return trpcCall(path, { method: 'GET', body: input });
 }
 
-// Mutation: POST based
+// Mutation: POST with JSON body
 export function trpcMutate(path: string, input: unknown) {
   return trpcCall(path, { method: 'POST', body: input });
 }
 
-// TanStack Query hooks — simple wrappers
+// TanStack Query options
 export function getTrpcQueryOptions(path: string, input?: Record<string, unknown>) {
   return {
     queryKey: ['trpc', path, input],

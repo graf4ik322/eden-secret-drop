@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useIsAdmin } from '@/lib/useIsAdmin';
 import { Search, ArrowRight, Home, Grid3X3, Heart, User } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 import { Button } from '@/components/ui';
 ;
 
 export function HomePage() {
+  const isAdmin = useIsAdmin();
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
   const [selectedSubcategory, setSelectedSubcategory] = useState<number | undefined>(undefined);
@@ -208,7 +210,10 @@ export function HomePage() {
 
       <nav className="fixed bottom-[18px] left-4 right-4 h-[72px] glass-card flex items-center justify-around px-2 z-50" style={{ borderRadius: '28px' }}>
         <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}><Home size={22} /><span className="text-[10px] font-medium">Home</span></button>
-        <button onClick={() => navigate('/studio')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Grid3X3 size={22} /><span className="text-[10px] font-medium">Drops</span></button>
+        <button onClick={() => navigate('/studio')} className="flex flex-col items-center gap-0.5" style={{ color: isAdmin ? 'var(--gold)' : 'var(--muted)' }}>
+          <Grid3X3 size={22} />
+          <span className="text-[10px] font-medium">{isAdmin ? 'Studio' : 'Browse'}</span>
+        </button>
         <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Heart size={22} /><span className="text-[10px] font-medium">Favorites</span></button>
         <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><User size={22} /><span className="text-[10px] font-medium">Profile</span></button>
       </nav>
