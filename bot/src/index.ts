@@ -17,6 +17,18 @@ if (!BOT_TOKEN) {
 
 const bot = new Bot(BOT_TOKEN);
 
+bot.command('debug', async (ctx) => {
+  const debugUrl = `${MINI_APP_URL}/debug.html`;
+  await ctx.reply('🔍 *EDEN Diagnostics*', {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: '🔍 Run Diagnostics', url: debugUrl }],
+        [{ text: '🔐 Open Mini App', web_app: { url: MINI_APP_URL } }],
+      ],
+    },
+  });
+});
+
 /** Register subscriber via backend tRPC */
 async function registerSubscriber(tgUserId: string, username?: string, firstName?: string) {
   try {
