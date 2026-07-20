@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Search, Edit3, Share2, Archive, BarChart3, Package, DollarSign, Eye, TrendingUp, Home, User, Trash2, X } from 'lucide-react';
 import { getTrpcQueryOptions, trpcMutate } from '@/lib/trpc';
+import { useActivityStore } from '@/store/auth';
 import { GlassCard, StatusDot } from '@/components/ui';
 import type { StatusType } from '@/components/ui';
 
@@ -260,6 +261,28 @@ function CategoryManager() {
 
 /* ===== Main Studio Page ===== */
 export function StudioPage() {
+  const { activities, addActivity } = useActivityStore();
+  // Admin check — redirect non-admins
+  const { data: adminCheck } = useQuery({
+    ...getTrpcQueryOptions('auth.checkAdmin'),
+    retry: false,
+  });
+  const isAdmin = (adminCheck as Record<string, unknown> | null)?.isAdmin === true;
+  
+  if (!isAdmin) {
+    return (
+      <div className="min-h-dvh safe-top safe-bottom flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--surface)' }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.5"><polygon points="12,2 22,8 22,18 12,24 2,18 2,8" /></svg>
+          </div>
+          <h2 className="text-lg font-semibold mb-2" style={{ color: 'var(--text)' }}>Drop Studio</h2>
+          <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>Admin access required. Open this page from Telegram to verify your identity.</p>
+          <button onClick={() => window.history.back()} className="h-12 px-6 rounded-xl font-semibold text-sm" style={{ background: 'var(--emerald)', color: 'var(--text)' }}>Go Back</button>
+        </div>
+      </div>
+    );
+  }
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -302,6 +325,7 @@ export function StudioPage() {
     if (!confirm(`Archive ${String(drop.displayId || '')}?`)) return;
     try {
       await trpcMutate('drop.update', { id: drop.id, status: 'archived' });
+      addActivity('Archived ' + String(drop.displayId || '') + ' - ' + String(drop.title || ''));
       refetch();
     } catch {}
   };
@@ -438,10 +462,33 @@ export function StudioPage() {
               drop={editingDrop}
               categories={categories}
               onClose={() => { setShowDropModal(false); setEditingDrop(null); }}
-              onSaved={() => { refetch(); }}
+              onSaved={() => {
+                if (editingDrop) addActivity('Updated ' + String(editingDrop.displayId || ''));
+                else addActivity('Created new drop');
+                refetch();
+              }}
             />
           </div>
         </div>
+      )}
+
+      {activities.length > 0 && (
+        <section className="mx-4 mt-6">
+          <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Recent Activity</h3>
+          <GlassCard className="p-4">
+            <div className="space-y-2">
+              {activities.slice(0, 10).map((a: { id: number; text: string; time: Date }) => (
+                <div key={a.id} className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: 'var(--gold)' }} />
+                  <span>{a.text}</span>
+                  <span className="ml-auto flex-shrink-0" style={{ color: 'var(--muted)' }}>
+                    {new Date(a.time).toLocaleTimeString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </GlassCard>
+        </section>
       )}
 
       <nav className="fixed bottom-[18px] left-4 right-4 h-[72px] glass-card flex items-center justify-around px-2 z-50" style={{ borderRadius: '28px' }}>
