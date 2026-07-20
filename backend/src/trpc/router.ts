@@ -1,6 +1,6 @@
 import { initTRPC } from '@trpc/server';
 import { z } from 'zod';
-import { db, drops, categories, dropStatus, subscribers } from '../db';
+import { db, drops, categories, dropStatus, subscribers, dropCounter } from '../db';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import type { Context } from './context';
 import { registerSubscriber, listActiveSubscribers, deactivateSubscriber } from '../services/subscriber';
@@ -72,6 +72,17 @@ export const dropRouter = t.router({
         .orderBy(desc(drops.createdAt))
         .limit(input.limit);
     }),
+
+  /** Get next scheduled drop (for Home timer, TZ 2.3) */
+  nextScheduled: publicProcedure.query(async () => {
+    const result = await db
+      .select()
+      .from(drops)
+      .where(eq(drops.status, 'scheduled'))
+      .orderBy(drops.scheduledAt)
+      .limit(1);
+    return result[0] || null;
+  }),
 
   /** List categories (with subcategories) */
   listCategories: publicProcedure.query(async () => {
@@ -150,8 +161,13 @@ export const dropRouter = t.router({
         .where(eq(drops.id, input.id))
         .returning();
 
-      // Trigger broadcast when drop goes live (TZ 2.5)
+      // Increment counter + trigger broadcast when drop goes live (TZ 2.3, 2.5)
       if (input.status === 'live' && drop) {
+        // Increment global drop counter
+        const [counter] = await db.update(dropCounter)
+          .set({ count: sql`count + 1`, updatedAt: new Date() })
+          .where(eq(dropCounter.id, 1))
+          .returning();
         const miniAppUrl = process.env.MINI_APP_URL || `https://${process.env.DOMAIN || 'localhost'}`;
         await enqueueBroadcast({
           dropId: drop.id,
@@ -244,11 +260,27 @@ export const subscriberRouter = t.router({
     }),
 });
 
+/* ===== Auth Router (TZ 2.7) ===== */
+export const authRouter = t.router({
+  checkAdmin: publicProcedure
+    .input(z.object({ initData: z.string().optional() }).optional())
+    .query(async ({ ctx }) => {
+      const adminIds = (process.env.ADMIN_IDS || '').split(',').map(id => id.trim()).filter(Boolean);
+      const isAdmin = ctx.isAdmin;
+      let userData = null;
+      if (isAdmin && ctx.tgUserId) {
+        userData = { userId: ctx.tgUserId, isAdmin: true };
+      }
+      return { isAdmin, userId: ctx.tgUserId, user: userData };
+    }),
+});
+
 /* ===== Main App Router ===== */
 export const appRouter = t.router({
   drop: dropRouter,
   category: categoryRouter,
   subscriber: subscriberRouter,
+  auth: authRouter,
   health: publicProcedure.query(() => ({ status: 'ok', timestamp: new Date().toISOString() })),
 });
 

@@ -20,6 +20,9 @@ export function HomePage() {
   const { data: latestDrops, isLoading: latestLoading } = useQuery(
     getTrpcQueryOptions('drop.latest', { limit: 10 }),
   );
+  const { data: nextScheduled } = useQuery(
+    getTrpcQueryOptions('drop.nextScheduled'),
+  );
 
   const featuredDrop: Record<string, unknown> | undefined = Array.isArray(activeDrops) ? activeDrops[0] : undefined;
   const categories: Record<string, unknown>[] = Array.isArray(categoriesData) ? categoriesData : [];
@@ -79,9 +82,29 @@ export function HomePage() {
         <span className="text-lg font-bold" style={{ color: 'var(--gold)' }}>
           {dropsLoading ? 'DROP #----' : `DROP #${String(drops.length).padStart(4, '0')}`}
         </span>
-        <span className="text-sm" style={{ color: 'var(--muted)' }}>
-          {drops.length > 0 ? `${drops.length} active drops` : 'No active drops'}
-        </span>
+        <div className="text-right">
+          <span className="text-sm" style={{ color: 'var(--muted)' }}>
+            {drops.length > 0 ? `${drops.length} active` : 'No drops'}
+          </span>
+          {(() => {
+            const scheduled = nextScheduled as Record<string, unknown> | null;
+            if (scheduled?.scheduledAt) {
+              const nextTime = new Date(String(scheduled.scheduledAt));
+              const now = Date.now();
+              const diff = nextTime.getTime() - now;
+              if (diff > 0) {
+                const hours = Math.floor(diff / 3600000);
+                const mins = Math.floor((diff % 3600000) / 60000);
+                return (
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--gold)' }}>
+                    Next update: {hours}h {mins}m
+                  </p>
+                );
+              }
+            }
+            return null;
+          })()}
+        </div>
       </section>
 
       <section className="mx-4 mt-5">
