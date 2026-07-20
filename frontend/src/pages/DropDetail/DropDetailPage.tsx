@@ -1,183 +1,205 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  ArrowLeft, Heart, Share2, ShieldCheck, Award, Verified, Truck,
-  Clock, Eye, Package, MapPin,
-} from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft, Heart, Share2, ShieldCheck, Award, Verified, Truck, Clock, Eye, Package, MapPin } from 'lucide-react';
+import { getTrpcQueryOptions } from '@/lib/trpc';
 import { GlassCard, Badge } from '@/components/ui';
 
-const specs = [
-  { key: 'Material', value: 'Stainless Steel' },
-  { key: 'Movement', value: 'Automatic' },
-  { key: 'Water Resistance', value: '300m' },
-  { key: 'Diameter', value: '41mm' },
-];
-
-const trustItems = [
-  { icon: ShieldCheck, label: 'Original' },
-  { icon: Award, label: 'Warranty' },
-  { icon: Verified, label: 'Verified' },
-  { icon: Truck, label: 'Fast Delivery' },
-];
-
 export function DropDetailPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
+  const { data: dropRaw, isLoading, error } = useQuery({
+    ...getTrpcQueryOptions('drop.getByDisplayId', { displayId: id || '' }),
+    enabled: !!id,
+  });
+
+  const drop = dropRaw as Record<string, unknown> | null | undefined;
+
+  let specs: { key: string; value: string }[] = [];
+  if (drop?.specifications) {
+    try {
+      const parsed = JSON.parse(String(drop.specifications));
+      specs = Object.entries(parsed).map(([key, value]) => ({ key, value: String(value) }));
+    } catch { /* ignore */ }
+  }
+
+  const trustItems = [
+    { icon: ShieldCheck, label: 'Original' },
+    { icon: Award, label: 'Warranty' },
+    { icon: Verified, label: 'Verified' },
+    { icon: Truck, label: 'Fast Delivery' },
+  ];
+
+  const formatPrice = (price: unknown) => {
+    if (!price) return 'Price on request';
+    const num = parseFloat(String(price));
+    return '\u20AC' + num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  };
+
+  const timeAgo = (dateStr: unknown) => {
+    if (!dateStr) return 'N/A';
+    const hours = Math.floor((Date.now() - new Date(String(dateStr)).getTime()) / (1000 * 60 * 60));
+    if (hours < 1) return 'Published less than an hour ago';
+    if (hours === 1) return 'Published 1 hour ago';
+    return 'Published ' + hours + ' hours ago';
+  };
+
+  const deeplink = drop
+    ? 'https://t.me/edensecretdrop?text=Hi!%20I%27m%20interested%20in%20' + drop.displayId + '%20-%20' + encodeURIComponent(String(drop.title || ''))
+    : '';
+
+  if (isLoading) {
+    return (
+      <div className="min-h-dvh safe-top safe-bottom">
+        <div className="animate-pulse">
+          <header className="flex items-center justify-between px-4 h-[68px]">
+            <div className="w-[44px] h-[44px] rounded-full" style={{ background: 'var(--surface)' }} />
+            <div className="flex gap-2">
+              <div className="w-[44px] h-[44px] rounded-full" style={{ background: 'var(--surface)' }} />
+              <div className="w-[44px] h-[44px] rounded-full" style={{ background: 'var(--surface)' }} />
+            </div>
+          </header>
+          <div className="mx-4 space-y-4">
+            <div className="h-[340px] rounded-2xl" style={{ background: 'var(--surface)' }} />
+            <div className="h-8 w-3/4 rounded" style={{ background: 'var(--surface)' }} />
+            <div className="h-6 w-1/2 rounded" style={{ background: 'var(--surface)' }} />
+            <div className="h-20 rounded-2xl" style={{ background: 'var(--surface)' }} />
+            <div className="h-32 rounded-2xl" style={{ background: 'var(--surface)' }} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !drop) {
+    return (
+      <div className="min-h-dvh safe-top safe-bottom flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Drop not found</p>
+          <p className="text-sm mt-2" style={{ color: 'var(--muted)' }}>The drop you are looking for does not exist</p>
+          <button onClick={() => navigate('/')} className="mt-6 px-6 py-3 rounded-xl font-semibold" style={{ background: 'var(--emerald)', color: 'var(--text)' }}>Go Home</button>
+        </div>
+      </div>
+    );
+  }
+
+  const isLive = drop.status === 'live';
+  const isSold = drop.status === 'sold';
+  const remaining = Number(drop.remaining ?? 1);
 
   return (
     <div className="min-h-dvh safe-top safe-bottom">
-      {/* ===== Header (68px) (TZ 4.2.1) ===== */}
       <header className="flex items-center justify-between px-4 h-[68px]">
-        <button
-          onClick={() => navigate(-1)}
-          className="w-[44px] h-[44px] rounded-full glass-card flex items-center justify-center hover:border-[var(--gold)]/50 transition-all"
-        >
+        <button onClick={() => navigate(-1)} className="w-[44px] h-[44px] rounded-full glass-card flex items-center justify-center hover:border-[var(--gold)]/50 transition-all">
           <ArrowLeft size={20} style={{ color: 'var(--text-secondary)' }} />
         </button>
         <div className="flex gap-2">
-          <button className="w-[44px] h-[44px] rounded-full glass-card flex items-center justify-center hover:border-[var(--gold)]/50 transition-all">
-            <Heart size={20} style={{ color: 'var(--text-secondary)' }} />
-          </button>
-          <button className="w-[44px] h-[44px] rounded-full glass-card flex items-center justify-center hover:border-[var(--gold)]/50 transition-all">
-            <Share2 size={20} style={{ color: 'var(--text-secondary)' }} />
-          </button>
+          <button className="w-[44px] h-[44px] rounded-full glass-card flex items-center justify-center hover:border-[var(--gold)]/50 transition-all"><Heart size={20} style={{ color: 'var(--text-secondary)' }} /></button>
+          <button className="w-[44px] h-[44px] rounded-full glass-card flex items-center justify-center hover:border-[var(--gold)]/50 transition-all"><Share2 size={20} style={{ color: 'var(--text-secondary)' }} /></button>
         </div>
       </header>
 
-      {/* ===== Hero Image (340px) (TZ 4.2.2) ===== */}
-      <div className="mx-4 mt-1 glass-card h-[340px] flex items-center justify-center relative overflow-hidden">
-        {/* Ambient glow */}
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            background: 'radial-gradient(ellipse at center, var(--gold) 0%, transparent 70%)',
-          }}
-        />
-        <span className="relative z-10 text-sm" style={{ color: 'var(--muted)' }}>
-          Cutout Image — {id}
-        </span>
-        <Badge variant="limited" className="absolute top-3 left-3 z-10">Limited</Badge>
+      <section className="mx-4 relative h-[340px] flex items-center justify-center overflow-hidden rounded-2xl" style={{ background: 'var(--surface)' }}>
+        {drop.cutoutUrl ? (
+          <img src={String(drop.cutoutUrl)} alt={String(drop.title || '')} className="h-full w-auto object-contain max-w-none" style={{ filter: 'drop-shadow(0 0 40px rgba(31,139,116,0.35))' }} />
+        ) : drop.imageUrl ? (
+          <img src={String(drop.imageUrl)} alt={String(drop.title || '')} className="w-full h-full object-cover" />
+        ) : (
+          <span className="text-6xl opacity-20">{'\u2726'}</span>
+        )}
+        <Badge variant={isLive ? 'new' : isSold ? 'default' : 'limited'} className="absolute top-4 left-4">
+          {isLive ? 'LIVE' : isSold ? 'SOLD' : 'LIMITED'}
+        </Badge>
+      </section>
+
+      <div className="flex justify-center gap-1.5 mt-3">
+        <div className="w-2 h-2 rounded-full" style={{ background: 'var(--gold)' }} />
+        <div className="w-2 h-2 rounded-full" style={{ background: 'var(--surface-light)' }} />
       </div>
 
-      {/* ===== Content ===== */}
-      <div className="px-4 mt-5 space-y-6 pb-32">
-        {/* Title + Brand (TZ 4.2.4) */}
-        <div>
-          <h1 className="text-[30px] font-bold leading-tight" style={{ color: 'var(--text)' }}>
-            Product Name
-          </h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Brand / Manufacturer</p>
-        </div>
+      <section className="px-4 mt-5">
+        <h1 className="text-[30px] font-bold leading-tight" style={{ color: 'var(--text)' }}>{String(drop.title || '')}</h1>
+        {!!drop.brand && <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>{String(drop.brand)}</p>}
+      </section>
 
-        {/* Price + Stock (TZ 4.2.5) */}
-        <div className="flex items-center justify-between">
-          <span className="text-[36px] font-bold" style={{ color: 'var(--gold)' }}>€9,500</span>
-          <span className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--success)' }}>
-            <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: 'var(--success)' }} />
-            In Stock
-          </span>
+      <section className="px-4 mt-4 flex items-center justify-between">
+        <span className="text-[36px] font-bold" style={{ color: 'var(--gold)' }}>{formatPrice(drop.price)}</span>
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full" style={{ background: 'var(--success)' }} />
+          <span className="text-sm" style={{ color: 'var(--success)' }}>{remaining > 0 ? 'In Stock (' + remaining + ')' : 'Sold Out'}</span>
         </div>
+      </section>
 
-        {/* Trust Strip (TZ 4.2.6) */}
-        <GlassCard className="p-4 flex items-center justify-around">
-          {trustItems.map(({ icon: Icon, label }) => (
-            <div key={label} className="flex flex-col items-center gap-1.5">
-              <Icon size={18} style={{ color: 'var(--gold)' }} />
-              <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
-                {label}
-              </span>
+      <section className="mx-4 mt-5 glass-card p-4">
+        <div className="grid grid-cols-4 gap-3 text-center">
+          {trustItems.map((item, i) => (
+            <div key={i} className="flex flex-col items-center gap-1.5">
+              <item.icon size={20} style={{ color: 'var(--gold)' }} />
+              <span className="text-[11px] font-medium" style={{ color: 'var(--text-secondary)' }}>{item.label}</span>
             </div>
           ))}
-        </GlassCard>
-
-        {/* Description (TZ 4.2.7) */}
-        <div>
-          <p className="text-base leading-relaxed line-clamp-5" style={{ color: 'var(--text-secondary)' }}>
-            Experience unparalleled craftsmanship with this premium timepiece.
-            Featuring a sapphire crystal, ceramic bezel, and a meticulously
-            finished automatic movement visible through the exhibition caseback.
-          </p>
         </div>
+      </section>
 
-        {/* Specifications (TZ 4.2.8) */}
-        <div>
-          <h3 className="text-base font-semibold mb-3" style={{ color: 'var(--text)' }}>Specifications</h3>
+      {!!drop.description && (
+        <section className="px-4 mt-6">
+          <p className="text-base leading-relaxed line-clamp-5" style={{ color: 'var(--text-secondary)' }}>{String(drop.description)}</p>
+        </section>
+      )}
+
+      {specs.length > 0 && (
+        <section className="mx-4 mt-5">
           <div className="grid grid-cols-2 gap-3">
-            {specs.map((spec) => (
-              <GlassCard key={spec.key} className="p-3">
-                <p className="text-xs font-medium" style={{ color: 'var(--muted)' }}>{spec.key}</p>
-                <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{spec.value}</p>
+            {specs.map((spec, i) => (
+              <GlassCard key={i} className="p-4">
+                <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{spec.key}</p>
+                <p className="text-sm font-semibold mt-1" style={{ color: 'var(--text)' }}>{spec.value}</p>
               </GlassCard>
             ))}
           </div>
-        </div>
+        </section>
+      )}
 
-        {/* Seller Note (TZ 4.2.9) */}
-        <GlassCard className="p-5">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-[var(--emerald)]/20 flex items-center justify-center flex-shrink-0">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--emerald-glow)" strokeWidth="2">
-                <polygon points="12,2 22,8 22,18 12,24 2,18 2,8" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text)' }}>From Eden</p>
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                Every item in our collection is hand-selected and verified by our
-                team. We guarantee authenticity and quality.
-              </p>
-            </div>
+      <section className="mx-4 mt-5 glass-card p-5">
+        <div className="flex items-start gap-3">
+          <div className="w-[40px] h-[40px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'var(--emerald)' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2"><polygon points="12,2 22,8 22,18 12,24 2,18 2,8" /></svg>
           </div>
-        </GlassCard>
-
-        {/* Drop Information (TZ 4.2.10) */}
-        <GlassCard className="p-4 space-y-2">
-          {[
-            { icon: Package, label: 'Drop', value: id },
-            { icon: Clock, label: 'Published', value: '2 hours ago' },
-            { icon: Eye, label: 'Viewed', value: '47 times' },
-            { icon: Package, label: 'Remaining', value: '3 pcs' },
-          ].map(({ icon: Icon, label, value }) => (
-            <div key={label} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Icon size={14} style={{ color: 'var(--muted)' }} />
-                <span className="text-sm" style={{ color: 'var(--muted)' }}>{label}</span>
-              </div>
-              <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>{value}</span>
-            </div>
-          ))}
-        </GlassCard>
-
-        {/* Delivery (TZ 4.2.11) */}
-        <GlassCard className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[var(--emerald)]/20 flex items-center justify-center">
-              <MapPin size={18} style={{ color: 'var(--emerald-glow)' }} />
-            </div>
-            <div>
-              <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Estimated Delivery</p>
-              <p className="text-xs" style={{ color: 'var(--muted)' }}>3–5 business days · Worldwide</p>
-            </div>
+          <div>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>From Eden</p>
+            <p className="text-sm mt-1 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              Every item is handpicked and verified. Your satisfaction is guaranteed &mdash; we stand behind every drop with our authenticity promise.
+            </p>
           </div>
-        </GlassCard>
-      </div>
-
-      {/* ===== Sticky Buy Now (TZ 4.2.12) ===== */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 safe-bottom z-40">
-        <div className="glass-card p-2 rounded-[var(--radius-card)]">
-          <a
-            href={`https://t.me/edensecretdrop?text=Hi!%20I%27m%20interested%20in%20${id}%20-%20Product%20Name`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-full h-[64px] leading-[64px] text-center font-bold text-lg rounded-[var(--radius-btn)]"
-            style={{
-              background: 'linear-gradient(135deg, var(--gold), var(--gold-light))',
-              color: 'var(--bg)',
-              boxShadow: 'var(--shadow-glow-gold)',
-            }}
-          >
-            Buy Now €9,500
-          </a>
         </div>
+      </section>
+
+      <section className="mx-4 mt-5 glass-card p-5">
+        <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Drop Information</h3>
+        <div className="space-y-2.5">
+          <div className="flex items-center gap-3"><Package size={16} style={{ color: 'var(--gold)' }} /><span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{String(drop.displayId || '')}</span></div>
+          <div className="flex items-center gap-3"><Clock size={16} style={{ color: 'var(--gold)' }} /><span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{timeAgo(drop.publishedAt)}</span></div>
+          <div className="flex items-center gap-3"><Eye size={16} style={{ color: 'var(--gold)' }} /><span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Viewed {String(drop.views ?? 0)} times</span></div>
+          <div className="flex items-center gap-3"><Package size={16} style={{ color: 'var(--gold)' }} /><span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Remaining {remaining} pcs</span></div>
+        </div>
+      </section>
+
+      <section className="mx-4 mt-5 glass-card p-5">
+        <div className="flex items-center gap-3">
+          <MapPin size={18} style={{ color: 'var(--gold)' }} />
+          <div>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Estimated Delivery</p>
+            <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>3-5 business days via DHL Express</p>
+          </div>
+        </div>
+      </section>
+
+      <div className="sticky bottom-0 left-0 right-0 p-4 pb-6 z-10" style={{ background: 'linear-gradient(to top, var(--bg) 60%, transparent)' }}>
+        <a href={deeplink} target="_blank" rel="noopener noreferrer"
+          className="w-full h-16 flex items-center justify-center rounded-xl font-bold text-base gap-2 transition-all hover:opacity-90"
+          style={{ background: 'linear-gradient(135deg, var(--gold), var(--gold-light))', color: '#071A17', boxShadow: 'var(--shadow-glow-gold)' }}>
+          Buy Now {formatPrice(drop.price)}
+        </a>
       </div>
     </div>
   );

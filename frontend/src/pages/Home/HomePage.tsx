@@ -1,146 +1,193 @@
-import { Search, Home, Grid3X3, Heart, User, ArrowRight } from 'lucide-react';
-import { Button, GlassCard, Chip, Badge } from '@/components/ui';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { Search, ArrowRight, Home, Grid3X3, Heart, User } from 'lucide-react';
+import { getTrpcQueryOptions } from '@/lib/trpc';
+import { Button } from '@/components/ui';
+;
 
 export function HomePage() {
+  const navigate = useNavigate();
+  const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<number | undefined>(undefined);
+
+  const { data: categoriesData } = useQuery(
+    getTrpcQueryOptions('drop.listCategories'),
+  );
+  const { data: activeDrops, isLoading: dropsLoading } = useQuery(
+    getTrpcQueryOptions('drop.listActive', { limit: 20, categoryId: selectedSubcategory ?? selectedCategory }),
+  );
+  const { data: latestDrops, isLoading: latestLoading } = useQuery(
+    getTrpcQueryOptions('drop.latest', { limit: 10 }),
+  );
+
+  const featuredDrop: Record<string, unknown> | undefined = Array.isArray(activeDrops) ? activeDrops[0] : undefined;
+  const categories: Record<string, unknown>[] = Array.isArray(categoriesData) ? categoriesData : [];
+  const latest: Record<string, unknown>[] = Array.isArray(latestDrops) ? latestDrops : [];
+  const drops: Record<string, unknown>[] = Array.isArray(activeDrops) ? activeDrops : [];
+
+  const selectedCatObj = categories.find(c => c.id === selectedCategory);
+  const subcategories: Record<string, unknown>[] = (selectedCatObj?.subcategories as Record<string, unknown>[]) || [];
+
+  const handleCategoryClick = (catId: number | undefined) => {
+    setSelectedCategory(catId);
+    setSelectedSubcategory(undefined);
+  };
+
+  const formatPrice = (price: unknown) => {
+    if (!price) return '';
+    const num = parseFloat(String(price));
+    return `\u20AC${num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+  };
+
   return (
     <div className="min-h-dvh safe-top safe-bottom pb-20">
-      {/* ===== Header (72px) ===== */}
       <header className="flex items-center justify-between px-4 h-[72px]">
         <div className="flex items-center gap-3">
-          {/* Hex logo 44x44 */}
           <div className="w-[44px] h-[44px] rounded-full bg-[var(--emerald)]/30 border border-[var(--emerald)]/30 flex items-center justify-center">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2">
               <polygon points="12,2 22,8 22,18 12,24 2,18 2,8" />
             </svg>
           </div>
-          <h1 className="text-xl font-semibold tracking-[0.25em] uppercase" style={{ color: 'var(--text)' }}>
-            EDEN
-          </h1>
+          <h1 className="text-xl font-semibold tracking-[0.25em] uppercase" style={{ color: 'var(--text)' }}>EDEN</h1>
         </div>
-        <button className="w-[44px] h-[44px] rounded-full glass-card flex items-center justify-center hover:border-[var(--gold)]/50 transition-all">
+        <button onClick={() => navigate('/studio')} className="w-[44px] h-[44px] rounded-full glass-card flex items-center justify-center hover:border-[var(--gold)]/50 transition-all">
           <Search size={20} style={{ color: 'var(--text-secondary)' }} />
         </button>
       </header>
 
-      {/* ===== Hero (220px) (TZ 4.1.2) ===== */}
       <section className="mx-4 mt-2 glass-card p-6 text-center relative overflow-hidden" style={{ height: '220px' }}>
-        {/* Glow line top */}
         <div className="absolute top-0 left-4 right-4 h-[1px] bg-gradient-to-r from-transparent via-[var(--gold)]/50 to-transparent" />
-        {/* Hex watermark */}
         <div className="absolute top-3 right-3 opacity-[0.06]">
           <svg width="120" height="120" viewBox="0 0 60 60" fill="none" stroke="var(--text)" strokeWidth=".5">
             <polygon points="30,2 56,17 56,43 30,58 4,43 4,17" />
           </svg>
         </div>
-        {/* Content */}
         <div className="relative z-10 flex flex-col items-center justify-center h-full gap-5">
           <p className="text-base font-normal leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
             Only the Best Deals —<br />
             <span className="text-[var(--gold)]">Selected electronics for members only</span>
           </p>
-          <Button variant="primary" className="!h-14" style={{ borderRadius: '18px', padding: '0 32px' }}>
-            Join Drop
+          <Button variant="primary" className="!h-14" style={{ borderRadius: '18px', padding: '0 32px' }}
+            onClick={() => featuredDrop ? navigate(`/drop/${featuredDrop.displayId}`) : undefined}>
+            {featuredDrop ? `View ${String(featuredDrop.title || '')}` : 'Join Drop'}
           </Button>
         </div>
       </section>
 
-      {/* ===== Drop Counter (TZ 2.3, 4.1.3) ===== */}
       <section className="mx-4 mt-6 flex items-center justify-between glass-card px-5 py-4">
-        <span className="text-lg font-bold" style={{ color: 'var(--gold)' }}>DROP #0842</span>
-        <span className="text-sm" style={{ color: 'var(--muted)' }}>Last drop: 2 days ago</span>
+        <span className="text-lg font-bold" style={{ color: 'var(--gold)' }}>
+          {dropsLoading ? 'DROP #----' : `DROP #${String(drops.length).padStart(4, '0')}`}
+        </span>
+        <span className="text-sm" style={{ color: 'var(--muted)' }}>
+          {drops.length > 0 ? `${drops.length} active drops` : 'No active drops'}
+        </span>
       </section>
 
-      {/* ===== Category Chips (TZ 4.1.4) ===== */}
       <section className="mx-4 mt-5">
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
-          {['All', '⌚ Watches', '📱 Tech', '💎 Jewelry', '🚗 Auto', '🎧 Audio'].map((cat) => (
-            <Chip key={cat} active={cat === 'All'}>{cat}</Chip>
+          <button onClick={() => handleCategoryClick(undefined)}
+            className={`px-4 h-[42px] rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+              selectedCategory === undefined
+                ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
+                : 'glass-card text-[var(--text-secondary)]'
+            }`}>All</button>
+          {categories.map((cat: Record<string, unknown>) => (
+            <button key={String(cat.id)} onClick={() => handleCategoryClick(Number(cat.id))}
+              className={`px-4 h-[42px] rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                selectedCategory === cat.id
+                  ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
+                  : 'glass-card text-[var(--text-secondary)]'
+              }`}>{String(cat.icon || '')} {String(cat.name || '')}</button>
           ))}
         </div>
+        {subcategories.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none mt-2">
+            {subcategories.map((sub: Record<string, unknown>) => (
+              <button key={String(sub.id)} onClick={() => setSelectedSubcategory(Number(sub.id))}
+                className={`px-4 h-[42px] rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                  selectedSubcategory === sub.id
+                    ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
+                    : 'glass-card text-[var(--text-secondary)]'
+                }`}>{String(sub.icon || '')} {String(sub.name || '')}</button>
+            ))}
+          </div>
+        )}
       </section>
 
-      {/* ===== Featured Drop (TZ 4.1.5) ===== */}
-      <section className="mx-4 mt-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Featured Drop</h2>
-          <button className="text-sm font-medium flex items-center gap-1" style={{ color: 'var(--gold)' }}>
-            View all <ArrowRight size={14} />
-          </button>
-        </div>
-        <GlassCard hoverable className="h-[330px] p-0 flex flex-col overflow-hidden">
-          {/* Cutout image area */}
-          <div className="flex-1 flex items-center justify-center relative bg-[var(--bg-secondary)]">
-            <div className="w-24 h-24 rounded-full opacity-[.08]"
-              style={{
-                background: 'radial-gradient(circle, var(--gold) 0%, transparent 70%)',
-                position: 'absolute',
-              }}
-            />
-            <span className="text-sm" style={{ color: 'var(--muted)' }}>Drop Image</span>
-            <Badge variant="limited" className="absolute top-3 left-3">Limited</Badge>
+      {featuredDrop && (
+        <section className="mx-4 mt-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Featured Drop</h2>
+            <button onClick={() => navigate('/studio')} className="text-sm font-medium flex items-center gap-1" style={{ color: 'var(--gold)' }}>View all \u2192</button>
           </div>
-          {/* Info */}
-          <div className="p-4 flex items-center justify-between">
-            <div>
-              <p className="font-semibold" style={{ color: 'var(--text)' }}>Featured Product</p>
-              <p className="text-sm" style={{ color: 'var(--muted)' }}>SD-0042</p>
+          <div className="glass-card overflow-hidden cursor-pointer hover:-translate-y-0.5 transition-all"
+            onClick={() => navigate(`/drop/${featuredDrop.displayId}`)}>
+            <div className="relative h-[190px] flex items-center justify-center overflow-hidden" style={{ background: 'var(--surface)' }}>
+              {featuredDrop.cutoutUrl ? (
+                <img src={String(featuredDrop.cutoutUrl)} alt={String(featuredDrop.title || '')} className="h-full w-auto object-contain drop-shadow-[0_0_24px_rgba(31,139,116,0.4)]" />
+              ) : (
+                <span className="text-4xl opacity-30">\u2726</span>
+              )}
+              <span className="absolute top-3 left-3 inline-flex items-center px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-[var(--radius-pill)] bg-gradient-to-r from-[var(--emerald)]/20 to-[var(--emerald-light)]/10 border border-[var(--emerald-light)]/30 text-[var(--emerald-light)]">LIVE</span>
             </div>
-            <span className="text-xl font-bold" style={{ color: 'var(--gold)' }}>€--</span>
+            <div className="p-[18px] flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-base" style={{ color: 'var(--text)' }}>{String(featuredDrop.title || '')}</h3>
+                <p className="text-[22px] font-bold mt-1" style={{ color: 'var(--gold)' }}>{formatPrice(featuredDrop.price)}</p>
+              </div>
+              <button onClick={(e: React.MouseEvent) => { e.stopPropagation(); navigate(`/drop/${featuredDrop.displayId}`); }}
+                className="h-10 px-5 rounded-xl font-bold text-sm transition-all"
+                style={{ background: 'linear-gradient(135deg, var(--gold), var(--gold-light))', color: '#071A17' }}>Buy</button>
+            </div>
           </div>
-        </GlassCard>
-      </section>
+        </section>
+      )}
 
-      {/* ===== Latest Drops (TZ 4.1.6) ===== */}
       <section className="mx-4 mt-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Latest Drops</h2>
-        </div>
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <GlassCard key={i} hoverable className="h-[122px] flex items-center gap-4 p-4">
-              {/* Thumb */}
-              <div className="w-24 h-24 rounded-lg bg-[var(--bg-secondary)] flex items-center justify-center flex-shrink-0">
-                <span className="text-xs" style={{ color: 'var(--muted)' }}>IMG</span>
+        <h2 className="text-lg font-semibold mb-3" style={{ color: 'var(--text)' }}>Latest Drops</h2>
+        {latestLoading && [1, 2, 3].map((i) => (
+          <div key={i} className="glass-card p-[18px] h-[122px] mb-3 animate-pulse">
+            <div className="flex items-center gap-4">
+              <div className="w-[96px] h-[96px] rounded-xl" style={{ background: 'var(--surface)' }} />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-3/4 rounded" style={{ background: 'var(--surface)' }} />
+                <div className="h-3 w-1/2 rounded" style={{ background: 'var(--surface)' }} />
+                <div className="h-5 w-1/3 rounded" style={{ background: 'var(--surface)' }} />
               </div>
-              {/* Info */}
+            </div>
+          </div>
+        ))}
+        {!latestLoading && latest.length === 0 && (
+          <p className="text-center py-8 text-sm" style={{ color: 'var(--muted)' }}>No drops available yet</p>
+        )}
+        {latest.map((drop: Record<string, unknown>) => (
+          <div key={String(drop.id)} className="glass-card mb-3 cursor-pointer hover:-translate-y-0.5 transition-all"
+            onClick={() => navigate(`/drop/${drop.displayId}`)}>
+            <div className="flex items-center gap-4 p-[18px]">
+              <div className="w-[96px] h-[96px] rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center" style={{ background: 'var(--surface)' }}>
+                {drop.cutoutUrl ? <img src={String(drop.cutoutUrl)} alt={String(drop.title || '')} className="h-full w-auto object-contain" /> : <span className="text-2xl opacity-20">\u2726</span>}
+              </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold truncate" style={{ color: 'var(--text)' }}>
-                  {['Rolex Submariner', 'Sony A7 IV', 'B&O Beoplay'][i - 1]}
-                </p>
-                <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>SD-{String(100 + i).padStart(4, '0')}</p>
-                <p className="text-xl font-bold mt-1" style={{ color: 'var(--gold)' }}>
-                  €{['9,500', '3,200', '1,850'][i - 1]}
-                </p>
+                <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{String(drop.displayId || '')}</p>
+                <h3 className="font-semibold text-base truncate mt-0.5" style={{ color: 'var(--text)' }}>{String(drop.title || '')}</h3>
+                <p className="text-lg font-bold mt-1" style={{ color: 'var(--gold)' }}>{formatPrice(drop.price)}</p>
               </div>
-              <button className="flex-shrink-0 text-sm font-semibold" style={{ color: 'var(--gold)' }}>
-                Buy →
+              <button onClick={(e: React.MouseEvent) => { e.stopPropagation(); navigate(`/drop/${drop.displayId}`); }}
+                className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all hover:border-[var(--gold)]"
+                style={{ background: 'var(--surface-light)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <ArrowRight size={18} style={{ color: 'var(--gold)' }} />
               </button>
-            </GlassCard>
-          ))}
-        </div>
+            </div>
+          </div>
+        ))}
       </section>
 
-      {/* ===== Floating Bottom Navigation (TZ 4.1.7) ===== */}
-      <nav className="fixed bottom-[18px] left-[18px] right-[18px] h-[72px] glass-card rounded-[28px] flex items-center justify-around px-4 z-50"
-        style={{ backdropFilter: 'blur(32px)', border: '1px solid rgba(255,255,255,.08)' }}
-      >
-        {[
-          { icon: Home, active: true },
-          { icon: Grid3X3, active: false },
-          { icon: Heart, active: false },
-          { icon: User, active: false },
-        ].map(({ icon: Icon, active }, i) => (
-          <button
-            key={i}
-            className="w-[44px] h-[44px] rounded-full flex items-center justify-center transition-all"
-            style={{
-              color: active ? 'var(--gold)' : 'var(--muted)',
-              background: active ? 'rgba(210,185,128,.1)' : 'transparent',
-            }}
-          >
-            <Icon size={22} />
-          </button>
-        ))}
+      <nav className="fixed bottom-[18px] left-4 right-4 h-[72px] glass-card flex items-center justify-around px-2 z-50" style={{ borderRadius: '28px' }}>
+        <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}><Home size={22} /><span className="text-[10px] font-medium">Home</span></button>
+        <button onClick={() => navigate('/studio')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Grid3X3 size={22} /><span className="text-[10px] font-medium">Drops</span></button>
+        <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Heart size={22} /><span className="text-[10px] font-medium">Favorites</span></button>
+        <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><User size={22} /><span className="text-[10px] font-medium">Profile</span></button>
       </nav>
     </div>
   );
