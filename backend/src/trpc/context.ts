@@ -24,13 +24,16 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
   const rawUserId = req.headers['x-tg-user-id'] as string | undefined;
   const firstName = req.headers['x-tg-first-name'] as string | undefined;
   const username = req.headers['x-tg-username'] as string | undefined;
+  
+  // === METHOD A2: query params (survives Cloudflare/nginx header stripping) ===
+  const queryTgUid = !rawUserId ? (req.query as any)?.['__tg_uid'] as string | undefined : undefined;
 
-  if (rawUserId) {
-    tgUserId = rawUserId;
+  if (rawUserId || queryTgUid) {
+    tgUserId = rawUserId || queryTgUid!;
     isAdmin = adminIds.includes(tgUserId);
-    console.log('[Auth] METHOD A - userId:', tgUserId, 'adminIds:', adminIds, 'isAdmin:', isAdmin);
+    console.log('[Auth] METHOD A - userId:', tgUserId, 'adminIds:', adminIds, 'isAdmin:', isAdmin, '(from:', rawUserId ? 'header' : 'query', ')');
     userData = {
-      id: parseInt(rawUserId, 10) || 0,
+      id: parseInt(tgUserId, 10) || 0,
       firstName: firstName || '',
       username: username || '',
     };
