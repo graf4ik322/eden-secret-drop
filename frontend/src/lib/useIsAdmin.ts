@@ -13,8 +13,9 @@ export type AdminState =
  * Handles loading state properly — returns AdminState, not a plain boolean.
  */
 export function useIsAdmin(): AdminState {
+  const localAuth = getTelegramAuth();
   const { data, isLoading, error } = useQuery({
-    ...getTrpcQueryOptions('auth.checkAdmin'),
+    ...getTrpcQueryOptions('auth.checkAdmin', { userId: localAuth.userId || undefined }),
     retry: 3,
     staleTime: 60 * 1000,
     retryDelay: 1000,

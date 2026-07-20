@@ -7,8 +7,9 @@ import { db } from '../db';
  * Docs: https://docs.telegram-mini-apps.com/platform/init-data
  * Spec: https://core.telegram.org/bots/webapps#validating-data-received-via-the-web-app
  *
- * Primary auth: Authorization: tma {initData} (HMAC-validated)
+ * Primary auth: Authorization: tma *** (HMAC-validated)
  * Fallback: x-tg-user-id (from initDataUnsafe.user.id)
+ * Ultra-fallback: __tg_uid query param (if headers stripped by CDN)
  */
 export async function createContext({ req }: CreateFastifyContextOptions) {
   const adminIds = (process.env.ADMIN_IDS || '').split(',').map(id => id.trim()).filter(Boolean);
@@ -19,19 +20,28 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
   let isAdmin = false;
   let userData: { id: number; firstName: string; username?: string } | null = null;
 
-  // === METHOD A: x-tg-user-id header (from initDataUnsafe.user.id) ===
-  // Most reliable — Telegram always injects initDataUnsafe.user in WebView
+  // Log what we received for debugging
+  console.log('[Auth] Request URL:', req.url);
+  console.log('[Auth] Headers:', JSON.stringify({
+    'x-tg-user-id': req.headers['x-tg-user-id'],
+    authorization: req.headers.authorization ? 'tma *** (present)' : 'none',
+    'content-type': req.headers['content-type'],
+  }));
+
+  // === METHOD A: x-tg-user-id header ===
   const rawUserId = req.headers['x-tg-user-id'] as string | undefined;
   const firstName = req.headers['x-tg-first-name'] as string | undefined;
   const username = req.headers['x-tg-username'] as string | undefined;
-  
-  // === METHOD A2: query params (survives Cloudflare/nginx header stripping) ===
-  const queryTgUid = !rawUserId ? (req.query as any)?.['__tg_uid'] as string | undefined : undefined;
+
+  // === METHOD A2: __tg_uid query param ===
+  const rawQuery = req.url?.split('?')[1];
+  const queryParams = rawQuery ? new URLSearchParams(rawQuery) : null;
+  const queryTgUid = !rawUserId ? queryParams?.get('__tg_uid') : undefined;
 
   if (rawUserId || queryTgUid) {
     tgUserId = rawUserId || queryTgUid!;
     isAdmin = adminIds.includes(tgUserId);
-    console.log('[Auth] METHOD A - userId:', tgUserId, 'adminIds:', adminIds, 'isAdmin:', isAdmin, '(from:', rawUserId ? 'header' : 'query', ')');
+    console.log('[Auth] METHOD A - userId:', tgUserId, 'isAdmin:', isAdmin, '(from:', rawUserId ? 'header' : 'query', ')');
     userData = {
       id: parseInt(tgUserId, 10) || 0,
       firstName: firstName || '',
