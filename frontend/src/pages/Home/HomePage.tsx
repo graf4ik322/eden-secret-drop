@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useIsAdminBool } from '@/lib/useIsAdmin';
-import { Search, ArrowRight, Home, Grid3X3, Heart, User } from 'lucide-react';
+import { Search, ArrowRight, Home, Grid3X3, User } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 import { Button } from '@/components/ui';
 ;
@@ -46,7 +46,7 @@ export function HomePage() {
   };
 
   return (
-    <div className="min-h-dvh safe-top safe-bottom pb-20">
+    <div className="min-h-dvh safe-top safe-bottom pb-24">
       <header className="flex items-center justify-between px-4 h-[72px]">
         <div className="flex items-center gap-3">
           <div className="w-[44px] h-[44px] rounded-full bg-[var(--emerald)]/30 border border-[var(--emerald)]/30 flex items-center justify-center">
@@ -214,7 +214,7 @@ export function HomePage() {
           <Grid3X3 size={22} />
           <span className="text-[10px] font-medium">{isAdmin ? 'Studio' : 'Browse'}</span>
         </button>
-        <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Heart size={22} /><span className="text-[10px] font-medium">Favorites</span></button>
+
         <button onClick={() => navigate('/profile')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><User size={22} /><span className="text-[10px] font-medium">Profile</span></button>
       </nav>
     </div>

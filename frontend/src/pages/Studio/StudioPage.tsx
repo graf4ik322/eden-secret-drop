@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, Edit3, Share2, Archive, BarChart3, Package, DollarSign, Eye, TrendingUp, Home, User, Trash2, X } from 'lucide-react';
+import { Plus, Search, Edit3, Share2, Archive, BarChart3, Package, DollarSign, Eye, TrendingUp, Home, User, Trash2, X, Folder } from 'lucide-react';
 import { getTrpcQueryOptions, trpcMutate } from '@/lib/trpc';
 import { useIsAdmin } from '@/lib/useIsAdmin';
 import { useActivityStore } from '@/store/auth';
@@ -421,10 +421,13 @@ export function StudioPage() {
                 : 'glass-card text-[var(--text-secondary)]'
             }`}>{f}</button>
         ))}
+      </section>
+
+      <section className="mx-4 mt-3 flex gap-2 overflow-x-auto pb-2 scrollbar-none">
         <button onClick={() => setShowCategoryModal(!showCategoryModal)}
-          className={`px-4 h-[34px] rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+          className={`px-4 h-[34px] rounded-full text-xs font-medium whitespace-nowrap gap-1.5 flex items-center transition-all ${
             showCategoryModal ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold' : 'glass-card text-[var(--text-secondary)]'
-          }`}>\ud83d\udcc1 Categories</button>
+          }`}><Folder size={14} /> Categories</button>
       </section>
 
       {showCategoryModal && (

@@ -23,7 +23,7 @@ export function ProfilePage() {
   const username = tgUsername || tgUser?.username || '';
 
   return (
-    <div className="min-h-dvh safe-top safe-bottom pb-20">
+    <div className="min-h-dvh safe-top safe-bottom pb-24">
       <header className="flex items-center justify-between px-4 h-[72px]">
         <button onClick={() => navigate(-1)} className="w-[44px] h-[44px] rounded-full glass-card flex items-center justify-center">
           <ArrowLeft size={20} style={{ color: 'var(--text-secondary)' }} />

@@ -213,11 +213,20 @@ export const categoryRouter = t.router({
       icon: z.string().optional(),
     }))
     .mutation(async ({ input }) => {
-      const [cat] = await db
-        .insert(categories)
-        .values(input)
-        .returning();
-      return cat;
+      try {
+        const [cat] = await db
+          .insert(categories)
+          .values({
+            name: input.name,
+            parentId: input.parentId ?? null,
+            icon: input.icon ?? null,
+          })
+          .returning();
+        return cat;
+      } catch (err) {
+        console.error('[Category] Create failed:', err);
+        throw new Error(`Category create failed: ${(err as Error).message}`);
+      }
     }),
 
   delete: adminProcedure
