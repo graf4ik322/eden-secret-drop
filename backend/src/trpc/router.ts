@@ -287,6 +287,19 @@ export const authRouter = t.router({
         user: ctx.userData,
       };
     }),
+  debug: publicProcedure
+    .query(async ({ ctx }) => {
+      const adminIds = (process.env.ADMIN_IDS || '').split(',').map(id => id.trim()).filter(Boolean);
+      return {
+        tgUserId: ctx.tgUserId,
+        isAdmin: ctx.isAdmin,
+        adminIds,
+        hasBotToken: !!process.env.BOT_TOKEN,
+        isDev: process.env.NODE_ENV === 'development' || process.env.DEV_MODE === 'true',
+        nodeEnv: process.env.NODE_ENV,
+        devMode: process.env.DEV_MODE,
+      };
+    }),
 });
 
 /* ===== Main App Router ===== */
