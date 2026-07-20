@@ -18,6 +18,7 @@ services:
       - 'BOT_TOKEN=${BOT_TOKEN}'
       - 'ADMIN_IDS=${ADMIN_IDS}'
       - 'DOMAIN=${DOMAIN}'
+      - DEV_MODE=${DEV_MODE:-true}
       - NODE_ENV=production
       - HOST=0.0.0.0
 
