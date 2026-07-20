@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Heart, Share2, ShieldCheck, Award, Verified, Truck, Clock, Eye, Package, MapPin } from 'lucide-react';
+import { ArrowLeft, Share2, ShieldCheck, Award, Verified, Truck, Clock, Eye, Package, MapPin } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 import { GlassCard, Badge } from '@/components/ui';
 
@@ -94,7 +94,6 @@ export function DropDetailPage() {
           <ArrowLeft size={20} style={{ color: 'var(--text-secondary)' }} />
         </button>
         <div className="flex gap-2">
-          <button className="w-[44px] h-[44px] rounded-full glass-card flex items-center justify-center hover:border-[var(--gold)]/50 transition-all"><Heart size={20} style={{ color: 'var(--text-secondary)' }} /></button>
           <button className="w-[44px] h-[44px] rounded-full glass-card flex items-center justify-center hover:border-[var(--gold)]/50 transition-all"><Share2 size={20} style={{ color: 'var(--text-secondary)' }} /></button>
         </div>
       </header>

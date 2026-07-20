@@ -1,17 +1,19 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useIsAdminBool } from '@/lib/useIsAdmin';
-import { Search, ArrowRight, Home, Grid3X3, User } from 'lucide-react';
+import { Search, ArrowRight, Home, Grid3X3, User, X } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 import { Button } from '@/components/ui';
-;
 
 export function HomePage() {
   const isAdmin = useIsAdminBool();
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
   const [selectedSubcategory, setSelectedSubcategory] = useState<number | undefined>(undefined);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const { data: categoriesData } = useQuery(
     getTrpcQueryOptions('drop.listCategories'),
@@ -56,11 +58,25 @@ export function HomePage() {
           </div>
           <h1 className="text-xl font-semibold tracking-[0.25em] uppercase" style={{ color: 'var(--text)' }}>EDEN</h1>
         </div>
-        <button onClick={() => navigate('/studio')} className="w-[44px] h-[44px] rounded-full glass-card flex items-center justify-center hover:border-[var(--gold)]/50 transition-all">
-          <Search size={20} style={{ color: 'var(--text-secondary)' }} />
+        <button onClick={() => { setShowSearch(!showSearch); setSearchQuery(''); }} className="w-[44px] h-[44px] rounded-full glass-card flex items-center justify-center hover:border-[var(--gold)]/50 transition-all">
+          {showSearch ? <X size={20} style={{ color: 'var(--text-secondary)' }} /> : <Search size={20} style={{ color: 'var(--text-secondary)' }} />}
         </button>
       </header>
 
+      {showSearch && (
+        <section className="mx-4 mt-2 px-4 py-3 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <input
+            ref={searchRef}
+            type="text"
+            placeholder="Search drops by name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-transparent text-sm outline-none"
+            style={{ color: 'var(--text)' }}
+            autoFocus
+          />
+        </section>
+      )}
       <section className="mx-4 mt-2 glass-card p-6 text-center relative overflow-hidden" style={{ height: '220px' }}>
         <div className="absolute top-0 left-4 right-4 h-[1px] bg-gradient-to-r from-transparent via-[var(--gold)]/50 to-transparent" />
         <div className="absolute top-3 right-3 opacity-[0.06]">
@@ -210,11 +226,12 @@ export function HomePage() {
 
       <nav className="fixed bottom-[18px] left-4 right-4 h-[72px] glass-card flex items-center justify-around px-2 z-50" style={{ borderRadius: '28px' }}>
         <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}><Home size={22} /><span className="text-[10px] font-medium">Home</span></button>
-        <button onClick={() => navigate('/studio')} className="flex flex-col items-center gap-0.5" style={{ color: isAdmin ? 'var(--gold)' : 'var(--muted)' }}>
-          <Grid3X3 size={22} />
-          <span className="text-[10px] font-medium">{isAdmin ? 'Studio' : 'Browse'}</span>
-        </button>
-
+        {isAdmin && (
+          <button onClick={() => navigate('/studio')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}>
+            <Grid3X3 size={22} />
+            <span className="text-[10px] font-medium">Studio</span>
+          </button>
+        )}
         <button onClick={() => navigate('/profile')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><User size={22} /><span className="text-[10px] font-medium">Profile</span></button>
       </nav>
     </div>

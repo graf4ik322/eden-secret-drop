@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, Edit3, Share2, Archive, BarChart3, Package, DollarSign, Eye, TrendingUp, Home, User, Trash2, X, Folder } from 'lucide-react';
+import { Plus, Search, Edit3, Share2, Archive, BarChart3, Package, DollarSign, Eye, TrendingUp, Home, User, Trash2, X, Folder, FileText } from 'lucide-react';
 import { getTrpcQueryOptions, trpcMutate } from '@/lib/trpc';
 import { useIsAdmin } from '@/lib/useIsAdmin';
 import { useActivityStore } from '@/store/auth';
@@ -77,7 +77,7 @@ function DropForm({ drop, categories, onClose, onSaved }: {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 pb-24">
       {error && (
         <div className="p-3 rounded-xl text-sm" style={{ background: 'rgba(255,107,107,0.15)', color: 'var(--danger)' }}>{error}</div>
       )}
@@ -234,7 +234,7 @@ function CategoryManager() {
           <div key={String(cat.id)} className="glass-card p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-lg">{String(cat.icon || '\ud83d\udcc1')}</span>
+                <span className="text-lg">{cat.icon ? String(cat.icon) : <Folder size={18} />}</span>
                 <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{String(cat.name || '')}</span>
                 <span className="text-xs ml-1" style={{ color: 'var(--muted)' }}>#{Number(cat.sortOrder || 0)}</span>
               </div>
@@ -245,7 +245,7 @@ function CategoryManager() {
                 {subs.map((sub: Record<string, unknown>) => (
                   <div key={String(sub.id)} className="flex items-center justify-between py-1.5">
                     <div className="flex items-center gap-2">
-                      <span>{String(sub.icon || '\ud83d\udcc4')}</span>
+                      <span className="text-lg">{sub.icon ? String(sub.icon) : <FileText size={16} />}</span>
                       <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{String(sub.name || '')}</span>
                     </div>
                     <button onClick={() => deleteCat(Number(sub.id))} className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-red-500/10" style={{ color: 'var(--danger)' }}><Trash2 size={12} /></button>
@@ -423,11 +423,17 @@ export function StudioPage() {
         ))}
       </section>
 
-      <section className="mx-4 mt-3 flex gap-2 overflow-x-auto pb-2 scrollbar-none">
-        <button onClick={() => setShowCategoryModal(!showCategoryModal)}
-          className={`px-4 h-[34px] rounded-full text-xs font-medium whitespace-nowrap gap-1.5 flex items-center transition-all ${
-            showCategoryModal ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold' : 'glass-card text-[var(--text-secondary)]'
-          }`}><Folder size={14} /> Categories</button>
+      <section className="mx-4 mt-6">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--text)' }}>
+            <Folder size={16} /> Category Management
+          </h3>
+          <button onClick={() => setShowCategoryModal(!showCategoryModal)}
+            className="px-4 h-[34px] rounded-full text-xs font-semibold"
+            style={{ background: 'linear-gradient(135deg, var(--gold), var(--gold-light))', color: '#071A17' }}>
+            + New
+          </button>
+        </div>
       </section>
 
       {showCategoryModal && (
