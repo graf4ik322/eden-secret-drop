@@ -1,30 +1,43 @@
-import { useAuthStore } from '@/store/auth';
 import { useQuery } from '@tanstack/react-query';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 
+export type AdminState = 
+  | { status: 'loading' }
+  | { status: 'checked'; isAdmin: boolean; userId: string }
+  | { status: 'error'; message: string };
+
 /**
  * Hook that checks if current Telegram user is admin.
- * Uses the trpcQuery helper which properly sends initData headers.
+ * Uses official Telegram initData in Authorization header (tma format).
+ * Handles loading state properly — returns AdminState, not a plain boolean.
  */
-export function useIsAdmin(): boolean {
-  const { user, setUser } = useAuthStore();
-
-  const { data } = useQuery({
+export function useIsAdmin(): AdminState {
+  const { data, isLoading, error } = useQuery({
     ...getTrpcQueryOptions('auth.checkAdmin'),
-    retry: false,
-    staleTime: 60 * 1000, // re-check every minute
+    retry: 3,
+    staleTime: 60 * 1000,
+    retryDelay: 1000,
   });
+
+  if (isLoading) {
+    return { status: 'loading' };
+  }
+
+  if (error) {
+    return { status: 'error', message: String(error) };
+  }
 
   const result = data as { isAdmin?: boolean; userId?: string } | null | undefined;
 
-  if (result && user?.isAdmin !== result.isAdmin) {
-    setUser({
-      id: Number(result.userId) || 0,
-      firstName: '',
-      username: '',
-      isAdmin: result.isAdmin || false,
-    });
-  }
+  return {
+    status: 'checked',
+    isAdmin: result?.isAdmin ?? false,
+    userId: result?.userId ?? '',
+  };
+}
 
-  return result?.isAdmin ?? false;
+/** Convenience hook that returns just boolean (for callers that handle loading elsewhere). */
+export function useIsAdminBool(): boolean {
+  const state = useIsAdmin();
+  return state.status === 'checked' && state.isAdmin;
 }

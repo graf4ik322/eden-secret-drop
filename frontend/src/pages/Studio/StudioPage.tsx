@@ -263,10 +263,37 @@ function CategoryManager() {
 /* ===== Main Studio Page ===== */
 export function StudioPage() {
   const { activities, addActivity } = useActivityStore();
-  // Admin check via Telegram initData (TZ 2.7)
-  const isAdmin = useIsAdmin();
+  // Admin check with loading state (TZ 2.7)
+  const adminState = useIsAdmin();
   
-  if (!isAdmin) {
+  if (adminState.status === 'loading') {
+    return (
+      <div className="min-h-dvh safe-top safe-bottom flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--surface)' }}>
+            <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'var(--emerald)', borderTopColor: 'transparent' }} />
+          </div>
+          <p className="text-sm" style={{ color: 'var(--muted)' }}>Verifying identity...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (adminState.status === 'error') {
+    return (
+      <div className="min-h-dvh safe-top safe-bottom flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--surface)' }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" strokeWidth="1.5"><polygon points="12,2 22,8 22,18 12,24 2,18 2,8" /></svg>
+          </div>
+          <h2 className="text-lg font-semibold mb-2" style={{ color: 'var(--text)' }}>Drop Studio</h2>
+          <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>Verification failed. Try opening from Telegram.</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (adminState.status === 'checked' && !adminState.isAdmin) {
     return (
       <div className="min-h-dvh safe-top safe-bottom flex items-center justify-center px-4">
         <div className="text-center">
@@ -274,11 +301,15 @@ export function StudioPage() {
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.5"><polygon points="12,2 22,8 22,18 12,24 2,18 2,8" /></svg>
           </div>
           <h2 className="text-lg font-semibold mb-2" style={{ color: 'var(--text)' }}>Drop Studio</h2>
-          <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>Admin access required. Open from Telegram to verify.</p>
+          <p className="text-sm mb-2" style={{ color: 'var(--muted)' }}>Admin access required. Open from Telegram to verify.</p>
+          <p className="text-xs" style={{ color: 'var(--muted)' }}>Your Telegram ID must be in ADMIN_IDS on the server.</p>
         </div>
       </div>
     );
   }
+  
+  // ===== Admin verified =====
+
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');

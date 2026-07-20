@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useIsAdmin } from '@/lib/useIsAdmin';
+import { useIsAdminBool } from '@/lib/useIsAdmin';
 import { Search, ArrowRight, Home, Grid3X3, Heart, User } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 import { Button } from '@/components/ui';
 ;
 
 export function HomePage() {
-  const isAdmin = useIsAdmin();
+  const isAdmin = useIsAdminBool();
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
   const [selectedSubcategory, setSelectedSubcategory] = useState<number | undefined>(undefined);
