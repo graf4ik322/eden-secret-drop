@@ -1,214 +1,173 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>EDEN Debug</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #071A17; color: #F5EDDD; font-family: monospace; padding: 16px; font-size: 13px; line-height: 1.5; }
-    h1 { color: #D2B980; font-size: 18px; margin-bottom: 16px; }
-    h2 { color: #D2B980; font-size: 14px; margin: 16px 0 8px; border-bottom: 1px solid rgba(210,185,128,.3); padding-bottom: 4px; }
-    .block { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06); border-radius: 8px; padding: 10px; margin-bottom: 8px; overflow-x: auto; }
-    .key { color: #28C8A4; }
-    .value { color: #F5EDDD; }
-    .string { color: #E7D5A7; }
-    .null { color: #8A908E; }
-    .error { color: #FF6B6B; }
-    .ok { color: #4CD07F; }
-    .loading { color: #8A908E; }
-    pre { white-space: pre-wrap; word-break: break-all; }
-    #result { margin-top: 8px; }
-    .btn { display: inline-block; background: linear-gradient(135deg, #D2B980, #E7D5A7); color: #071A17; padding: 8px 16px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; margin: 8px 0; }
-    .timestamp { color: #8A908E; font-size: 11px; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>EDEN Debug</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#071A17;color:#F5EDDD;font-family:monospace;padding:16px;font-size:13px;line-height:1.5}
+h1{color:#D2B980;font-size:18px;margin-bottom:16px}
+h2{color:#D2B980;font-size:14px;margin:16px 0 8px;border-bottom:1px solid rgba(210,185,128,.3);padding-bottom:4px}
+.block{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:10px;margin-bottom:8px;overflow-x:auto;word-break:break-all}
+.ok{color:#4CD07F}
+.err{color:#FF6B6B}
+.muted{color:#8A908E}
+.gold{color:#D2B980}
+pre{white-space:pre-wrap;word-break:break-all}
+.btn{background:linear-gradient(135deg,#D2B980,#E7D5A7);color:#071A17;padding:8px 16px;border-radius:8px;border:none;font-weight:600;cursor:pointer;margin:8px 0;font-size:14px}
+</style>
 </head>
 <body>
-  <h1>🔍 EDEN Debug</h1>
-  <p class="timestamp" id="ts"></p>
-  <button class="btn" onclick="runDiagnostics()">🔄 Run Diagnostics</button>
+<h1>🔍 EDEN Debug</h1>
+<p class="muted" id="ts"></p>
+<button class="btn" id="runBtn">🔄 Run Diagnostics</button>
 
-  <h2>1. window.Telegram</h2>
-  <div class="block" id="telegram-check">Checking...</div>
+<h2>1. window.Telegram</h2>
+<div class="block" id="d1"><span class="muted">waiting...</span></div>
 
-  <h2>2. window.Telegram.WebApp</h2>
-  <div class="block" id="webapp-check">Checking...</div>
+<h2>2. window.Telegram.WebApp</h2>
+<div class="block" id="d2"><span class="muted">waiting...</span></div>
 
-  <h2>3. URL Hash</h2>
-  <div class="block" id="url-hash">Checking...</div>
+<h2>3. URL hash</h2>
+<div class="block" id="d3"><span class="muted">waiting...</span></div>
 
-  <h2>4. retrieveLaunchParams()</h2>
-  <div class="block" id="launch-params">Checking...</div>
+<h2>4. initData (raw string)</h2>
+<div class="block" id="d4"><span class="muted">waiting...</span></div>
 
-  <h2>5. initData (from window.Telegram)</h2>
-  <div class="block" id="initdata-raw">Checking...</div>
+<h2>5. initDataUnsafe</h2>
+<div class="block" id="d5"><span class="muted">waiting...</span></div>
 
-  <h2>6. initDataUnsafe.user</h2>
-  <div class="block" id="initdata-user">Checking...</div>
+<h2>6. initDataUnsafe.user</h2>
+<div class="block" id="d6"><span class="muted">waiting...</span></div>
 
-  <h2>7. Navigation Timing</h2>
-  <div class="block" id="timing">Checking...</div>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
 
-  <script>
-    function $(id) { return document.getElementById(id); }
-    function setText(id, text) { $(id).innerHTML = '<pre>' + text + '</pre>'; }
-    function setJSON(id, obj) { $(id).innerHTML = '<pre class="key">' + syntaxHighlight(JSON.stringify(obj, null, 2)) + '</pre>'; }
-    
-    function syntaxHighlight(json) {
-      json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      return json.replace(
-        /("(?:[^"\\]|\\.)*")(?=\s*:)|("(?:[^"\\]|\\.)*")|(\b\d+\.?\d*\b)|(\btrue\b|\bfalse\b|\bnull\b)/g,
-        function(m, key, str, num, lit) {
-          if (key) return '<span class="key">' + key + '</span>';
-          if (str) return '<span class="string">' + str + '</span>';
-          if (lit === 'null') return '<span class="null">' + lit + '</span>';
-          return '<span class="value">' + (num || lit) + '</span>';
-        }
-      );
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function json(v) {
+  if (v === undefined) return '<span class="err">undefined</span>';
+  if (v === null) return '<span class="muted">null</span>';
+  let j;
+  try { j = JSON.stringify(v, null, 2); } catch(e) { j = String(v); }
+  return '<pre>' + esc(j) + '</pre>';
+}
+
+function run() {
+  const ts = document.getElementById('ts');
+  if (ts) ts.textContent = '🕐 ' + new Date().toISOString();
+
+  // ——— 1. window.Telegram ———
+  const tg = window.Telegram;
+  const d1 = $('d1');
+  if (tg) {
+    d1.innerHTML = '<span class="ok">✅ EXISTS</span><br>type: ' + typeof tg + '<br>keys: ' + esc(Object.keys(tg).join(', '));
+  } else {
+    d1.innerHTML = '<span class="err">❌ NOT FOUND</span><br>window.Telegram is <span class="err">undefined</span>';
+  }
+
+  // ——— 2. window.Telegram.WebApp ———
+  const wa = tg?.WebApp;
+  const d2 = $('d2');
+  if (wa) {
+    const keys = Object.keys(wa).filter(k => !k.startsWith('_'));
+    d2.innerHTML = '<span class="ok">✅ EXISTS</span><br>keys: ' + esc(keys.join(', '));
+  } else {
+    d2.innerHTML = '<span class="err">❌ NOT FOUND</span><br>window.Telegram.WebApp is ' + (tg ? 'defined but null/empty' : 'unreachable (tg missing)');
+  }
+
+  // ——— 3. URL hash ———
+  const hash = window.location.hash;
+  const d3 = $('d3');
+  if (hash && hash.length > 10) {
+    d3.innerHTML = '<span class="ok">✅ HAS HASH</span> (' + hash.length + ' chars)<br><pre>' + esc(hash.substring(0, 600)) + '</pre>';
+    // Parse hash params
+    try {
+      const hp = new URLSearchParams(hash.substring(1));
+      let html = '<br><span class="gold">Hash params:</span><br>';
+      for (const [k, v] of hp.entries()) {
+        html += '<span class="gold">' + esc(k) + '</span>: ' + esc(v.substring(0, 300)) + '<br>';
+      }
+      d3.innerHTML += html;
+    } catch(e) {
+      d3.innerHTML += '<br><span class="err">Parse error: ' + esc(e.message) + '</span>';
     }
-    
-    function safeGet(obj, path) {
-      try {
-        const keys = path.split('.');
-        let val = obj;
-        for (const k of keys) {
-          if (val === null || val === undefined) return undefined;
-          val = val[k];
-        }
-        return val;
-      } catch { return 'ERROR'; }
+  } else {
+    d3.innerHTML = '<span class="err">❌ EMPTY</span> (length=' + (hash ? hash.length : 0) + ')';
+  }
+
+  // ——— 4. initData raw ———
+  const initData = wa?.initData || '';
+  const d4 = $('d4');
+  if (initData) {
+    d4.innerHTML = '<span class="ok">✅ HAS initData</span> (' + initData.length + ' chars)<br><pre>' + esc(initData.substring(0, 1000)) + '</pre>';
+    // Parse user from initData
+    try {
+      const qp = new URLSearchParams(initData);
+      const userStr = qp.get('user');
+      if (userStr) {
+        d4.innerHTML += '<br><span class="gold">user param:</span> ' + esc(userStr.substring(0, 500));
+      }
+      d4.innerHTML += '<br><span class="muted">hash param: ' + esc((qp.get('hash') || 'N/A').substring(0, 30)) + '...</span>';
+    } catch(e) {
+      d4.innerHTML += '<br><span class="err">parse error: ' + esc(e.message) + '</span>';
     }
-
-    function describe(obj, depth = 0) {
-      if (depth > 3) return '...';
-      if (obj === null) return '<span class="null">null</span>';
-      if (obj === undefined) return '<span class="null">undefined</span>';
-      if (typeof obj === 'string') return '<span class="string">"' + obj.replace(/</g,'&lt;') + '"</span>';
-      if (typeof obj === 'number' || typeof obj === 'boolean') return '<span class="value">' + obj + '</span>';
-      if (typeof obj === 'object') {
-        if (Array.isArray(obj)) return '[' + obj.map(v => describe(v, depth+1)).join(', ') + ']';
-        let html = '{<br>';
-        for (const [k, v] of Object.entries(obj)) {
-          html += '&nbsp;&nbsp;<span class="key">"' + k + '"</span>: ' + describe(v, depth+1) + ',<br>';
-        }
-        html += '}';
-        return html;
+  } else {
+    d4.innerHTML = '<span class="err">❌ EMPTY</span>';
+    // Fallback: try to get from URL hash
+    try {
+      const hp = new URLSearchParams(hash.substring(1));
+      const tgData = hp.get('tgWebAppData');
+      if (tgData) {
+        d4.innerHTML += '<br><span class="ok">✅ Found in URL hash as tgWebAppData</span><br><pre>' + esc(decodeURIComponent(tgData).substring(0, 600)) + '</pre>';
       }
-      if (typeof obj === 'function') return '<span class="key">ƒ</span>';
-      return String(obj);
+    } catch(e) {
+      d4.innerHTML += '<br><span class="err">hash parse error: ' + esc(e.message) + '</span>';
     }
+  }
 
-    async function parseHashForTelegramData() {
-      const hash = window.location.hash;
-      if (!hash || !hash.includes('tgWebAppData')) {
-        return '<span class="error">❌ No tgWebAppData in URL hash</span>';
-      }
-      try {
-        const hp = new URLSearchParams(hash.substring(1));
-        let html = '<span class="ok">✅ tgWebAppData found in URL hash</span><br>';
-        for (const [key, value] of hp.entries()) {
-          if (key === 'tgWebAppData') {
-            html += '&nbsp;&nbsp;<span class="key">"tgWebAppData"</span>: (decoded)<br><pre class="string">' + decodeURIComponent(value).replace(/</g,'&amp;lt;').substring(0, 500) + '</pre>';
-            // Also try to parse user from it
-            try {
-              const params = new URLSearchParams(decodeURIComponent(value));
-              const userStr = params.get('user');
-              if (userStr) {
-                const user = JSON.parse(userStr);
-                html += '<br><span class="ok">✅ User found in tgWebAppData:</span><br><pre>' + describe(user) + '</pre>';
-              }
-            } catch(e2) {
-              html += '<br><span class="error">Parse error: ' + e2.message + '</span>';
-            }
-          } else {
-            html += '&nbsp;&nbsp;<span class="key">"' + key + '"</span>: <span class="string">"' + value.substring(0, 100) + '"</span><br>';
-          }
-        }
-        return html;
-      } catch(e) {
-        return '<span class="error">Parse error: ' + e.message + '</span>';
-      }
-    }
+  // ——— 5. initDataUnsafe ———
+  const idu = wa?.initDataUnsafe;
+  const d5 = $('d5');
+  if (idu) {
+    d5.innerHTML = '<span class="ok">✅ EXISTS</span><br>' + json(idu);
+  } else {
+    d5.innerHTML = '<span class="err">❌ EMPTY</span>';
+  }
 
-    function runDiagnostics() {
-      $('ts').textContent = '🕐 ' + new Date().toISOString();
-      
-      // 1. window.Telegram
-      const tg = window.Telegram;
-      $('telegram-check').innerHTML = tg 
-        ? '<span class="ok">✅ EXISTS</span> — type: ' + typeof tg + '<br><pre>' + describe(tg) + '</pre>'
-        : '<span class="error">❌ NOT FOUND</span> — window.Telegram is undefined';
+  // ——— 6. initDataUnsafe.user ———
+  const user = idu?.user;
+  const d6 = $('d6');
+  if (user) {
+    d6.innerHTML = '<span class="ok">✅ HAS USER</span><br>' + json(user);
+  } else {
+    d6.innerHTML = '<span class="err">❌ NO USER</span><br>initDataUnsafe.user is ' + (idu ? 'empty/undefined' : 'initDataUnsafe missing');
+  }
 
-      // 2. window.Telegram.WebApp
-      const webapp = tg?.WebApp;
-      $('webapp-check').innerHTML = webapp
-        ? '<span class="ok">✅ EXISTS</span> — type: ' + typeof webapp + '<br><pre>' + describe(webapp) + '</pre>'
-        : '<span class="error">❌ NOT FOUND</span> — window.Telegram.WebApp is undefined';
+  // Log all errors to console for debugging
+  console.log('=== EDEN DEBUG ===');
+  console.log('Telegram:', tg);
+  console.log('WebApp:', wa);
+  console.log('initData:', initData);
+  console.log('initDataUnsafe:', idu);
+  console.log('user:', user);
+  console.log('hash:', hash);
+}
 
-      // 3. URL Hash
-      const hash = window.location.hash;
-      $('url-hash').innerHTML = hash
-        ? '<span class="ok">✅ HAS HASH</span><br><pre class="string">"' + hash.replace(/</g,'&lt;').substring(0, 500) + '"</pre>'
-        : '<span class="null">❌ EMPTY</span> — window.location.hash has no content';
+// Auto-run on load
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(run, 200);
+});
 
-      // Parse hash params
-      if (hash) {
-        try {
-          const hp = new URLSearchParams(hash.substring(1));
-          let html = '<span class="ok">✅ Hash params:</span><br>';
-          for (const [k, v] of hp.entries()) {
-            html += '&nbsp;&nbsp;<span class="key">"' + k + '"</span>: <span class="string">"' + v.substring(0, 200) + '"</span><br>';
-          }
-          $('url-hash').innerHTML += '<br>' + html;
-        } catch(e) {
-          $('url-hash').innerHTML += '<br><span class="error">Parse error: ' + e.message + '</span>';
-        }
-      }
-
-      // 4. URL Hash Parsing
-      try {
-        // Dynamic import of @tma.js/sdk
-        const sdk = await import('@tma.js/sdk');
-        if (sdk?.retrieveLaunchParams) {
-          const lp = sdk.retrieveLaunchParams();
-          $('launch-params').innerHTML = '<span class="ok">✅ retrieveLaunchParams() SUCCESS</span><br><pre>' + describe(lp) + '</pre>';
-        } else {
-          $('launch-params').innerHTML = '<span class="error">❌ retrieveLaunchParams not found in @tma.js/sdk</span>';
-        }
-      } catch (e) {
-        $('launch-params').innerHTML = '<span class="error">❌ retrieveLaunchParams ERROR: ' + e.message + '</span>';
-      }
-
-      // 5. initData raw string
-      const initData = webapp?.initData || '';
-      $('initdata-raw').innerHTML = initData
-        ? '<span class="ok">✅ HAS initData</span> (' + initData.length + ' chars)<br><pre class="string">"' + initData.replace(/</g,'&lt;').substring(0, 800) + '"</pre>'
-        : '<span class="error">❌ EMPTY</span> — initData is empty string';
-
-      // 6. initDataUnsafe.user
-      const user = webapp?.initDataUnsafe?.user;
-      $('initdata-user').innerHTML = user
-        ? '<span class="ok">✅ HAS USER</span><br><pre>' + describe(user) + '</pre>'
-        : '<span class="null">❌ NO USER</span> — initDataUnsafe.user is ' + (webapp?.initDataUnsafe ? 'present but empty/undefined' : 'initDataUnsafe is undefined/null');
-
-      // 7. Timing
-      if (window.performance?.timing) {
-        const t = window.performance.timing;
-        const now = Date.now();
-        setText('timing', 
-          'DOM loaded: ' + (t.domContentLoadedEventEnd ? ((now - t.domContentLoadedEventEnd) / 1000).toFixed(2) + 's ago' : 'N/A') + '\n' +
-          'First paint: ' + (window.performance.getEntriesByType?.('paint')?.[0]?.startTime || 'N/A') + '\n' +
-          'Page loaded: ' + (t.loadEventEnd ? ((now - t.loadEventEnd) / 1000).toFixed(2) + 's ago' : 'N/A')
-        );
-      } else {
-        setText('timing', 'Performance API not available');
-      }
-    }
-
-    // Auto-run on load
-    window.addEventListener('load', () => {
-      setTimeout(runDiagnostics, 100);
-    });
-  </script>
+// Button handler
+document.getElementById('runBtn').addEventListener('click', function(e) {
+  e.preventDefault();
+  run();
+});
+</script>
 </body>
 </html>
