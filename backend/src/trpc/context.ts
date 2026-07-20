@@ -28,6 +28,7 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
   if (rawUserId) {
     tgUserId = rawUserId;
     isAdmin = adminIds.includes(tgUserId);
+    console.log('[Auth] METHOD A - userId:', tgUserId, 'adminIds:', adminIds, 'isAdmin:', isAdmin);
     userData = {
       id: parseInt(rawUserId, 10) || 0,
       firstName: firstName || '',

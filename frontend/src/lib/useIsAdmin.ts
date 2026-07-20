@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getTrpcQueryOptions } from '@/lib/trpc';
+import { getTelegramAuth } from '@/lib/telegram-auth';
 
 export type AdminState = 
   | { status: 'loading' }
@@ -18,6 +19,10 @@ export function useIsAdmin(): AdminState {
     staleTime: 60 * 1000,
     retryDelay: 1000,
   });
+
+  // Debug: log auth response
+  console.log('[useIsAdmin] checkAdmin response:', data);
+  console.log('[useIsAdmin] local userId:', getTelegramAuth().userId, 'isAdmin from backend:', (data as any)?.isAdmin);
 
   if (isLoading) {
     return { status: 'loading' };
