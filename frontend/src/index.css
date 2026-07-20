@@ -104,8 +104,12 @@
 }
 
 /* ===== Background Recipe (TZ 3.4) ===== */
+html {
+  background-color: #071A17 !important;
+}
+
 body {
-  background-color: var(--bg);
+  background-color: var(--bg) !important;
   background-image:
     /* Layer 1: Strong radial glow, center-top (TZ 3.4) */
     radial-gradient(ellipse 100% 80% at 50% 0%, rgba(31,139,116,.35) 0%, rgba(20,107,90,.12) 40%, transparent 70%),
