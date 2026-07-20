@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useIsAdminBool } from '@/lib/useIsAdmin';
+import { getTelegramAuth } from '@/lib/telegram-auth';
 import { Search, ArrowRight, Home, Grid3X3, User, X } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 import { Button } from '@/components/ui';
@@ -13,7 +14,30 @@ export function HomePage() {
   const [selectedSubcategory, setSelectedSubcategory] = useState<number | undefined>(undefined);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debugInfo, setDebugInfo] = useState<string>('');
+  const [tapCount, setTapCount] = useState(0);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  const { data: authCheck } = useQuery(getTrpcQueryOptions('auth.checkAdmin'));
+
+  const handleLogoTap = async () => {
+    const newCount = tapCount + 1;
+    setTapCount(newCount);
+    if (newCount >= 5) {
+      setTapCount(0);
+      const auth = getTelegramAuth();
+      const backend = authCheck as any;
+      setDebugInfo(
+        `🔐 Auth Debug\n` +
+        `local userId: ${auth.userId || '❌'}\n` +
+        `local initData: ${auth.initData ? auth.initData.substring(0, 50) + '...' : '❌'}\n` +
+        `backend userId: ${backend?.userId || '❌'}\n` +
+        `backend isAdmin: ${backend?.isAdmin ?? '❌'}\n` +
+        `isAdmin from hook: ${isAdmin}\n` +
+        `hash: ${window.location.hash.substring(0, 80)}...`
+      );
+    }
+  };
 
   const { data: categoriesData } = useQuery(
     getTrpcQueryOptions('drop.listCategories'),
@@ -51,7 +75,7 @@ export function HomePage() {
     <div className="min-h-dvh safe-top safe-bottom pb-24">
       <header className="flex items-center justify-between px-4 h-[72px]">
         <div className="flex items-center gap-3">
-          <div className="w-[44px] h-[44px] rounded-full bg-[var(--emerald)]/30 border border-[var(--emerald)]/30 flex items-center justify-center">
+          <div onClick={handleLogoTap} className="w-[44px] h-[44px] rounded-full bg-[var(--emerald)]/30 border border-[var(--emerald)]/30 flex items-center justify-center cursor-pointer active:scale-95 transition-transform">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2">
               <polygon points="12,2 22,8 22,18 12,24 2,18 2,8" />
             </svg>
@@ -62,6 +86,13 @@ export function HomePage() {
           {showSearch ? <X size={20} style={{ color: 'var(--text-secondary)' }} /> : <Search size={20} style={{ color: 'var(--text-secondary)' }} />}
         </button>
       </header>
+
+      {debugInfo && (
+        <section className="mx-4 mb-2 p-3 rounded-xl text-xs font-mono whitespace-pre-wrap" style={{ background: 'rgba(0,0,0,0.5)', color: 'var(--gold)', border: '1px solid rgba(212,175,116,0.3)' }}>
+          {debugInfo}
+          <button onClick={() => setDebugInfo('')} className="mt-2 text-xs" style={{ color: 'var(--muted)' }}>✕ close</button>
+        </section>
+      )}
 
       {showSearch && (
         <section className="mx-4 mt-2 px-4 py-3 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.06)' }}>
