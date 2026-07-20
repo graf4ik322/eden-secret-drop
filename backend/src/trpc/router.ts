@@ -220,12 +220,19 @@ export const categoryRouter = t.router({
             name: input.name,
             parentId: input.parentId ?? null,
             icon: input.icon ?? null,
+            sortOrder: 0,
+            isActive: true,
           })
           .returning();
         return cat;
       } catch (err) {
         console.error('[Category] Create failed:', err);
-        throw new Error(`Category create failed: ${(err as Error).message}`);
+        const e = err as Error & { code?: string; detail?: string; schema?: string; table?: string; column?: string };
+        throw new Error(
+          `Category create failed: ${e.message}` +
+          (e.code ? ` (code: ${e.code})` : '') +
+          (e.detail ? ` — ${e.detail}` : '')
+        );
       }
     }),
 
