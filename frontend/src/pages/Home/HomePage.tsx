@@ -215,7 +215,7 @@ export function HomePage() {
           <span className="text-[10px] font-medium">{isAdmin ? 'Studio' : 'Browse'}</span>
         </button>
         <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Heart size={22} /><span className="text-[10px] font-medium">Favorites</span></button>
-        <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><User size={22} /><span className="text-[10px] font-medium">Profile</span></button>
+        <button onClick={() => navigate('/profile')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><User size={22} /><span className="text-[10px] font-medium">Profile</span></button>
       </nav>
     </div>
   );

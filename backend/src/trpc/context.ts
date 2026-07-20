@@ -35,17 +35,29 @@ export async function createContext({ req, res }: CreateFastifyContextOptions) {
   // Method 2: Dev bypass — x-admin-id header (only in dev/test)
   if (!isAdmin && isDev) {
     const devId = req.headers['x-admin-id'] as string | undefined;
+    const isDevMode = req.headers['x-dev-mode'] as string | undefined;
     if (devId) {
       tgUserId = devId;
       isAdmin = adminIds.includes(devId);
     }
+    // Auto-grant admin in dev mode if no specific ID needed
+    if (!isAdmin && isDevMode) {
+      tgUserId = 'dev-' + (devId || 'user');
+      isAdmin = true; // Grant admin in dev mode
+    }
   }
-
   // Method 3: If no auth at all but adminIds has '0' or 'dev', allow in dev mode
   if (!isAdmin && isDev && adminIds.includes('dev')) {
     isAdmin = true;
     tgUserId = 'dev-user';
   }
+  
+  // Log auth state for debugging
+  if (!isAdmin && !tgUserId) {
+    console.log('[Auth] No auth data — headers:', Object.keys(req.headers).filter(h => h.startsWith('x-')).join(','));
+  }
+
+
 
   return {
     db,
