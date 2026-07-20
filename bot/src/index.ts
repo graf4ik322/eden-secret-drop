@@ -22,7 +22,7 @@ bot.command('debug', async (ctx) => {
   await ctx.reply('🔍 *EDEN Diagnostics*', {
     reply_markup: {
       inline_keyboard: [
-        [{ text: '🔍 Run Diagnostics', url: debugUrl }],
+        [{ text: '🔍 Run Diagnostics', web_app: { url: debugUrl } }],
         [{ text: '🔐 Open Mini App', web_app: { url: MINI_APP_URL } }],
       ],
     },
