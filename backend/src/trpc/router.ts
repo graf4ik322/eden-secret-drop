@@ -265,13 +265,11 @@ export const authRouter = t.router({
   checkAdmin: publicProcedure
     .input(z.object({ initData: z.string().optional() }).optional())
     .query(async ({ ctx }) => {
-      const adminIds = (process.env.ADMIN_IDS || '').split(',').map(id => id.trim()).filter(Boolean);
-      const isAdmin = ctx.isAdmin;
-      let userData = null;
-      if (isAdmin && ctx.tgUserId) {
-        userData = { userId: ctx.tgUserId, isAdmin: true };
-      }
-      return { isAdmin, userId: ctx.tgUserId, user: userData };
+      return {
+        isAdmin: ctx.isAdmin,
+        userId: ctx.tgUserId,
+        user: ctx.userData,
+      };
     }),
 });
 

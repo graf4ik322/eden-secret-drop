@@ -8,12 +8,19 @@ export function ProfilePage() {
   const navigate = useNavigate();
   const { data: authData } = useQuery(getTrpcQueryOptions('auth.checkAdmin'));
   const auth = authData as Record<string, unknown> | null | undefined;
+  
+  // User data from backend (populated via Telegram headers)
+  const backendUser = auth?.user as Record<string, unknown> | null | undefined;
+  const userId = String(auth?.userId || backendUser?.id || '');
+  const firstName = String(backendUser?.firstName || '');
+  const tgUsername = String(backendUser?.username || '');
+  const isAdmin = auth?.isAdmin ?? false;
 
+  // Try to also read from Telegram directly for additional data
   const tg = (typeof window !== 'undefined') ? (window as any).Telegram?.WebApp : null;
   const tgUser = tg?.initDataUnsafe?.user;
-
-  const userId = auth?.userId || tgUser?.id || 'Unknown';
-  const isAdmin = auth?.isAdmin ?? false;
+  const displayName = firstName || tgUser?.first_name || 'Telegram Explorer';
+  const username = tgUsername || tgUser?.username || '';
 
   return (
     <div className="min-h-dvh safe-top safe-bottom pb-20">
@@ -26,19 +33,32 @@ export function ProfilePage() {
       </header>
 
       <section className="mx-4 mt-2 glass-card p-6 text-center">
-        <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center" style={{ background: 'var(--emerald)' }}>
-          <User size={36} style={{ color: 'var(--gold)' }} />
-        </div>
+        {/* Avatar — try to show Telegram userpic, fallback to icon */}
+        {tgUser?.photo_url ? (
+          <div className="w-20 h-20 mx-auto rounded-full overflow-hidden">
+            <img src={tgUser.photo_url} alt="" className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center" style={{ background: 'var(--emerald)' }}>
+            <User size={36} style={{ color: 'var(--gold)' }} />
+          </div>
+        )}
         <h2 className="text-xl font-bold mt-4" style={{ color: 'var(--text)' }}>
-          {tgUser?.first_name || 'Telegram User'}
+          {displayName}
         </h2>
-        {tgUser?.username && (
-          <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>@{tgUser.username}</p>
+        {username && (
+          <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>@{username}</p>
         )}
         {isAdmin && (
           <span className="inline-flex items-center gap-1 mt-3 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider"
             style={{ background: 'rgba(212,175,116,0.15)', color: 'var(--gold)', border: '1px solid rgba(212,175,116,0.3)' }}>
             <Shield size={12} /> Admin
+          </span>
+        )}
+        {!isAdmin && userId && (
+          <span className="inline-flex items-center gap-1 mt-3 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider"
+            style={{ background: 'rgba(76,208,127,0.15)', color: 'var(--success)', border: '1px solid rgba(76,208,127,0.3)' }}>
+            Member
           </span>
         )}
       </section>
@@ -49,7 +69,7 @@ export function ProfilePage() {
             <MessageCircle size={18} style={{ color: 'var(--gold)' }} />
             <div>
               <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--muted)' }}>Telegram ID</p>
-              <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{String(userId)}</p>
+              <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{userId || '—'}</p>
             </div>
           </div>
         </GlassCard>
@@ -60,6 +80,17 @@ export function ProfilePage() {
               <div>
                 <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--muted)' }}>Language</p>
                 <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{tgUser.language_code.toUpperCase()}</p>
+              </div>
+            </div>
+          </GlassCard>
+        )}
+        {tgUser?.is_premium && (
+          <GlassCard className="p-4">
+            <div className="flex items-center gap-3">
+              <Shield size={18} style={{ color: 'var(--gold)' }} />
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--muted)' }}>Telegram Premium</p>
+                <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>Active</p>
               </div>
             </div>
           </GlassCard>

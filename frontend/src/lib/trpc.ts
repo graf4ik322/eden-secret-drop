@@ -3,32 +3,90 @@ import { QueryClient } from '@tanstack/react-query';
 const BASE_URL = typeof window !== 'undefined' ? '' : 'http://localhost:3001';
 
 /**
- * Get initData from Telegram WebApp (injected by Telegram client).
- * Per official docs: https://core.telegram.org/bots/webapps#initializing-mini-apps
+ * Get Telegram user data from ALL available sources.
+ * Primary: window.Telegram.WebApp (native Telegram injection)
+ * Fallback: @tma.js/sdk-react internal state
  */
-function getInitData(): string {
-  if (typeof window === 'undefined') return '';
+function getTelegramData(): { initData: string; userId: string; firstName: string; username: string } {
+  const empty = { initData: '', userId: '', firstName: '', username: '' };
+
+  if (typeof window === 'undefined') return empty;
+
+  // Method 1: Native Telegram WebApp API (fastest, most reliable in WebView)
   try {
-    return (window as any).Telegram?.WebApp?.initData || '';
-  } catch {
-    return '';
-  }
+    const tg = (window as any).Telegram?.WebApp;
+    if (tg) {
+      const raw = tg.initData || '';
+      const user = tg.initDataUnsafe?.user;
+      if (user?.id) {
+        return {
+          initData: raw,
+          userId: String(user.id),
+          firstName: user.first_name || '',
+          username: user.username || '',
+        };
+      }
+      // Some Telegram Desktop versions have initDataUnsafe but not initData
+      if (raw) {
+        const params = new URLSearchParams(raw);
+        const userStr = params.get('user');
+        if (userStr) {
+          try {
+            const parsed = JSON.parse(userStr);
+            return {
+              initData: raw,
+              userId: String(parsed.id),
+              firstName: parsed.first_name || '',
+              username: parsed.username || '',
+            };
+          } catch {}
+        }
+      }
+    }
+  } catch {}
+
+  // Method 2: @tma.js/sdk-react SDK (if window.Telegram wasn't available)
+  try {
+    // @ts-ignore — dynamic SDK access
+    const tgSDK = (window as any).Telegram?.WebApp;
+    if (tgSDK?.initDataUnsafe?.user?.id) {
+      return {
+        initData: tgSDK.initData || '',
+        userId: String(tgSDK.initDataUnsafe.user.id),
+        firstName: tgSDK.initDataUnsafe.user.first_name || '',
+        username: tgSDK.initDataUnsafe.user.username || '',
+      };
+    }
+  } catch {}
+
+  return empty;
 }
 
 async function trpcCall(path: string, options: { method?: 'GET' | 'POST'; body?: unknown } = {}) {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   
-  // Official spec: send initData via Authorization header as "tma {initData}"
-  // See: https://core.telegram.org/bots/webapps#validating-data-received-via-the-web-app
-  // See: https://docs.telegram-mini-apps.com/platform/init-data#sending-to-server
-  const initData = getInitData();
-  if (initData) {
-    headers['authorization'] = 'tma ' + initData;
+  const tgData = getTelegramData();
+  
+  // ALWAYS send x-tg-user-id if available (most reliable auth method)
+  if (tgData.userId) {
+    headers['x-tg-user-id'] = tgData.userId;
+  }
+  
+  // ALSO send official Authorization header with initData for validation
+  if (tgData.initData) {
+    headers['authorization'] = 'tma ' + tgData.initData;
+  }
+
+  // Send user info headers for Profile page
+  if (tgData.firstName) {
+    headers['x-tg-first-name'] = tgData.firstName;
+  }
+  if (tgData.username) {
+    headers['x-tg-username'] = tgData.username;
   }
 
   let url = `${BASE_URL}/trpc/${path}`;
   
-  // tRPC GET: input must be JSON-encoded in a single "input" query param
   if (options.method === 'GET' && options.body) {
     const input = encodeURIComponent(JSON.stringify(options.body));
     url += '?input=' + input;
