@@ -1,0 +1,93 @@
+# ============================================
+# EDEN Secret Drop — полный Docker Compose
+# Frontend + Backend + Bot + PostgreSQL + Redis
+# Всё на одном домене через nginx frontend
+# ============================================
+
+services:
+  # ===== Frontend (nginx: SPA + proxy api/bot) =====
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - bot
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.eden.rule=Host(`${DOMAIN}`)"
+
+  # ===== Backend API (Fastify + tRPC) =====
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../infra/Dockerfile.backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgres://postgres:${DB_PASSWORD}@postgres:5432/eden_secret_drop"
+      REDIS_URL: "redis://redis:6379"
+      PORT: "3001"
+      HOST: "0.0.0.0"
+      NODE_ENV: production
+      MINI_APP_URL: "https://${DOMAIN}"
+    expose:
+      - "3001"
+
+  # ===== Bot (grammY webhook) =====
+  bot:
+    build:
+      context: ./bot
+      dockerfile: ../infra/Dockerfile.bot
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      BOT_TOKEN: "${BOT_TOKEN}"
+      WEBHOOK_URL: "https://${DOMAIN}"
+      BACKEND_URL: "http://backend:3001"
+      BOT_PORT: "3002"
+      HOST: "0.0.0.0"
+      MINI_APP_URL: "https://${DOMAIN}"
+      ADMIN_IDS: "${ADMIN_IDS}"
+    expose:
+      - "3002"
+
+  # ===== PostgreSQL =====
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      POSTGRES_DB: eden_secret_drop
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ===== Redis (BullMQ очереди) =====
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+  redisdata:
