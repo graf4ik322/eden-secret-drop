@@ -59,7 +59,7 @@ bot.command('start', async (ctx) => {
     {
       reply_markup: {
         inline_keyboard: [
-          [{ text: '🔐 Open EDEN', web_app: { url: process.env.MINI_APP_URL || 'https://eden-secret-drop.pages.dev' } }],
+          [{ text: '🔐 Open EDEN', web_app: { url: MINI_APP_URL || 'https://eden-secret-drop.pages.dev' } }],
         ],
       },
     },
