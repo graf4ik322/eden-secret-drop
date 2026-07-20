@@ -1,0 +1,111 @@
+# ============================================
+# EDEN Secret Drop — Coolify Docker Compose
+# ============================================
+# Использование: 
+# 1. В Coolify создай новый ресурс → Docker Compose
+# 2. Вставь этот файл
+# 3. Настрой переменные окружения (Env Variables)
+# 4. Укажи домен для frontend (Coolify сам выдаст SSL)
+# ============================================
+
+services:
+  # ===== Frontend (Telegram Mini App) =====
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    # Coolify сам проксирует на этот порт и выдаёт SSL
+    ports:
+      - "80:80"
+    labels:
+      - "traefik.enable=true"
+      # Coolify подставит домен автоматически
+      - "traefik.http.routers.eden-frontend.rule=Host(`$${DOMAIN}`)"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===== Backend API (Fastify + tRPC) =====
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../infra/Dockerfile.backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "${DATABASE_URL}"
+      REDIS_URL: "${REDIS_URL}"
+      PORT: "3001"
+      HOST: "0.0.0.0"
+      NODE_ENV: production
+    ports:
+      - "3001:3001"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.eden-backend.rule=Host(`api.$${DOMAIN}`)"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===== Bot (grammY webhook) =====
+  bot:
+    build:
+      context: ./bot
+      dockerfile: ../infra/Dockerfile.bot
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      BOT_TOKEN: "${BOT_TOKEN}"
+      WEBHOOK_URL: "${WEBHOOK_URL}"
+      BACKEND_URL: "${BACKEND_URL}"
+      BOT_PORT: "3002"
+      HOST: "0.0.0.0"
+      MINI_APP_URL: "${MINI_APP_URL}"
+      ADMIN_IDS: "${ADMIN_IDS}"
+    ports:
+      - "3002:3002"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.eden-bot.rule=Host(`bot.$${DOMAIN}`)"
+
+  # ===== PostgreSQL =====
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      POSTGRES_DB: eden_secret_drop
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ===== Redis (для BullMQ очередей) =====
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+  redisdata:
