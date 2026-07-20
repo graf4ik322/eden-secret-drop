@@ -1,65 +1,80 @@
 import { QueryClient } from '@tanstack/react-query';
+import { retrieveLaunchParams } from '@tma.js/sdk';
 
 const BASE_URL = typeof window !== 'undefined' ? '' : 'http://localhost:3001';
 
 /**
- * Get Telegram user data from ALL available sources.
- * Primary: window.Telegram.WebApp (native Telegram injection)
- * Fallback: @tma.js/sdk-react internal state
+ * Get Telegram user data using ALL available methods.
+ * 
+ * Primary: retrieveLaunchParams() from @tma.js/sdk (official docs method)
+ *   — reads tgWebAppData from URL hash
+ * Fallback: window.Telegram.WebApp (native Telegram injection)
+ * 
+ * Per official docs: https://docs.telegram-mini-apps.com/platform/init-data#retrieving
  */
 function getTelegramData(): { initData: string; userId: string; firstName: string; username: string } {
   const empty = { initData: '', userId: '', firstName: '', username: '' };
 
   if (typeof window === 'undefined') return empty;
 
-  // Method 1: Native Telegram WebApp API (fastest, most reliable in WebView)
+  let rawInitData = '';
+  let user: { id?: number; first_name?: string; username?: string } | null = null;
+
+  // Method 1: retrieveLaunchParams() from @tma.js/sdk (official, most reliable)
+  // Reads the tgWebAppData URL hash parameter directly
   try {
-    const tg = (window as any).Telegram?.WebApp;
-    if (tg) {
-      const raw = tg.initData || '';
-      const user = tg.initDataUnsafe?.user;
-      if (user?.id) {
-        return {
-          initData: raw,
-          userId: String(user.id),
-          firstName: user.first_name || '',
-          username: user.username || '',
-        };
+    const lp = retrieveLaunchParams();
+    if (lp?.tgWebAppData) {
+      rawInitData = String(lp.tgWebAppData);
+      // Parse user from the initData query string
+      const params = new URLSearchParams(rawInitData);
+      const userStr = params.get('user');
+      if (userStr) {
+        user = JSON.parse(userStr);
       }
-      // Some Telegram Desktop versions have initDataUnsafe but not initData
-      if (raw) {
-        const params = new URLSearchParams(raw);
-        const userStr = params.get('user');
-        if (userStr) {
-          try {
-            const parsed = JSON.parse(userStr);
-            return {
-              initData: raw,
-              userId: String(parsed.id),
-              firstName: parsed.first_name || '',
-              username: parsed.username || '',
-            };
-          } catch {}
+    }
+  } catch {}
+
+  // Method 2: window.Telegram.WebApp (native Telegram WebView injection)
+  if (!user?.id) {
+    try {
+      const tg = (window as any).Telegram?.WebApp;
+      if (tg) {
+        rawInitData = tg.initData || rawInitData;
+        if (tg.initDataUnsafe?.user?.id) {
+          user = {
+            id: tg.initDataUnsafe.user.id,
+            first_name: tg.initDataUnsafe.user.first_name,
+            username: tg.initDataUnsafe.user.username,
+          };
         }
       }
-    }
-  } catch {}
+    } catch {}
+  }
 
-  // Method 2: @tma.js/sdk-react SDK (if window.Telegram wasn't available)
-  try {
-    // @ts-ignore — dynamic SDK access
-    const tgSDK = (window as any).Telegram?.WebApp;
-    if (tgSDK?.initDataUnsafe?.user?.id) {
-      return {
-        initData: tgSDK.initData || '',
-        userId: String(tgSDK.initDataUnsafe.user.id),
-        firstName: tgSDK.initDataUnsafe.user.first_name || '',
-        username: tgSDK.initDataUnsafe.user.username || '',
-      };
-    }
-  } catch {}
+  // Method 3: Parse URL hash directly (last resort)
+  if (!user?.id && !rawInitData) {
+    try {
+      const hash = window.location.hash;
+      if (hash && hash.includes('tgWebAppData=')) {
+        const params = new URLSearchParams(hash.substring(1));
+        const tgData = params.get('tgWebAppData');
+        if (tgData) {
+          rawInitData = decodeURIComponent(tgData);
+          const qp = new URLSearchParams(rawInitData);
+          const userStr = qp.get('user');
+          if (userStr) user = JSON.parse(userStr);
+        }
+      }
+    } catch {}
+  }
 
-  return empty;
+  return {
+    initData: rawInitData,
+    userId: user?.id ? String(user.id) : '',
+    firstName: user?.first_name || '',
+    username: user?.username || '',
+  };
 }
 
 async function trpcCall(path: string, options: { method?: 'GET' | 'POST'; body?: unknown } = {}) {
@@ -72,18 +87,14 @@ async function trpcCall(path: string, options: { method?: 'GET' | 'POST'; body?:
     headers['x-tg-user-id'] = tgData.userId;
   }
   
-  // ALSO send official Authorization header with initData for validation
+  // ALSO send official Authorization header with initData for HMAC validation
   if (tgData.initData) {
     headers['authorization'] = 'tma ' + tgData.initData;
   }
 
   // Send user info headers for Profile page
-  if (tgData.firstName) {
-    headers['x-tg-first-name'] = tgData.firstName;
-  }
-  if (tgData.username) {
-    headers['x-tg-username'] = tgData.username;
-  }
+  if (tgData.firstName) headers['x-tg-first-name'] = tgData.firstName;
+  if (tgData.username) headers['x-tg-username'] = tgData.username;
 
   let url = `${BASE_URL}/trpc/${path}`;
   
