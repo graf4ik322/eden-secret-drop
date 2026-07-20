@@ -4,6 +4,8 @@ import Fastify from 'fastify';
 
 const BOT_TOKEN = process.env.BOT_TOKEN!;
 const WEBHOOK_URL = process.env.WEBHOOK_URL;
+const DOMAIN = process.env.DOMAIN || '';
+const MINI_APP_URL = process.env.MINI_APP_URL || (DOMAIN ? `https://${DOMAIN}` : '');
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 const PORT = parseInt(process.env.BOT_PORT || '3002', 10);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -76,7 +78,7 @@ bot.command('admin', async (ctx) => {
   await ctx.reply('🛠 *Drop Studio*\n\nManage your drops and categories:', {
     reply_markup: {
       inline_keyboard: [
-        [{ text: '📦 Open Drop Studio', web_app: { url: `${process.env.MINI_APP_URL || 'https://eden-secret-drop.pages.dev'}/studio` } }],
+        [{ text: '📦 Open Drop Studio', web_app: { url: `${MINI_APP_URL}/studio` } }],
       ],
     },
   });

@@ -6,6 +6,8 @@ import { appRouter } from './trpc/router';
 import { createContext } from './trpc/context';
 import { startBroadcastWorker } from './queue/broadcast';
 
+const DOMAIN = process.env.DOMAIN || 'localhost:3001';
+const MINI_APP_URL = process.env.MINI_APP_URL || `https://${DOMAIN}`;
 const PORT = parseInt(process.env.PORT || '3001', 10);
 const HOST = process.env.HOST || '0.0.0.0';
 

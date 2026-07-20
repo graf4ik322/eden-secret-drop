@@ -152,7 +152,7 @@ export const dropRouter = t.router({
 
       // Trigger broadcast when drop goes live (TZ 2.5)
       if (input.status === 'live' && drop) {
-        const miniAppUrl = process.env.MINI_APP_URL || 'https://eden-secret-drop.pages.dev';
+        const miniAppUrl = process.env.MINI_APP_URL || `https://${process.env.DOMAIN || 'localhost'}`;
         await enqueueBroadcast({
           dropId: drop.id,
           displayId: drop.displayId,
