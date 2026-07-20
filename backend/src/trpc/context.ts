@@ -4,20 +4,47 @@ import { db } from '../db';
 export async function createContext({ req, res }: CreateFastifyContextOptions) {
   // Admin IDs from env (comma-separated)
   const adminIds = (process.env.ADMIN_IDS || '').split(',').map(id => id.trim()).filter(Boolean);
+  const isDev = process.env.NODE_ENV === 'development' || process.env.DEV_MODE === 'true';
 
-  // Try to extract TG user from initData header
   let tgUserId: string | null = null;
   let isAdmin = false;
 
-  const authHeader = req.headers['x-telegram-init-data'] as string | undefined;
+  // Method 1: Try Telegram initData header (from Mini App)
+  const authHeader = (req.headers['x-telegram-init-data'] || req.headers['authorization']) as string | undefined;
   if (authHeader) {
     try {
-      const parsed = JSON.parse(decodeURIComponent(authHeader));
+      // Try parsing as JSON first (Telegram initData)
+      const decoded = decodeURIComponent(authHeader);
+      const parsed = JSON.parse(decoded);
       tgUserId = String(parsed.user?.id || parsed.id || '');
       isAdmin = adminIds.includes(tgUserId);
     } catch {
-      // not authenticated
+      // Try parsing as raw initData string (hash-based)
+      const params = new URLSearchParams(authHeader);
+      const userStr = params.get('user');
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          tgUserId = String(user.id);
+          isAdmin = adminIds.includes(tgUserId);
+        } catch {}
+      }
     }
+  }
+
+  // Method 2: Dev bypass — x-admin-id header (only in dev/test)
+  if (!isAdmin && isDev) {
+    const devId = req.headers['x-admin-id'] as string | undefined;
+    if (devId) {
+      tgUserId = devId;
+      isAdmin = adminIds.includes(devId);
+    }
+  }
+
+  // Method 3: If no auth at all but adminIds has '0' or 'dev', allow in dev mode
+  if (!isAdmin && isDev && adminIds.includes('dev')) {
+    isAdmin = true;
+    tgUserId = 'dev-user';
   }
 
   return {

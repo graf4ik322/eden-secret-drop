@@ -9,9 +9,23 @@ interface FetchOptions {
 
 async function trpcCall(path: string, options: FetchOptions = {}) {
   const url = `${BASE_URL}/trpc/${path}`;
+  // Attach Telegram initData for admin auth
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (typeof window !== 'undefined') {
+    const tg = (window as any).Telegram?.WebApp;
+    if (tg?.initData) {
+      headers['x-telegram-init-data'] = tg.initData;
+    }
+    // Dev mode: use admin ID from URL param or localStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const adminId = urlParams.get('admin_id') || localStorage.getItem('eden_admin_id');
+    if (adminId) {
+      headers['x-admin-id'] = adminId;
+    }
+  }
   const res = await fetch(url, {
     method: options.method || 'GET',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
   if (!res.ok) {
