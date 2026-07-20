@@ -531,3 +531,4 @@ export function StudioPage() {
     </div>
   );
 }
+export default StudioPage;

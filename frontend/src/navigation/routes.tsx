@@ -1,7 +1,8 @@
 import type { ComponentType } from 'react';
 import { HomePage } from '@/pages/Home/HomePage';
 import { DropDetailPage } from '@/pages/DropDetail/DropDetailPage';
-import { StudioPage } from '@/pages/Studio/StudioPage';
+import { lazy } from 'react';
+const StudioPage = lazy(() => import('@/pages/Studio/StudioPage'));
 import { ProfilePage } from '@/pages/Profile/ProfilePage';
 
 interface Route {
