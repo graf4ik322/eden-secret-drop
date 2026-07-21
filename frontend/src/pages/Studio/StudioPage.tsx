@@ -332,7 +332,8 @@ export function StudioPage() {
   const queryClient = useQueryClient();
 
   const statusParam = activeFilter === 'All' ? undefined : activeFilter.toLowerCase() === 'active' ? 'live' : activeFilter.toLowerCase();
-  const { data: allDropsRaw } = useQuery(getTrpcQueryOptions('drop.listAll', { limit: 100, status: statusParam }));
+  // Критично: запрос всегда без фильтра — аналитика не зависит от выбранного фильтра (BUG-17)
+  const { data: allDropsRaw } = useQuery(getTrpcQueryOptions('drop.listAll', { limit: 100 }));
   const { data: catsRaw } = useQuery(getTrpcQueryOptions('category.list'));
   const { data: subsRaw } = useQuery(getTrpcQueryOptions('subscriber.list'));
 
@@ -340,12 +341,18 @@ export function StudioPage() {
   const categories = (Array.isArray(catsRaw) ? catsRaw : []) as Record<string, unknown>[];
   const subscribers = (Array.isArray(subsRaw) ? subsRaw : []) as Record<string, unknown>[];
 
+  // Фильтр применяется только на уровне отображения — не влияет на аналитику
   const filteredDrops = useMemo(() => {
     return allDrops.filter((drop: Record<string, unknown>) => {
       const q = searchQuery.toLowerCase();
-      return String(drop.title || '').toLowerCase().includes(q) || String(drop.displayId || '').toLowerCase().includes(q);
+      const matchesSearch = String(drop.title || '').toLowerCase().includes(q) || String(drop.displayId || '').toLowerCase().includes(q);
+      if (!matchesSearch) return false;
+      if (statusParam) {
+        return String(drop.status || '') === statusParam;
+      }
+      return true;
     });
-  }, [allDrops, searchQuery]);
+  }, [allDrops, searchQuery, statusParam]);
 
   const analytics = useMemo(() => ({
     active: allDrops.filter(d => d.status === 'live').length,
@@ -446,15 +453,18 @@ export function StudioPage() {
         </div>
       </div>
 
-      <section className="mx-4 mt-3 flex gap-2 overflow-x-auto pb-2 scrollbar-none">
-        {FILTERS.map((f) => (
-          <button key={f} onClick={() => setActiveFilter(f)}
-            className={`px-4 h-[34px] rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-              activeFilter === f
-                ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
-                : 'glass-card text-[var(--text-secondary)]'
-            }`}>{f}</button>
-        ))}
+      <section className="mx-4 mt-3">
+        <div className="flex items-center h-10 rounded-xl px-1" style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.04)' }}>
+          {FILTERS.map((f, idx) => (
+            <button key={f} onClick={() => setActiveFilter(f)}
+              className={`relative flex-1 h-full text-xs font-medium transition-all rounded-lg ${
+                activeFilter === f
+                  ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text)]'
+              } ${idx > 0 ? 'filter-item' : ''}`}
+            >{f}</button>
+          ))}
+        </div>
       </section>
 
       <section className="mx-4 mt-6">
@@ -574,7 +584,7 @@ export function StudioPage() {
         </section>
       )}
 
-      <nav className="fixed bottom-4 left-4 right-4 h-16 glass-card flex items-center justify-around px-2 z-50" style={{ borderRadius: 'var(--radius-bar)' }}>
+      <nav className="fixed bottom-4 left-4 right-4 h-16 bottom-nav flex items-center justify-around px-2 z-50">
         <button onClick={() => navigate('/')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Home size={22} /><span className="text-[10px] font-medium">Home</span></button>
         <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}><Package size={22} /><span className="text-[10px] font-medium">Drops</span></button>
         <button onClick={() => { setEditingDrop(null); setShowDropModal(true); }} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Plus size={22} /><span className="text-[10px] font-medium">Add</span></button>

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useIsAdminBool, useIsAdmin } from '@/lib/useIsAdmin';
 import { getTelegramAuth } from '@/lib/telegram-auth';
-import { Search, ArrowRight, Home, Grid3X3, User, X } from 'lucide-react';
+import { Search, ArrowRight, Home, Sparkles, User, X } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 import { Button } from '@/components/ui';
 
@@ -263,15 +263,15 @@ export function HomePage() {
         ))}
       </section>
 
-      <nav className="fixed bottom-4 left-4 right-4 h-16 glass-card flex items-center justify-around px-2 z-50" style={{ borderRadius: 'var(--radius-bar)' }}>
+      <nav className="fixed bottom-4 left-4 right-4 h-16 bottom-nav flex items-center justify-around px-2 z-50">
         <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}><Home size={22} /><span className="text-[10px] font-medium">Home</span></button>
+        <button onClick={() => navigate('/profile')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><User size={22} /><span className="text-[10px] font-medium">Profile</span></button>
         {isAdmin && (
           <button onClick={() => navigate('/studio')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}>
-            <Grid3X3 size={22} />
+            <Sparkles size={22} />
             <span className="text-[10px] font-medium">Studio</span>
           </button>
         )}
-        <button onClick={() => navigate('/profile')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><User size={22} /><span className="text-[10px] font-medium">Profile</span></button>
       </nav>
     </div>
   );

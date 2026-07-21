@@ -212,6 +212,32 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* ===== Bottom Navigation (FR-01) ===== */
+.bottom-nav {
+  background: linear-gradient(180deg, oklch(0.1 0.012 170 / 0.92), oklch(0.06 0.008 170 / 0.96));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid oklch(1 0 0 / 0.06);
+  border-radius: var(--radius-bar);
+}
+
+/* ===== Filter Panel (FR-04) ===== */
+.filter-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 20%;
+  bottom: 20%;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    oklch(1 0 0 / 0.12) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
 /* ===== Keyframes (TZ §17) ===== */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(20px); }

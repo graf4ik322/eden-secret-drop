@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, User, MessageCircle, Calendar, Shield, Home, Grid3X3 } from 'lucide-react';
+import { ArrowLeft, User, MessageCircle, Calendar, Shield, Home, Sparkles } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 import { getTelegramAuth } from '@/lib/telegram-auth';
 import { GlassCard } from '@/components/ui';
@@ -86,10 +86,10 @@ export function ProfilePage() {
         </GlassCard>
       </section>
 
-      <nav className="fixed bottom-4 left-4 right-4 h-16 glass-card flex items-center justify-around px-2 z-50" style={{ borderRadius: 'var(--radius-bar)' }}>
+      <nav className="fixed bottom-4 left-4 right-4 h-16 bottom-nav flex items-center justify-around px-2 z-50">
         <button onClick={() => navigate('/')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Home size={22} /><span className="text-[10px] font-medium">Home</span></button>
         {showAdminBadge && (
-          <button onClick={() => navigate('/studio')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Grid3X3 size={22} /><span className="text-[10px] font-medium">Drops</span></button>
+          <button onClick={() => navigate('/studio')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Sparkles size={22} /><span className="text-[10px] font-medium">Studio</span></button>
         )}
         <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}><User size={22} /><span className="text-[10px] font-medium">Profile</span></button>
       </nav>
