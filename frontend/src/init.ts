@@ -30,6 +30,8 @@ export function init(debugMode: boolean): void {
       viewport.bindCssVars();
       miniApp.bindCssVars();
       themeParams.bindCssVars();
+      // Lock orientation to portrait (native Telegram API)
+      try { (window as any).Telegram?.WebApp?.lockOrientation?.(); } catch {}
     })
     .catch((e) => {
       console.error('Something went wrong mounting the viewport', e);

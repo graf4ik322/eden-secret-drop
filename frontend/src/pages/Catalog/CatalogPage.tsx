@@ -33,7 +33,7 @@ export function CatalogPage() {
   return (
     <div className="min-h-dvh safe-top scroll-safe">
       <header className="app-header flex items-center justify-between px-4">
-        <button onClick={() => navigate(-1)} className="w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all">
+        <button onClick={() => navigate(-1)} className="back-btn w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all">
           <ArrowRight size={20} style={{ color: 'var(--text-secondary)', transform: 'rotate(180deg)' }} />
         </button>
         <h1 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Catalog</h1>

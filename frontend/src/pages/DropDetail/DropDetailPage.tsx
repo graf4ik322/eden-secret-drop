@@ -73,7 +73,7 @@ export function DropDetailPage() {
 
   if (error || !drop) {
     return (
-      <div className="min-h-dvh safe-top safe-bottom flex items-center justify-center">
+      <div className="min-h-dvh safe-top flex items-center justify-center px-4">
         <div className="text-center">
           <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Drop not found</p>
           <p className="text-sm mt-2" style={{ color: 'var(--muted)' }}>The drop you are looking for does not exist</p>
@@ -89,10 +89,11 @@ export function DropDetailPage() {
 
   return (
     <div className="min-h-dvh safe-top scroll-safe">
-      <header className="flex items-center justify-between px-4 h-16">
-        <button onClick={() => navigate(-1)} className="w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all">
+      <header className="app-header flex items-center justify-between px-4">
+        <button onClick={() => navigate(-1)} className="back-btn w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all">
           <ArrowLeft size={20} style={{ color: 'var(--text-secondary)' }} />
         </button>
+        <div className="flex-1" />
         <div className="flex gap-2">
           <button className="w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all"><Share2 size={20} style={{ color: 'var(--text-secondary)' }} /></button>
         </div>

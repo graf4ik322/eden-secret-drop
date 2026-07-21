@@ -30,7 +30,7 @@ export function ProfilePage() {
   return (
     <div className="min-h-dvh safe-top scroll-safe">
       <header className="app-header flex items-center justify-between px-4">
-        <button onClick={() => navigate(-1)} className="w-[44px] h-[44px] rounded-full glass-card flex items-center justify-center">
+        <button onClick={() => navigate(-1)} className="back-btn w-11 h-11 rounded-full glass-card flex items-center justify-center">
           <ArrowLeft size={20} style={{ color: 'var(--text-secondary)' }} />
         </button>
         <h1 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Profile</h1>
