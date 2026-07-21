@@ -1,7 +1,6 @@
 import { Suspense, useEffect, useState } from 'react';
 import { Navigate, Route, Routes, HashRouter, useNavigate } from 'react-router-dom';
 import { routes } from '@/navigation/routes';
-import { getTelegramAuth } from '@/lib/telegram-auth';
 
 /**
  * Parses start_param from Telegram initData and navigates to drop if present.
