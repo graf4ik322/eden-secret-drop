@@ -88,7 +88,7 @@ export function HomePage() {
     <div className="min-h-dvh safe-top safe-bottom pb-24">
       <header className="flex items-center justify-between px-4 h-20">
         <div className="w-11" /> {/* spacer — balances search btn */}
-        <div className="flex items-center gap-3 absolute left-1/2 -translate-x-1/2">
+        <div className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
           <div onClick={handleLogoTap} className="w-[60px] h-[60px] flex items-center justify-center cursor-pointer active:scale-95 transition-transform">
             <img src="/logo.png" alt="EDEN SecretDrop" className="w-full h-full object-contain" />
           </div>
