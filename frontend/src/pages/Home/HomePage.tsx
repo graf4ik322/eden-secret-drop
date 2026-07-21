@@ -202,44 +202,37 @@ export function HomePage() {
 
       {featuredDrop && (
         <section className="mx-4 mt-6">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Featured Drop</h2>
-            <button onClick={() => navigate('/studio')} className="text-sm font-medium flex items-center gap-1" style={{ color: 'var(--gold)' }}>View all \u2192</button>
-          </div>
-          <div className="glass-card overflow-hidden cursor-pointer hover:-translate-y-0.5 transition-all"
+          <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--text)' }}>Featured</h2>
+          <div className="glass-card overflow-hidden cursor-pointer transition-all"
             onClick={() => navigate(`/drop/${featuredDrop.displayId}`)}>
-            <div className="relative h-[190px] flex items-center justify-center overflow-hidden" style={{ background: 'var(--surface)' }}>
+            <div className="relative h-[200px] flex items-center justify-center overflow-hidden" style={{ background: 'var(--surface)' }}>
               {featuredDrop.cutoutUrl ? (
                 <img src={String(featuredDrop.cutoutUrl)} alt={String(featuredDrop.title || '')} className="h-full w-auto object-contain drop-shadow-[0_0_24px_rgba(31,139,116,0.4)]" />
               ) : (
-                <span className="text-4xl opacity-30">\u2726</span>
+                <span className="text-4xl opacity-20">✦</span>
               )}
-              <span className="absolute top-3 left-3 inline-flex items-center px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-[var(--radius-pill)] bg-gradient-to-r from-[var(--emerald)]/20 to-[var(--emerald-light)]/10 border border-[var(--emerald-light)]/30 text-[var(--emerald-light)]">LIVE</span>
             </div>
-            <div className="p-[18px] flex items-center justify-between">
+            <div className="p-4 flex items-center justify-between">
               <div>
                 <h3 className="font-semibold text-base" style={{ color: 'var(--text)' }}>{String(featuredDrop.title || '')}</h3>
-                <p className="text-[22px] font-bold mt-1" style={{ color: 'var(--gold)' }}>{formatPrice(featuredDrop.price)}</p>
+                <p className="text-xl font-bold mt-1" style={{ color: 'var(--gold)' }}>{formatPrice(featuredDrop.price)}</p>
               </div>
               <button onClick={(e: React.MouseEvent) => { e.stopPropagation(); navigate(`/drop/${featuredDrop.displayId}`); }}
-                className="h-10 px-5 rounded-xl font-bold text-sm transition-all"
-                style={{ background: 'linear-gradient(135deg, var(--gold), var(--gold-light))', color: '#071A17' }}>Buy</button>
+                className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-110"
+                style={{ background: 'var(--surface-light)', border: 'none' }}>
+                <ArrowRight size={20} style={{ color: 'var(--gold)' }} />
+              </button>
             </div>
           </div>
         </section>
       )}
-
       <section className="mx-4 mt-6">
         <h2 className="text-lg font-semibold mb-3" style={{ color: 'var(--text)' }}>Latest Drops</h2>
         {latestLoading && [1, 2, 3].map((i) => (
-          <div key={i} className="glass-card p-[18px] h-[122px] mb-3 animate-pulse">
-            <div className="flex items-center gap-4">
-              <div className="w-[96px] h-[96px] rounded-xl" style={{ background: 'var(--surface)' }} />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 w-3/4 rounded" style={{ background: 'var(--surface)' }} />
-                <div className="h-3 w-1/2 rounded" style={{ background: 'var(--surface)' }} />
-                <div className="h-5 w-1/3 rounded" style={{ background: 'var(--surface)' }} />
-              </div>
+          <div key={i} className="glass-card p-3 h-[88px] mb-2 animate-pulse">
+            <div className="flex items-center gap-3">
+              <div className="w-16 h-16 rounded-xl" style={{ background: 'var(--surface)' }} />
+              <div className="flex-1 space-y-2"><div className="h-4 w-3/4 rounded" style={{ background: 'var(--surface)' }} /><div className="h-3 w-1/2 rounded" style={{ background: 'var(--surface)' }} /></div>
             </div>
           </div>
         ))}
@@ -247,21 +240,21 @@ export function HomePage() {
           <p className="text-center py-8 text-sm" style={{ color: 'var(--muted)' }}>No drops available yet</p>
         )}
         {latest.map((drop: Record<string, unknown>) => (
-          <div key={String(drop.id)} className="glass-card mb-3 cursor-pointer hover:-translate-y-0.5 transition-all"
+          <div key={String(drop.id)} className="glass-card mb-2 cursor-pointer transition-all"
             onClick={() => navigate(`/drop/${drop.displayId}`)}>
-            <div className="flex items-center gap-4 p-[18px]">
-              <div className="w-[96px] h-[96px] rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center" style={{ background: 'var(--surface)' }}>
-                {drop.cutoutUrl ? <img src={String(drop.cutoutUrl)} alt={String(drop.title || '')} className="h-full w-auto object-contain" /> : <span className="text-2xl opacity-20">\u2726</span>}
+            <div className="flex items-center gap-3 p-3">
+              <div className="w-16 h-16 rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center" style={{ background: 'var(--surface)' }}>
+                {drop.cutoutUrl ? <img src={String(drop.cutoutUrl)} alt={String(drop.title || '')} className="h-full w-auto object-contain" /> : <span className="text-xl opacity-20">✦</span>}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{String(drop.displayId || '')}</p>
-                <h3 className="font-semibold text-base truncate mt-0.5" style={{ color: 'var(--text)' }}>{String(drop.title || '')}</h3>
-                <p className="text-lg font-bold mt-1" style={{ color: 'var(--gold)' }}>{formatPrice(drop.price)}</p>
+              <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+                <span className="text-xs font-semibold" style={{ color: 'var(--text)' }}>{String(drop.title || '')}</span>
+                <span className="text-[10px]" style={{ color: 'var(--muted)' }}>{String(drop.displayId || '')}</span>
+                <span className="text-sm font-bold" style={{ color: 'var(--gold)' }}>{formatPrice(drop.price)}</span>
               </div>
               <button onClick={(e: React.MouseEvent) => { e.stopPropagation(); navigate(`/drop/${drop.displayId}`); }}
-                className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all hover:border-[var(--gold)]"
-                style={{ background: 'var(--surface-light)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <ArrowRight size={18} style={{ color: 'var(--gold)' }} />
+                className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110"
+                style={{ background: 'var(--surface-light)', border: 'none' }}>
+                <ArrowRight size={16} style={{ color: 'var(--gold)' }} />
               </button>
             </div>
           </div>

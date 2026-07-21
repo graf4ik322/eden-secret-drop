@@ -89,16 +89,16 @@ export function DropDetailPage() {
 
   return (
     <div className="min-h-dvh safe-top safe-bottom">
-      <header className="flex items-center justify-between px-4 h-[68px]">
-        <button onClick={() => navigate(-1)} className="w-[44px] h-[44px] rounded-full glass-card flex items-center justify-center hover:border-[var(--gold)]/50 transition-all">
+      <header className="flex items-center justify-between px-4 h-16">
+        <button onClick={() => navigate(-1)} className="w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all">
           <ArrowLeft size={20} style={{ color: 'var(--text-secondary)' }} />
         </button>
         <div className="flex gap-2">
-          <button className="w-[44px] h-[44px] rounded-full glass-card flex items-center justify-center hover:border-[var(--gold)]/50 transition-all"><Share2 size={20} style={{ color: 'var(--text-secondary)' }} /></button>
+          <button className="w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all"><Share2 size={20} style={{ color: 'var(--text-secondary)' }} /></button>
         </div>
       </header>
 
-      <section className="mx-4 relative h-[340px] flex items-center justify-center overflow-hidden rounded-2xl" style={{ background: 'var(--surface)' }}>
+      <section className="mx-4 relative h-[340px] flex items-center justify-center overflow-hidden" style={{ background: 'var(--surface)', borderRadius: 'var(--radius-card)' }}>
         {drop.cutoutUrl ? (
           <img src={String(drop.cutoutUrl)} alt={String(drop.title || '')} className="h-full w-auto object-contain max-w-none" style={{ filter: 'drop-shadow(0 0 40px rgba(31,139,116,0.35))' }} />
         ) : drop.imageUrl ? (
@@ -117,12 +117,12 @@ export function DropDetailPage() {
       </div>
 
       <section className="px-4 mt-5">
-        <h1 className="text-[30px] font-bold leading-tight" style={{ color: 'var(--text)' }}>{String(drop.title || '')}</h1>
+        <h1 className="text-3xl font-bold leading-tight" style={{ color: 'var(--text)' }}>{String(drop.title || '')}</h1>
         {!!drop.brand && <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>{String(drop.brand)}</p>}
       </section>
 
       <section className="px-4 mt-4 flex items-center justify-between">
-        <span className="text-[36px] font-bold" style={{ color: 'var(--gold)' }}>{formatPrice(drop.price)}</span>
+        <span className="text-4xl font-bold" style={{ color: 'var(--gold)' }}>{formatPrice(drop.price)}</span>
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full" style={{ background: 'var(--success)' }} />
           <span className="text-sm" style={{ color: 'var(--success)' }}>{remaining > 0 ? 'In Stock (' + remaining + ')' : 'Sold Out'}</span>
@@ -134,7 +134,7 @@ export function DropDetailPage() {
           {trustItems.map((item, i) => (
             <div key={i} className="flex flex-col items-center gap-1.5">
               <item.icon size={20} style={{ color: 'var(--gold)' }} />
-              <span className="text-[11px] font-medium" style={{ color: 'var(--text-secondary)' }}>{item.label}</span>
+              <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>{item.label}</span>
             </div>
           ))}
         </div>
