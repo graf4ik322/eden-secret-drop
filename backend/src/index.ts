@@ -6,16 +6,34 @@ import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import { appRouter } from './trpc/router';
 import { createContext } from './trpc/context';
 import { startBroadcastWorker } from './queue/broadcast';
-import { db } from './db';
+import { db, drops, categories, subscribers, dropCounter } from './db';
+import { sql } from 'drizzle-orm';
 
 const DOMAIN = process.env.DOMAIN || 'localhost:3001';
 const MINI_APP_URL = process.env.MINI_APP_URL || `https://${DOMAIN}`;
 const PORT = parseInt(process.env.PORT || '3001', 10);
 const HOST = process.env.HOST || '0.0.0.0';
 
+async function ensureTablesExist() {
+  try {
+    // Check if a known table exists
+    await db.execute(sql`SELECT 1 FROM "drops" LIMIT 1`);
+  } catch {
+    // Table doesn't exist — the drizzle migration tracker thinks it's applied,
+    // but the actual tables were dropped. Force re-push by removing the tracker.
+    console.log('⚠️  Tables missing — forcing schema re-push...');
+    try {
+      await db.execute(sql`DROP TABLE IF EXISTS "__drizzle_migrations" CASCADE`);
+      console.log('🗑️  Removed stale migration tracker');
+    } catch {
+      // __drizzle_migrations might not exist either
+    }
+  }
+}
+
 async function main() {
   const server = Fastify({
-    maxParamLength: 5000,
+    routerOptions: { maxParamLength: 5000 },
     logger: {
       transport: {
         target: 'pino-pretty',
@@ -44,6 +62,9 @@ async function main() {
 
   // Start
   try {
+    // Check if tables actually exist before relying on migration tracker
+    await ensureTablesExist();
+
     // Run database migrations (generated at build time)
     try {
       await migrate(db, { migrationsFolder: './drizzle' });
