@@ -16,6 +16,10 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
     const adminIds = rawAdminIds.split(',').map(id => id.trim()).filter(Boolean);
     const botToken = process.env.BOT_TOKEN || '';
 
+    if (adminIds.length === 0) {
+      console.warn('[Auth] ADMIN_IDS is empty or not set — no users will be recognized as admin');
+    }
+
     let tgUserId: string | null = null;
     let isAdmin = false;
     let userData: { id: number; firstName: string; username?: string } | null = null;
@@ -33,6 +37,7 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
             const vid = String(parsed.user.id);
             tgUserId = vid;
             isAdmin = adminIds.some(id => id === vid);
+            if (isAdmin) console.log('[Auth] Admin detected via HMAC:', vid);
             userData = {
               id: parsed.user.id,
               firstName: parsed.user.firstName || req.headers['x-tg-first-name'] as string || '',
@@ -49,6 +54,7 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
           if (parsed.user) {
             tgUserId = String(parsed.user.id);
             isAdmin = adminIds.some(id => id === tgUserId);
+            if (isAdmin) console.log('[Auth] Admin detected (no bot token):', tgUserId);
             userData = {
               id: parsed.user.id,
               firstName: parsed.user.firstName || '',
@@ -67,6 +73,7 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
       if (rawUserId) {
         tgUserId = rawUserId;
         isAdmin = adminIds.some(id => id === rawUserId);
+        if (isAdmin) console.log('[Auth] Admin detected via x-tg-user-id:', rawUserId);
         userData = {
           id: parseInt(rawUserId, 10) || 0,
           firstName: req.headers['x-tg-first-name'] as string || '',

@@ -7,7 +7,7 @@ import { GlassCard } from '@/components/ui';
 
 export function ProfilePage() {
   const navigate = useNavigate();
-  const { data: authData } = useQuery(getTrpcQueryOptions('auth.checkAdmin'));
+  const { data: authData, isLoading: authLoading } = useQuery(getTrpcQueryOptions('auth.checkAdmin'));
   const auth = authData as Record<string, unknown> | null | undefined;
   
   // User data from backend (populated via Telegram headers)
@@ -22,6 +22,10 @@ export function ProfilePage() {
   const displayName = firstName || localAuth.firstName || 'Telegram Explorer';
   const displayUsername = tgUsername || localAuth.username || '';
   const displayUserId = userId || localAuth.userId;
+
+  // Пока проверка админа не завершена — не показываем статус Member (TZ 2.7)
+  const showAdminBadge = isAdmin;
+  const showMemberBadge = !authLoading && !isAdmin && !!displayUserId;
 
   return (
     <div className="min-h-dvh safe-top safe-bottom pb-24">
@@ -46,13 +50,13 @@ export function ProfilePage() {
         {displayUsername && (
           <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>@{displayUsername}</p>
         )}
-        {isAdmin && (
+        {showAdminBadge && (
           <span className="inline-flex items-center gap-1 mt-3 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider"
             style={{ background: 'rgba(212,175,116,0.15)', color: 'var(--gold)', border: '1px solid rgba(212,175,116,0.3)' }}>
             <Shield size={12} /> Admin
           </span>
         )}
-        {!isAdmin && displayUserId && (
+        {showMemberBadge && (
           <span className="inline-flex items-center gap-1 mt-3 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider"
             style={{ background: 'rgba(76,208,127,0.15)', color: 'var(--success)', border: '1px solid rgba(76,208,127,0.3)' }}>
             Member
@@ -84,7 +88,7 @@ export function ProfilePage() {
 
       <nav className="fixed bottom-[18px] left-4 right-4 h-[72px] glass-card flex items-center justify-around px-2 z-50" style={{ borderRadius: '28px' }}>
         <button onClick={() => navigate('/')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Home size={22} /><span className="text-[10px] font-medium">Home</span></button>
-        {isAdmin && (
+        {showAdminBadge && (
           <button onClick={() => navigate('/studio')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Grid3X3 size={22} /><span className="text-[10px] font-medium">Drops</span></button>
         )}
         <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}><User size={22} /><span className="text-[10px] font-medium">Profile</span></button>
