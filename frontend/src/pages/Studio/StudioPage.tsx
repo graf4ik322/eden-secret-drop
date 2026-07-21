@@ -282,7 +282,7 @@ export function StudioPage() {
   
   if (adminState.status === 'loading') {
     return (
-      <div className="min-h-dvh safe-top safe-bottom flex items-center justify-center px-4">
+      <div className="min-h-dvh safe-top scroll-safe flex items-center justify-center px-4">
         <div className="text-center">
           <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--surface)' }}>
             <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'var(--emerald)', borderTopColor: 'transparent' }} />
@@ -295,7 +295,7 @@ export function StudioPage() {
   
   if (adminState.status === 'error') {
     return (
-      <div className="min-h-dvh safe-top safe-bottom flex items-center justify-center px-4">
+      <div className="min-h-dvh safe-top scroll-safe flex items-center justify-center px-4">
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--surface)' }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" strokeWidth="1.5"><polygon points="12,2 22,8 22,18 12,24 2,18 2,8" /></svg>
@@ -309,7 +309,7 @@ export function StudioPage() {
   
   if (adminState.status === 'checked' && !adminState.isAdmin) {
     return (
-      <div className="min-h-dvh safe-top safe-bottom flex items-center justify-center px-4">
+      <div className="min-h-dvh safe-top scroll-safe flex items-center justify-center px-4">
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--surface)' }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.5"><polygon points="12,2 22,8 22,18 12,24 2,18 2,8" /></svg>
@@ -402,8 +402,8 @@ export function StudioPage() {
   };
 
   return (
-    <div className="min-h-dvh safe-top safe-bottom pb-24">
-      <header className="flex items-center justify-between px-4 h-16 border-b border-[var(--surface-light)]/50">
+    <div className="min-h-dvh safe-top scroll-safe">
+      <header className="app-header flex items-center justify-between px-4 border-b border-[var(--surface-light)]/50">
         <button onClick={() => setDrawerOpen(true)}
           className="w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all">
           <Menu size={20} style={{ color: 'var(--text-secondary)' }} />
@@ -623,10 +623,16 @@ export function StudioPage() {
       </>
       )}
 
-      {/* FAB — create new drop */}
+      {/* FAB — create new drop (TZ §14: safe area bottom) */}
       <button onClick={() => { setEditingDrop(null); setShowDropModal(true); }}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full z-40 flex items-center justify-center shadow-lg transition-all active:scale-95"
-        style={{ background: 'linear-gradient(135deg, var(--gold), var(--gold-light))', color: '#071A17', boxShadow: '0 4px 24px rgba(212,175,116,0.35)' }}>
+        className="fixed z-40 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95"
+        style={{
+          bottom: 'calc(var(--safe-bottom, 0px) + 24px)',
+          right: '24px',
+          background: 'linear-gradient(135deg, var(--gold), var(--gold-light))',
+          color: '#071A17',
+          boxShadow: '0 4px 24px rgba(212,175,116,0.35)',
+        }}>
         <Plus size={24} />
       </button>
     </div>

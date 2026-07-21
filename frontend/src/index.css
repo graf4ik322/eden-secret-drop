@@ -204,21 +204,78 @@ body {
   background: oklch(1 0 0 / 0.04);
 }
 
-/* ===== Safe Area ===== */
-.safe-top {
-  padding-top: env(safe-area-inset-top, 0px);
-}
-.safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+/* ===== Safe Area (TZ §1) ===== */
+/* Telegram CSS vars from viewport.bindCssVars(), fallback env() */
+:root {
+  --safe-top: var(--tg-safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --safe-bottom: var(--tg-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --safe-left: var(--tg-safe-area-inset-left, env(safe-area-inset-left, 0px));
+  --safe-right: var(--tg-safe-area-inset-right, env(safe-area-inset-right, 0px));
 }
 
-/* ===== Bottom Navigation (FR-01) ===== */
+.safe-top {
+  padding-top: var(--safe-top);
+}
+.safe-bottom {
+  padding-bottom: var(--safe-bottom);
+}
+
+/* ===== Bottom Navigation — Floating (TZ §4, §5) ===== */
 .bottom-nav {
   background: linear-gradient(180deg, oklch(0.1 0.012 170 / 0.92), oklch(0.06 0.008 170 / 0.96));
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid oklch(1 0 0 / 0.06);
   border-radius: var(--radius-bar);
+  box-shadow: 0 8px 32px oklch(0 0 0 / 0.25);
+  /* Floating position: 24px above content, safe area below */
+  bottom: calc(var(--safe-bottom) + 12px);
+  left: 16px;
+  right: 16px;
+}
+
+/* ===== Responsive Typography (TZ §11) ===== */
+:root {
+  --text-xs: clamp(10px, 1.5vw, 12px);
+  --text-sm: clamp(12px, 2vw, 14px);
+  --text-base: clamp(14px, 2.5vw, 16px);
+  --text-lg: clamp(16px, 3vw, 18px);
+  --text-xl: clamp(18px, 3.5vw, 22px);
+  --text-2xl: clamp(22px, 4vw, 28px);
+  --text-3xl: clamp(26px, 5vw, 34px);
+}
+
+/* ===== Scroll Padding (TZ §6) ===== */
+.scroll-safe {
+  padding-bottom: calc(64px + var(--safe-bottom) + 32px);
+}
+
+/* ===== Application Header (TZ §2) ===== */
+.app-header {
+  padding-top: calc(var(--safe-top) + 24px);
+  min-height: 64px;
+}
+
+/* ===== Back Button (TZ §3) ===== */
+.back-btn {
+  position: absolute;
+  top: calc(var(--safe-top) + 16px);
+  left: 24px;
+}
+
+/* ===== Responsive Header (TZ §8) ===== */
+@media (max-width: 400px) {
+  .brand-text-eden { display: none; }
+  .brand-text-full { display: none; }
+  .brand-text-short { display: inline; }
+}
+@media (min-width: 401px) and (max-width: 480px) {
+  .brand-text-eden { display: inline; }
+  .brand-text-full { display: none; }
+}
+@media (min-width: 481px) {
+  .brand-text-eden { display: inline; }
+  .brand-text-full { display: inline; }
 }
 
 /* ===== Filter Panel (FR-04) ===== */
@@ -238,10 +295,19 @@ body {
   pointer-events: none;
 }
 
-/* ===== Keyframes (TZ §17) ===== */
+/* ===== Keyframes (TZ §16, §17) ===== */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Page transition (TZ §16) */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-fade-in {
+  animation: fade-in 220ms ease-out;
 }
 
 @keyframes ambient-glow {

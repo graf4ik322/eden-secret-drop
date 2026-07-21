@@ -1,6 +1,16 @@
 import { Suspense, useEffect, useState } from 'react';
-import { Navigate, Route, Routes, HashRouter, useNavigate } from 'react-router-dom';
+import { Navigate, Route, Routes, HashRouter, useNavigate, useLocation } from 'react-router-dom';
 import { routes } from '@/navigation/routes';
+
+/** Wraps route content with fade-in transition (TZ §16) */
+function AnimatedOutlet({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  return (
+    <div key={location.pathname} className="animate-fade-in">
+      {children}
+    </div>
+  );
+}
 
 /**
  * Parses start_param from Telegram initData and navigates to drop if present.
@@ -42,7 +52,7 @@ function StartParamRouter({ children }: { children: React.ReactNode }) {
     // 3. Try from URL query (for debugging in browser)
     try {
       const qp = new URLSearchParams(window.location.search);
-      const sp = qp.get('startapp');
+      const sp = qp.get('startapp') || qp.get('start_param');
       if (sp?.startsWith('drop_')) {
         const displayId = sp.slice(5);
         navigate(`/drop/${displayId}`, { replace: true });
@@ -54,18 +64,43 @@ function StartParamRouter({ children }: { children: React.ReactNode }) {
     setProcessed(true);
   }, [navigate, processed]);
 
-  if (!processed) return null;
   return <>{children}</>;
 }
 
 export function App() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+        <div className="w-10 h-10 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'var(--emerald)', borderTopColor: 'transparent' }} />
+      </div>
+    );
+  }
+
   return (
     <HashRouter>
       <StartParamRouter>
-        <Suspense fallback={null}>
+        <Suspense fallback={
+          <div className="min-h-dvh flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+            <div className="w-10 h-10 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'var(--emerald)', borderTopColor: 'transparent' }} />
+          </div>
+        }>
           <Routes>
-            {routes.map((route) => (
-              <Route key={route.path} path={route.path} Component={route.Component} />
+            {routes.map(({ path, Component }) => (
+              <Route
+                key={path}
+                path={path}
+                element={
+                  <AnimatedOutlet>
+                    <Component />
+                  </AnimatedOutlet>
+                }
+              />
             ))}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>

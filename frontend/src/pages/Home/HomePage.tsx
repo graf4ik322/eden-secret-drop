@@ -85,15 +85,15 @@ export function HomePage() {
   };
 
   return (
-    <div className="min-h-dvh safe-top safe-bottom pb-24">
-      <header className="flex items-center justify-between px-4 h-20">
+    <div className="min-h-dvh safe-top scroll-safe">
+      <header className="app-header flex items-center justify-between px-4">
         <div className="w-11" /> {/* spacer — balances search btn */}
         <div className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
           <div onClick={handleLogoTap} className="w-[60px] h-[60px] flex items-center justify-center cursor-pointer active:scale-95 transition-transform">
             <img src="/logo.png" alt="EDEN SecretDrop" className="w-full h-full object-contain" />
           </div>
-          <div className="flex flex-col leading-[1.05]">
-            <span className="text-xl font-bold tracking-tight" style={{ color: 'var(--gold)' }}>EDEN</span>
+          <div className="flex flex-col leading-[1.05] brand-text-full">
+            <span className="brand-text-eden text-xl font-bold tracking-tight" style={{ color: 'var(--gold)' }}>EDEN</span>
             <span className="text-[14px] font-medium" style={{ color: 'var(--gold)' }}>SecretDrop</span>
           </div>
           </div>
@@ -263,7 +263,7 @@ export function HomePage() {
         ))}
       </section>
 
-      <nav className="fixed bottom-4 left-4 right-4 h-16 bottom-nav flex items-center justify-around px-2 z-50">
+      <nav className="h-16 bottom-nav flex items-center justify-around px-2 z-50 fixed">
         <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}><Home size={22} /><span className="text-[10px] font-medium">Home</span></button>
         <button onClick={() => navigate('/catalog')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Package size={22} /><span className="text-[10px] font-medium">Catalog</span></button>
         <button onClick={() => navigate('/profile')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><User size={22} /><span className="text-[10px] font-medium">Profile</span></button>

@@ -31,8 +31,8 @@ export function CatalogPage() {
   });
 
   return (
-    <div className="min-h-dvh safe-top safe-bottom pb-24">
-      <header className="flex items-center justify-between px-4 h-16">
+    <div className="min-h-dvh safe-top scroll-safe">
+      <header className="app-header flex items-center justify-between px-4">
         <button onClick={() => navigate(-1)} className="w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all">
           <ArrowRight size={20} style={{ color: 'var(--text-secondary)', transform: 'rotate(180deg)' }} />
         </button>
@@ -99,7 +99,7 @@ export function CatalogPage() {
       </section>
 
       {/* Bottom nav */}
-      <nav className="fixed bottom-4 left-4 right-4 h-16 bottom-nav flex items-center justify-around px-2 z-50">
+      <nav className="h-16 bottom-nav flex items-center justify-around px-2 z-50 fixed">
         <button onClick={() => navigate('/')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Home size={22} /><span className="text-[10px] font-medium">Home</span></button>
         <button onClick={() => navigate('/catalog')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}><Package size={22} /><span className="text-[10px] font-medium">Catalog</span></button>
         <button onClick={() => navigate('/profile')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><User size={22} /><span className="text-[10px] font-medium">Profile</span></button>

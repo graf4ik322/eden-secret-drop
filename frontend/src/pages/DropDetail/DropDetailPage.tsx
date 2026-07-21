@@ -50,9 +50,9 @@ export function DropDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-dvh safe-top safe-bottom">
+      <div className="min-h-dvh safe-top scroll-safe">
         <div className="animate-pulse">
-          <header className="flex items-center justify-between px-4 h-[68px]">
+          <header className="app-header flex items-center justify-between px-4">
             <div className="w-[44px] h-[44px] rounded-full" style={{ background: 'var(--surface)' }} />
             <div className="flex gap-2">
               <div className="w-[44px] h-[44px] rounded-full" style={{ background: 'var(--surface)' }} />
@@ -88,7 +88,7 @@ export function DropDetailPage() {
   const remaining = Number(drop.remaining ?? 1);
 
   return (
-    <div className="min-h-dvh safe-top safe-bottom">
+    <div className="min-h-dvh safe-top scroll-safe">
       <header className="flex items-center justify-between px-4 h-16">
         <button onClick={() => navigate(-1)} className="w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all">
           <ArrowLeft size={20} style={{ color: 'var(--text-secondary)' }} />
@@ -98,7 +98,7 @@ export function DropDetailPage() {
         </div>
       </header>
 
-      <section className="mx-4 relative h-[340px] flex items-center justify-center overflow-hidden" style={{ background: 'var(--surface)', borderRadius: 'var(--radius-card)' }}>
+      <section className="mx-4 mt-8 relative h-[340px] flex items-center justify-center overflow-hidden" style={{ background: 'var(--surface)', borderRadius: 'var(--radius-card)' }}>
         {drop.cutoutUrl ? (
           <img src={String(drop.cutoutUrl)} alt={String(drop.title || '')} className="h-full w-auto object-contain max-w-none" style={{ filter: 'drop-shadow(0 0 40px rgba(31,139,116,0.35))' }} />
         ) : drop.imageUrl ? (

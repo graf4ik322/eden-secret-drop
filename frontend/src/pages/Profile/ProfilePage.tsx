@@ -28,8 +28,8 @@ export function ProfilePage() {
   const showMemberBadge = !authLoading && !isAdmin && !!displayUserId;
 
   return (
-    <div className="min-h-dvh safe-top safe-bottom pb-24">
-      <header className="flex items-center justify-between px-4 h-[72px]">
+    <div className="min-h-dvh safe-top scroll-safe">
+      <header className="app-header flex items-center justify-between px-4">
         <button onClick={() => navigate(-1)} className="w-[44px] h-[44px] rounded-full glass-card flex items-center justify-center">
           <ArrowLeft size={20} style={{ color: 'var(--text-secondary)' }} />
         </button>
@@ -86,7 +86,7 @@ export function ProfilePage() {
         </GlassCard>
       </section>
 
-      <nav className="fixed bottom-4 left-4 right-4 h-16 bottom-nav flex items-center justify-around px-2 z-50">
+      <nav className="h-16 bottom-nav flex items-center justify-around px-2 z-50 fixed">
         <button onClick={() => navigate('/')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Home size={22} /><span className="text-[10px] font-medium">Home</span></button>
         <button onClick={() => navigate('/catalog')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Package size={22} /><span className="text-[10px] font-medium">Catalog</span></button>
         <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}><User size={22} /><span className="text-[10px] font-medium">Profile</span></button>
