@@ -92,7 +92,7 @@ export function HomePage() {
           <div onClick={handleLogoTap} className="w-8 h-8 flex items-center justify-center cursor-pointer active:scale-95 transition-transform">
             <img src="/logo.png" alt="E.D.S" className="w-full h-full object-contain" />
           </div>
-          <span className="text-xl font-bold tracking-[0.15em]" style={{ color: 'var(--text)' }}>E.S.D</span>
+          <span className="text-xl font-bold tracking-[0.15em] font-serif" style={{ color: 'var(--text)' }}>E.S.D</span>
         </div>
         <button onClick={() => { setShowSearch(!showSearch); setSearchQuery(''); }} className="w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all">
           {showSearch ? <X size={20} style={{ color: 'var(--text-secondary)' }} /> : <Search size={20} style={{ color: 'var(--text-secondary)' }} />}
