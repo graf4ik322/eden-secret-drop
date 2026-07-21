@@ -259,7 +259,7 @@ body {
 /* ===== Back Button (TZ §3) ===== */
 .back-btn {
   position: absolute;
-  top: calc(var(--safe-top) + 16px);
+  top: calc(max(var(--safe-top), 8px) + 16px);
   left: 24px;
 }
 
