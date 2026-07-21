@@ -17,8 +17,6 @@ services:
       - 'REDIS_URL=redis://redis:6379'
       - 'BOT_TOKEN=${BOT_TOKEN}'
       - 'ADMIN_IDS=${ADMIN_IDS}'
-      - 'BOT_USERNAME=${BOT_USERNAME}'
-      - 'MINI_APP_SHORT_NAME=${MINI_APP_SHORT_NAME}'
       - 'DOMAIN=${DOMAIN}'
       - DEV_MODE=${DEV_MODE:-true}
       - NODE_ENV=production

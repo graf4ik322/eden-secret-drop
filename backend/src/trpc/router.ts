@@ -8,13 +8,15 @@ import { enqueueBroadcast } from '../queue/broadcast';
 
 const t = initTRPC.context<Context>().create();
 
-const BOT_USERNAME = process.env.BOT_USERNAME || 'edensecretdrop_bot';
-const MINI_APP_SHORT_NAME = process.env.MINI_APP_SHORT_NAME || 'shop';
+const BOT_USERNAME = process.env.BOT_USERNAME;
 const MINI_APP_URL = process.env.MINI_APP_URL || `https://${process.env.DOMAIN || 'localhost'}`;
 
-/** Build Telegram Mini App deep link for a drop */
+/** Build Telegram deep link, or fall back to HTTPS URL if bot username not set */
 function dropDeepLink(displayId: string): string {
-  return `https://t.me/${BOT_USERNAME}/${MINI_APP_SHORT_NAME}?startapp=drop_${displayId}`;
+  if (BOT_USERNAME) {
+    return `https://t.me/${BOT_USERNAME.replace('@', '')}?startapp=drop_${displayId}`;
+  }
+  return `${MINI_APP_URL}/drop/${displayId}`;
 }
 
 /* ===== Helper: generate SD-XXXX ===== */

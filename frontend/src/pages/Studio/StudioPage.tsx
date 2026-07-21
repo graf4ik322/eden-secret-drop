@@ -516,7 +516,10 @@ export function StudioPage() {
                   style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <Edit3 size={14} style={{ color: 'var(--text-secondary)' }} />
                 </button>
-                <button onClick={() => navigator.clipboard?.writeText(`https://t.me/${import.meta.env.VITE_BOT_USERNAME || 'edensecretdrop_bot'}/${import.meta.env.VITE_MINI_APP_SHORT_NAME || 'shop'}?startapp=drop_${drop.displayId}`)}
+                <button onClick={() => {
+                  const baseUrl = window.location.origin;
+                  navigator.clipboard?.writeText(`${baseUrl}/#/drop/${drop.displayId}`);
+                }}
                   className="w-9 h-9 rounded-lg flex items-center justify-center"
                   style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <Share2 size={14} style={{ color: 'var(--text-secondary)' }} />
