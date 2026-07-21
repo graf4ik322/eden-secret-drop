@@ -1,14 +1,14 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, Edit3, Share2, Archive, BarChart3, Package, DollarSign, Eye, TrendingUp, Home, User, Trash2, X, Folder, FileText } from 'lucide-react';
+import { Plus, Search, Edit3, Share2, Archive, BarChart3, Package, Home, User, Trash2, X, Folder, FileText } from 'lucide-react';
 import { getTrpcQueryOptions, trpcMutate } from '@/lib/trpc';
 import { useIsAdmin } from '@/lib/useIsAdmin';
 import { useActivityStore } from '@/store/auth';
 import { GlassCard, StatusDot } from '@/components/ui';
 import type { StatusType } from '@/components/ui';
 
-const FILTERS = ['All', 'Active', 'Scheduled', 'Draft', 'Sold', 'Archived'] as const;
+const FILTERS = ['All', 'Active', 'Scheduled', 'Draft', 'Archived'] as const;
 
 const STATUS_COLORS: Record<string, StatusType> = {
   live: 'live', scheduled: 'scheduled', sold: 'sold', archived: 'archived', draft: 'draft',
@@ -399,7 +399,7 @@ export function StudioPage() {
           <div className="w-[44px] h-[44px] rounded-full flex items-center justify-center" style={{ background: 'var(--emerald)' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2"><polygon points="12,2 22,8 22,18 12,24 2,18 2,8" /></svg>
           </div>
-          <h1 className="text-xl font-semibold tracking-[0.25em] uppercase" style={{ color: 'var(--text)' }}>DROP STUDIO</h1>
+          <h1 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Drop Studio</h1>
         </div>
         <button onClick={() => { setEditingDrop(null); setShowDropModal(true); }}
           className="h-11 px-5 rounded-xl font-bold text-sm"
@@ -409,32 +409,31 @@ export function StudioPage() {
       </header>
 
       <section className="mx-4">
-        <div className="grid grid-cols-4 gap-2">
+        <div className="glass-card p-4 flex items-center justify-around">
           {[
-            { label: 'Active', value: analytics.active, icon: Package, color: 'var(--success)' },
-            { label: 'Sold', value: analytics.sold, icon: DollarSign, color: 'var(--sold)' },
-            { label: 'Views', value: analytics.views, icon: Eye, color: 'var(--gold)' },
-            { label: 'Subs', value: subscribers.length, icon: TrendingUp, color: 'var(--emerald-glow)' },
+            { label: 'Active', value: analytics.active, color: 'var(--success)' },
+            { label: 'Sold', value: analytics.sold, color: 'var(--sold)' },
+            { label: 'Views', value: analytics.views, color: 'var(--gold)' },
+            { label: 'Members', value: subscribers.length, color: 'var(--emerald-glow)' },
           ].map((item, i) => (
-            <GlassCard key={i} className="p-3 text-center">
-              <item.icon size={16} style={{ color: item.color }} className="mx-auto mb-1" />
-              <p className="text-lg font-bold" style={{ color: 'var(--text)' }}>{item.value}</p>
-              <p className="text-[10px] uppercase tracking-wider mt-0.5" style={{ color: 'var(--muted)' }}>{item.label}</p>
-            </GlassCard>
+            <div key={i} className="flex flex-col items-center gap-0.5">
+              <span className="text-lg font-bold" style={{ color: item.color }}>{item.value}</span>
+              <span className="text-[11px] font-medium" style={{ color: 'var(--muted)' }}>{item.label}</span>
+            </div>
           ))}
         </div>
       </section>
 
       {upcomingDrop && (
-        <section className="mx-4 mt-4 glass-card p-4" style={{ border: '1px solid rgba(231,213,167,0.3)' }}>
-          <div className="flex items-center justify-between">
+        <section className="mx-4 mt-4">
+          <div className="glass-card p-4 flex items-center justify-between">
             <div>
-              <p className="text-xs uppercase tracking-wider" style={{ color: 'var(--gold)' }}>Upcoming Drop</p>
-              <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{String(upcomingDrop.title || '')}</p>
+              <p className="text-xs font-medium" style={{ color: 'var(--gold)' }}>Upcoming</p>
+              <p className="text-sm font-semibold mt-1" style={{ color: 'var(--text)' }}>{String(upcomingDrop.title || '')}</p>
               <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{upcomingTime}</p>
             </div>
             <button onClick={() => { setEditingDrop(upcomingDrop); setShowDropModal(true); }}
-              className="px-4 h-9 rounded-xl text-xs font-semibold" style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'var(--gold)' }}>Edit</button>
+              className="btn-ghost text-xs">Edit</button>
           </div>
         </section>
       )}
@@ -483,52 +482,48 @@ export function StudioPage() {
           <div className="text-center py-10"><p className="text-sm" style={{ color: 'var(--muted)' }}>No drops found</p></div>
         )}
         {filteredDrops.map((drop: Record<string, unknown>) => (
-          <GlassCard key={String(drop.id)} className="mb-3">
-            <div className="flex items-center gap-4 p-[18px]">
+          <GlassCard key={String(drop.id)} className="mb-2">
+            <div className="flex items-center gap-3 p-3 min-h-[88px]">
               <div className="w-[72px] h-[72px] rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center" style={{ background: 'var(--surface)' }}>
-                {drop.cutoutUrl ? <img src={String(drop.cutoutUrl)} alt="" className="h-full w-auto object-contain" /> : <Package size={28} style={{ color: 'var(--muted)' }} />}
+                {drop.cutoutUrl ? <img src={String(drop.cutoutUrl)} alt="" className="h-full w-auto object-contain" /> : <Package size={24} style={{ color: 'var(--muted)' }} />}
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <StatusDot status={STATUS_COLORS[String(drop.status || 'draft')] || 'draft'} />
-                  <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{String(drop.displayId || '')}</span>
+              <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold" style={{ color: 'var(--text)' }}>{String(drop.title || '')}</span>
                 </div>
-                <h3 className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{String(drop.title || '')}</h3>
-                <p className="text-sm font-bold mt-0.5" style={{ color: 'var(--gold)' }}>{formatPrice(drop.price)}</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-medium" style={{ color: 'var(--muted)' }}>{String(drop.displayId || '')}</span>
+                  <StatusDot status={STATUS_COLORS[String(drop.status || 'draft')] || 'draft'} showLabel={false} />
+                </div>
+                <p className="text-sm font-bold" style={{ color: 'var(--gold)' }}>{formatPrice(drop.price)}</p>
               </div>
               <div className="flex items-center gap-1">
                 {String(drop.status || '') === 'draft' && (
                   <button onClick={() => handlePublish(drop)}
-                    className="h-9 px-3 rounded-lg text-xs font-bold"
+                    className="h-8 px-3 rounded-lg text-xs font-bold"
                     style={{ background: 'linear-gradient(135deg, var(--gold), var(--gold-light))', color: '#071A17' }}>
                     Publish
                   </button>
                 )}
                 {String(drop.status || '') === 'live' && (
                   <button onClick={() => handleMarkAsSold(drop)}
-                    className="h-9 px-3 rounded-lg text-xs font-bold"
-                    style={{ background: 'rgba(255,107,107,0.2)', color: 'var(--danger)', border: '1px solid rgba(255,107,107,0.3)' }}>
+                    className="h-8 px-3 rounded-lg text-xs font-bold"
+                    style={{ background: 'rgba(255,107,107,0.15)', color: 'var(--danger)', border: '1px solid rgba(255,107,107,0.2)' }}>
                     Sold
                   </button>
                 )}
                 <button onClick={() => { setEditingDrop(drop); setShowDropModal(true); }}
-                  className="w-9 h-9 rounded-lg flex items-center justify-center"
-                  style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <Edit3 size={14} style={{ color: 'var(--text-secondary)' }} />
+                  className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[var(--surface-light)] transition-all">
+                  <Edit3 size={13} style={{ color: 'var(--text-secondary)' }} />
                 </button>
-                <button onClick={() => {
-                  const baseUrl = window.location.origin;
-                  navigator.clipboard?.writeText(`${baseUrl}/#/drop/${drop.displayId}`);
-                }}
-                  className="w-9 h-9 rounded-lg flex items-center justify-center"
-                  style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <Share2 size={14} style={{ color: 'var(--text-secondary)' }} />
+                <button onClick={() => { const baseUrl = window.location.origin; navigator.clipboard?.writeText(`${baseUrl}/#/drop/${drop.displayId}`); }}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[var(--surface-light)] transition-all">
+                  <Share2 size={13} style={{ color: 'var(--text-secondary)' }} />
                 </button>
                 {String(drop.status || '') !== 'archived' && (
                   <button onClick={() => handleArchive(drop)}
-                    className="w-9 h-9 rounded-lg flex items-center justify-center"
-                    style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <Archive size={14} style={{ color: 'var(--danger)' }} />
+                    className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-[var(--surface-light)] transition-all">
+                    <Archive size={13} style={{ color: 'var(--danger)' }} />
                   </button>
                 )}
               </div>
@@ -579,7 +574,7 @@ export function StudioPage() {
         </section>
       )}
 
-      <nav className="fixed bottom-[18px] left-4 right-4 h-[72px] glass-card flex items-center justify-around px-2 z-50" style={{ borderRadius: '28px' }}>
+      <nav className="fixed bottom-4 left-4 right-4 h-16 glass-card flex items-center justify-around px-2 z-50" style={{ borderRadius: 'var(--radius-bar)' }}>
         <button onClick={() => navigate('/')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Home size={22} /><span className="text-[10px] font-medium">Home</span></button>
         <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}><Package size={22} /><span className="text-[10px] font-medium">Drops</span></button>
         <button onClick={() => { setEditingDrop(null); setShowDropModal(true); }} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Plus size={22} /><span className="text-[10px] font-medium">Add</span></button>

@@ -33,7 +33,7 @@ export function ProfilePage() {
         <button onClick={() => navigate(-1)} className="w-[44px] h-[44px] rounded-full glass-card flex items-center justify-center">
           <ArrowLeft size={20} style={{ color: 'var(--text-secondary)' }} />
         </button>
-        <h1 className="text-xl font-semibold tracking-[0.25em] uppercase" style={{ color: 'var(--text)' }}>PROFILE</h1>
+        <h1 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Profile</h1>
         <div className="w-[44px]" />
       </header>
 
@@ -86,7 +86,7 @@ export function ProfilePage() {
         </GlassCard>
       </section>
 
-      <nav className="fixed bottom-[18px] left-4 right-4 h-[72px] glass-card flex items-center justify-around px-2 z-50" style={{ borderRadius: '28px' }}>
+      <nav className="fixed bottom-4 left-4 right-4 h-16 glass-card flex items-center justify-around px-2 z-50" style={{ borderRadius: 'var(--radius-bar)' }}>
         <button onClick={() => navigate('/')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Home size={22} /><span className="text-[10px] font-medium">Home</span></button>
         {showAdminBadge && (
           <button onClick={() => navigate('/studio')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Grid3X3 size={22} /><span className="text-[10px] font-medium">Drops</span></button>

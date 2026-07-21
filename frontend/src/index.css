@@ -2,38 +2,10 @@
 @font-face {
   font-family: 'Space Grotesk';
   font-style: normal;
-  font-weight: 300;
+  font-weight: 300 700;
   font-display: swap;
   src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4Cw.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4Cw.woff2) format('woff2');
-}
-@font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4Cw.woff2) format('woff2');
-}
-@font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4Cw.woff2) format('woff2');
-}
-@font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4Cw.woff2) format('woff2');
 }
 
 /* ===== Tailwind v4 ===== */
@@ -41,174 +13,193 @@
 
 /* ===== EDEN Design Tokens (TZ Section 3) ===== */
 @theme inline {
+  /* 8pt Grid — space */
+  --space-unit: 8px;
+
   /* Background */
-  --color-bg: #071A17;
-  --color-bg-secondary: #0C2622;
-  --color-surface: #10352F;
-  --color-surface-light: #16463E;
+  --color-bg: oklch(0.06 0.008 170);
+  --color-bg-secondary: oklch(0.09 0.01 170);
+  --color-surface: oklch(0.1 0.01 170 / 0.5);
+  --color-surface-light: oklch(0.12 0.012 170 / 0.4);
 
   /* Brand */
-  --color-emerald: #146B5A;
-  --color-emerald-light: #1F8B74;
-  --color-emerald-glow: #28C8A4;
+  --color-emerald: oklch(0.38 0.05 170);
+  --color-emerald-light: oklch(0.48 0.06 170);
+  --color-emerald-glow: oklch(0.65 0.08 170);
 
   /* Accent */
-  --color-gold: #D2B980;
-  --color-gold-light: #E7D5A7;
+  --color-gold: oklch(0.72 0.06 90);
+  --color-gold-light: oklch(0.82 0.05 90);
 
   /* Text */
-  --color-text: #F5EDDD;
-  --color-text-secondary: #D8D0C2;
-  --color-muted: #8A908E;
+  --color-text: oklch(0.92 0.01 80);
+  --color-text-secondary: oklch(0.78 0.01 80);
+  --color-muted: oklch(0.55 0.01 150);
 
   /* States */
-  --color-success: #4CD07F;
-  --color-scheduled: #E7D5A7;
-  --color-sold: #8A908E;
-  --color-danger: #FF6B6B;
+  --color-success: oklch(0.68 0.12 145);
+  --color-scheduled: oklch(0.82 0.05 90);
+  --color-sold: oklch(0.55 0.01 150);
+  --color-danger: oklch(0.65 0.15 25);
 
-  /* Geometry */
+  /* Radius system (TZ §4) */
+  --radius-sm: 14px;
+  --radius-btn: 16px;
+  --radius-input: 16px;
   --radius-card: 20px;
-  --radius-btn: 14px;
-  --radius-pill: 999px;
-  --shadow-glow-gold: 0 0 24px rgba(212,175,116,.25);
-  --shadow-glow-emerald: 0 0 24px rgba(31,139,116,.22);
+  --radius-hero: 24px;
+  --radius-bar: 28px;
+
+  /* Shadows */
+  --shadow-glow-gold: 0 0 24px oklch(0.72 0.06 90 / 0.18);
+  --shadow-glow-emerald: 0 0 24px oklch(0.65 0.08 170 / 0.15);
+  --shadow-glass: 0 8px 32px oklch(0 0 0 / 0.35);
 }
 
-/* ===== Base Variables ===== */
+/* ===== Base Variables (shadcn/legacy dual namespace) ===== */
 :root {
-  --bg: #071A17;
-  --bg-secondary: #0C2622;
-  --surface: #10352F;
-  --surface-light: #16463E;
-  --emerald: #146B5A;
-  --emerald-light: #1F8B74;
-  --emerald-glow: #28C8A4;
-  --gold: #D2B980;
-  --gold-light: #E7D5A7;
-  --text: #F5EDDD;
-  --text-secondary: #D8D0C2;
-  --muted: #8A908E;
-  --success: #4CD07F;
-  --scheduled: #E7D5A7;
-  --sold: #8A908E;
-  --danger: #FF6B6B;
+  --bg: oklch(0.06 0.008 170);
+  --bg-secondary: oklch(0.09 0.01 170);
+  --surface: oklch(0.1 0.01 170 / 0.5);
+  --surface-light: oklch(0.12 0.012 170 / 0.4);
+  --emerald: oklch(0.38 0.05 170);
+  --emerald-light: oklch(0.48 0.06 170);
+  --emerald-glow: oklch(0.65 0.08 170);
+  --gold: oklch(0.72 0.06 90);
+  --gold-light: oklch(0.82 0.05 90);
+  --text: oklch(0.92 0.01 80);
+  --text-secondary: oklch(0.78 0.01 80);
+  --muted: oklch(0.55 0.01 150);
+  --success: oklch(0.68 0.12 145);
+  --scheduled: oklch(0.82 0.05 90);
+  --sold: oklch(0.55 0.01 150);
+  --danger: oklch(0.65 0.15 25);
 
+  --radius-sm: 14px;
+  --radius-btn: 16px;
+  --radius-input: 16px;
   --radius-card: 20px;
-  --radius-btn: 14px;
-  --radius-pill: 999px;
-  --blur: 28px;
-  --shadow: 0 8px 32px rgba(0,0,0,.35);
-  --shadow-glow-gold: 0 0 24px rgba(212,175,116,.25);
-  --shadow-glow-emerald: 0 0 24px rgba(31,139,116,.22);
+  --radius-hero: 24px;
+  --radius-bar: 28px;
+
+  --blur: 20px;
+  --shadow: 0 8px 32px oklch(0 0 0 / 0.35);
+  --shadow-glow-gold: 0 0 24px oklch(0.72 0.06 90 / 0.18);
+  --shadow-glow-emerald: 0 0 24px oklch(0.65 0.08 170 / 0.15);
+
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 400;
+  color: var(--text);
+  background-color: var(--bg);
 }
 
-/* ===== Background Recipe (TZ 3.4) ===== */
+/* ===== Background Recipe ===== */
 html {
-  background-color: #071A17 !important;
+  background-color: var(--bg) !important;
 }
 
 body {
   background-color: var(--bg) !important;
   background-image:
-    /* Layer 1: Strong radial glow, center-top (TZ 3.4) */
-    radial-gradient(ellipse 100% 80% at 50% 0%, rgba(31,139,116,.35) 0%, rgba(20,107,90,.12) 40%, transparent 70%),
-    /* Layer 2: Hex pattern texture (TZ 3.4) */
-    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 2l26 15v26L30 58 4 43V17L30 2z' fill='none' stroke='%23F5EDDD' stroke-opacity='.04' stroke-width='.5'/%3E%3C/svg%3E"),
-    /* Layer 3: Subtle noise texture (TZ 3.4) */
-    repeating-conic-gradient(rgba(255,255,255,.005) 0% 25%, transparent 0% 50%) 0 0 / 2px 2px;
-  color: var(--text);
-  padding: 0;
-  margin: 0;
-  font-family: 'Space Grotesk', sans-serif;
+    radial-gradient(ellipse 100% 80% at 50% 0%, oklch(0.48 0.06 170 / 0.25) 0%, oklch(0.38 0.05 170 / 0.08) 40%, transparent 70%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 2l26 15v26L30 58 4 43V17L30 2z' fill='none' stroke='%23F5EDDD' stroke-opacity='.03' stroke-width='.5'/%3E%3C/svg%3E");
+  background-size: 100% 100%, 60px 60px;
+  background-attachment: fixed;
+  min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  min-height: 100dvh;
-  overflow-x: hidden;
 }
 
-/* ===== Glass Card (TZ 3.5) ===== */
+/* ===== Glass Card (TZ §11 — ослабленный glass) ===== */
 .glass-card {
-  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-  backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
-  border: 1px solid rgba(255,255,255,.08);
+  background: linear-gradient(180deg, oklch(1 0 0 / 0.06), oklch(1 0 0 / 0.03));
+  backdrop-filter: blur(var(--blur, 20px));
+  -webkit-backdrop-filter: blur(var(--blur, 20px));
+  border: none;
+  box-shadow: inset 0 0 0 0.5px oklch(1 0 0 / 0.04);
   border-radius: var(--radius-card);
-  transition: all 300ms ease;
+  transition: all 250ms ease;
 }
 
 .glass-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--gold);
-  box-shadow: var(--shadow-glow-emerald);
+  transform: scale(1.02);
 }
 
-/* ===== Button Styles (TZ 3.6) ===== */
-.btn-primary {
-  height: 56px;
-  background: linear-gradient(135deg, #D2B980, #E7D5A7);
-  color: #071A17;
-  font-weight: 700;
+/* ===== Glass Effect Variations ===== */
+.glass-surface {
+  background: linear-gradient(180deg, oklch(1 0 0 / 0.04), oklch(1 0 0 / 0.02));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: none;
+  box-shadow: inset 0 0 0 0.5px oklch(1 0 0 / 0.03);
+  border-radius: var(--radius-bar);
+}
+
+/* ===== Button Styles ===== */
+.btn-gradient {
+  height: 48px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: var(--bg);
+  font-weight: 600;
   border-radius: var(--radius-btn);
-  box-shadow: 0 0 24px rgba(212,175,116,.25); /* --shadow-glow-gold */
   text-align: center;
   border: none;
   cursor: pointer;
-  transition: all 300ms ease;
-  letter-spacing: 0.02em;
+  transition: all 250ms ease;
+  padding: 0 24px;
 }
 
-.btn-primary:hover {
-  box-shadow: 0 0 32px rgba(212,175,116,.4);
-  transform: translateY(-1px);
+.btn-gradient:hover {
+  box-shadow: var(--shadow-glow-gold);
+  transform: scale(1.02);
 }
 
-.btn-primary:active {
-  transform: scale(.97);
-}
-
-/* Big CTA for Buy Now (TZ 3.6 — 64px) */
-.btn-primary-lg {
-  height: 64px;
-  background: linear-gradient(135deg, #D2B980, #E7D5A7);
-  color: #071A17;
-  font-weight: 700;
-  font-size: 18px;
-  border-radius: var(--radius-btn);
-  box-shadow: 0 0 24px rgba(212,175,116,.25);
-  text-align: center;
-  border: none;
-  cursor: pointer;
-  transition: all 300ms ease;
-  letter-spacing: 0.02em;
-}
-
-.btn-primary:active {
-  transform: scale(.97);
+.btn-gradient:active {
+  transform: scale(0.98);
 }
 
 .btn-secondary {
-  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-  backdrop-filter: blur(var(--blur));
-  border: 1px solid var(--gold);
-  color: #F5EDDD;
+  height: 48px;
+  background: oklch(1 0 0 / 0.04);
+  backdrop-filter: blur(20px);
+  color: var(--text);
   border-radius: var(--radius-btn);
-  transition: all 300ms ease;
+  border: none;
+  cursor: pointer;
+  transition: all 250ms ease;
+  padding: 0 24px;
+  font-weight: 500;
+}
+
+.btn-secondary:hover {
+  background: oklch(1 0 0 / 0.08);
 }
 
 .btn-ghost {
+  height: 48px;
   background: transparent;
   color: var(--gold);
   border: none;
   border-radius: var(--radius-btn);
-  transition: all 300ms ease;
+  cursor: pointer;
+  transition: all 250ms ease;
+  padding: 0 16px;
+  font-weight: 500;
 }
 
 .btn-ghost:hover {
-  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  background: oklch(1 0 0 / 0.04);
 }
 
-/* ===== Keyframes (TZ 3.8) ===== */
+/* ===== Safe Area ===== */
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ===== Keyframes (TZ §17) ===== */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
@@ -226,7 +217,7 @@ body {
 }
 
 .animate-fade-up {
-  animation: fade-up 350ms ease-out forwards;
+  animation: fade-up 300ms ease-out forwards;
 }
 
 .animate-ambient-glow {
@@ -245,14 +236,6 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--surface-light);
-  border-radius: 999px;
-}
-
-/* ===== Safe Area ===== */
-.safe-top {
-  padding-top: env(safe-area-inset-top, 0px);
-}
-.safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: oklch(1 0 0 / 0.1);
+  border-radius: 2px;
 }
