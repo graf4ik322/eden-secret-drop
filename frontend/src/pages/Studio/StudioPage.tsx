@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, Edit3, Share2, Archive, BarChart3, Package, Home, User, Trash2, X, Folder, FileText } from 'lucide-react';
+import { Plus, Search, Edit3, Share2, Archive, Package, Home, Trash2, X, Folder, FileText, Menu } from 'lucide-react';
+import { Drawer } from '@/components/ui';
 import { getTrpcQueryOptions, trpcMutate } from '@/lib/trpc';
 import { useIsAdmin } from '@/lib/useIsAdmin';
 import { useActivityStore } from '@/store/auth';
@@ -329,6 +330,8 @@ export function StudioPage() {
   const [showDropModal, setShowDropModal] = useState(false);
   const [editingDrop, setEditingDrop] = useState<Record<string, unknown> | null>(null);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [showCategoriesScreen, setShowCategoriesScreen] = useState(false);
   const queryClient = useQueryClient();
 
   const statusParam = activeFilter === 'All' ? undefined : activeFilter.toLowerCase() === 'active' ? 'live' : activeFilter.toLowerCase();
@@ -401,19 +404,41 @@ export function StudioPage() {
 
   return (
     <div className="min-h-dvh safe-top safe-bottom pb-24">
-      <header className="flex items-center justify-between px-4 h-[72px]">
-        <div className="flex items-center gap-3">
-          <div className="w-[44px] h-[44px] rounded-full flex items-center justify-center" style={{ background: 'var(--emerald)' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2"><polygon points="12,2 22,8 22,18 12,24 2,18 2,8" /></svg>
-          </div>
-          <h1 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Drop Studio</h1>
-        </div>
-        <button onClick={() => { setEditingDrop(null); setShowDropModal(true); }}
-          className="h-11 px-5 rounded-xl font-bold text-sm"
-          style={{ background: 'linear-gradient(135deg, var(--gold), var(--gold-light))', color: '#071A17' }}>
-          <Plus size={18} className="inline mr-1" /> Drop
+      <header className="flex items-center justify-between px-4 h-16 border-b border-[var(--surface-light)]/50">
+        <button onClick={() => setDrawerOpen(true)}
+          className="w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all">
+          <Menu size={20} style={{ color: 'var(--text-secondary)' }} />
+        </button>
+        <h1 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Drop Studio</h1>
+        <button onClick={() => navigate('/')}
+          className="w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all">
+          <Home size={20} style={{ color: 'var(--gold)' }} />
         </button>
       </header>
+
+      {/* Drawer navigation */}
+      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+        <div className="flex flex-col gap-1">
+          {[
+            { id: 'drops', label: 'Дропы', icon: Package, active: !showCategoriesScreen },
+            { id: 'categories', label: 'Категории', icon: Folder, active: showCategoriesScreen },
+          ].map((item) => (
+            <button key={item.id} onClick={() => {
+              setShowCategoriesScreen(item.id === 'categories');
+              setDrawerOpen(false);
+            }}
+              className={`flex items-center gap-3 px-4 h-12 rounded-xl text-sm font-medium transition-all ${
+                item.active
+                  ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17]'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--surface)]'
+              }`}
+            >
+              <item.icon size={18} />
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </Drawer>
 
       <section className="mx-4">
         <div className="glass-card p-4 flex items-center justify-around">
@@ -584,13 +609,12 @@ export function StudioPage() {
         </section>
       )}
 
-      <nav className="fixed bottom-4 left-4 right-4 h-16 bottom-nav flex items-center justify-around px-2 z-50">
-        <button onClick={() => navigate('/')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Home size={22} /><span className="text-[10px] font-medium">Home</span></button>
-        <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}><Package size={22} /><span className="text-[10px] font-medium">Drops</span></button>
-        <button onClick={() => { setEditingDrop(null); setShowDropModal(true); }} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Plus size={22} /><span className="text-[10px] font-medium">Add</span></button>
-        <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><BarChart3 size={22} /><span className="text-[10px] font-medium">Stats</span></button>
-        <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><User size={22} /><span className="text-[10px] font-medium">Profile</span></button>
-      </nav>
+      {/* FAB — create new drop */}
+      <button onClick={() => { setEditingDrop(null); setShowDropModal(true); }}
+        className="fixed bottom-6 right-6 w-14 h-14 rounded-full z-40 flex items-center justify-center shadow-lg transition-all active:scale-95"
+        style={{ background: 'linear-gradient(135deg, var(--gold), var(--gold-light))', color: '#071A17', boxShadow: '0 4px 24px rgba(212,175,116,0.35)' }}>
+        <Plus size={24} />
+      </button>
     </div>
   );
 }

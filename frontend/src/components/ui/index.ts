@@ -11,3 +11,4 @@ export { Input } from './Input';
 export type { InputProps } from './Input';
 export { Toggle } from './Toggle';
 export { Modal } from './Modal';
+export { Drawer } from './Drawer';
