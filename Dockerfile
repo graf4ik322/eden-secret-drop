@@ -29,7 +29,7 @@ RUN npx tsc && npm prune --production
 
 # ---- Stage 4: Runtime ----
 FROM nginx:alpine
-RUN apk add --no-cache nodejs supervisor
+RUN apk add --no-cache nodejs npm supervisor
 
 # Frontend static
 COPY --from=frontend-builder /app/dist /usr/share/nginx/html
