@@ -49,7 +49,7 @@ async function main() {
       await migrate(db, { migrationsFolder: './drizzle' });
       console.log('✅ Migrations applied');
     } catch (migrateErr) {
-      console.error('⚠️ Migration failed (non-fatal):', (migrateErr as Error).message);
+      console.log('⚠️ Migration failed (non-fatal):', (migrateErr as Error).message);
     }
 
     // Start broadcast worker (BullMQ)
