@@ -329,7 +329,6 @@ export function StudioPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showDropModal, setShowDropModal] = useState(false);
   const [editingDrop, setEditingDrop] = useState<Record<string, unknown> | null>(null);
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [showCategoriesScreen, setShowCategoriesScreen] = useState(false);
   const queryClient = useQueryClient();
@@ -492,25 +491,38 @@ export function StudioPage() {
         </div>
       </section>
 
-      <section className="mx-4 mt-6">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--text)' }}>
-            <Folder size={16} /> Category Management
-          </h3>
-          <button onClick={() => setShowCategoryModal(!showCategoryModal)}
-            className="px-4 h-[34px] rounded-full text-xs font-semibold"
-            style={{ background: 'linear-gradient(135deg, var(--gold), var(--gold-light))', color: '#071A17' }}>
-            + New
-          </button>
-        </div>
-      </section>
-
-      {showCategoryModal && (
-        <section className="mx-4 mt-4">
-          <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Category Management</h3>
+      {showCategoriesScreen ? (
+        /* ===== Categories Screen (FR-03) ===== */
+        <section className="mx-4 mt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Categories</h3>
+          </div>
           <CategoryManager />
         </section>
-      )}
+      ) : (
+        /* ===== Drops List (default) ===== */
+        <>
+      <div className="mx-4 mt-4">
+        <div className="flex items-center gap-3 px-4 h-12 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <Search size={16} style={{ color: 'var(--muted)' }} />
+          <input type="text" placeholder="Search Drop..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 bg-transparent text-sm outline-none" style={{ color: 'var(--text)' }} />
+        </div>
+      </div>
+
+      <section className="mx-4 mt-3">
+        <div className="flex items-center h-10 rounded-xl px-1" style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.04)' }}>
+          {FILTERS.map((f, idx) => (
+            <button key={f} onClick={() => setActiveFilter(f)}
+              className={`relative flex-1 h-full text-xs font-medium transition-all rounded-lg ${
+                activeFilter === f
+                  ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text)]'
+              } ${idx > 0 ? 'filter-item' : ''}`}
+            >{f}</button>
+          ))}
+        </div>
+      </section>
 
       <section className="mx-4 mt-4">
         {filteredDrops.length === 0 && (
@@ -607,6 +619,8 @@ export function StudioPage() {
             </div>
           </GlassCard>
         </section>
+      )}
+      </>
       )}
 
       {/* FAB — create new drop */}
