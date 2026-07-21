@@ -2,8 +2,12 @@ import { pgTable, serial, integer, varchar, text, numeric, timestamp, boolean, u
 import { relations } from 'drizzle-orm';
 
 /* ===== Drop Status Enum as varchar ===== */
-export const dropStatus = ['draft', 'scheduled', 'live', 'sold', 'archived'] as const;
+export const dropStatus = ['draft', 'scheduled', 'live', 'archived'] as const;
 export type DropStatus = (typeof dropStatus)[number];
+
+/* archived_reason — only used when status='archived' */
+export const archivedReasons = ['sold', 'manual'] as const;
+export type ArchivedReason = (typeof archivedReasons)[number];
 
 /* ===== Categories (TZ 2.2) ===== */
 export const categories = pgTable('categories', {
@@ -41,7 +45,9 @@ export const drops = pgTable('drops', {
   remaining: integer('remaining').default(1),        // "Remaining N pcs"
   brand: varchar('brand', { length: 255 }),
   publishedMessageId: integer('published_message_id'), // Telegram message ID for edit
-  scheduledAt: timestamp('scheduled_at'),             // for "scheduled" status
+  scheduledAt: timestamp('scheduled_at'),
+  archivedReason: varchar('archived_reason', { length: 10 }),  // 'sold' | 'manual' (nullable — only when status='archived')
+  notifySubscribers: boolean('notify_subscribers').default(false),
   isPublished: boolean('is_published').default(false),
   views: integer('views').default(0),
   createdAt: timestamp('created_at').defaultNow(),

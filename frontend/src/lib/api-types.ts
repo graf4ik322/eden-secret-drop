@@ -1,8 +1,11 @@
 // Shared API types — mirrors backend/src/trpc/router.ts
 // These are used by the frontend tRPC client for type safety
 
-export const DROP_STATUSES = ['draft', 'scheduled', 'live', 'sold', 'archived'] as const;
+export const DROP_STATUSES = ['draft', 'scheduled', 'live', 'archived'] as const;
 export type DropStatus = (typeof DROP_STATUSES)[number];
+
+export const ARCHIVED_REASONS = ['sold', 'manual'] as const;
+export type ArchivedReason = (typeof ARCHIVED_REASONS)[number];
 
 export interface Category {
   id: number;
@@ -33,7 +36,9 @@ export interface Drop {
   remaining: number;
   brand: string | null;
   scheduledAt: string | null;
-  publishedAt: string | null;
+  archivedReason: ArchivedReason | null;
+  notifySubscribers: boolean;
+  isPublished: boolean;
   views: number;
   createdAt: string;
   updatedAt: string;

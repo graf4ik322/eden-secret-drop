@@ -1,12 +1,21 @@
 import { initTRPC } from '@trpc/server';
 import { z } from 'zod';
-import { db, drops, categories, dropStatus, subscribers, dropCounter } from '../db';
+import { db, drops, categories, dropStatus, archivedReasons, subscribers, dropCounter } from '../db';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import type { Context } from './context';
 import { registerSubscriber, listActiveSubscribers, deactivateSubscriber } from '../services/subscriber';
 import { enqueueBroadcast } from '../queue/broadcast';
 
 const t = initTRPC.context<Context>().create();
+
+const BOT_USERNAME = process.env.BOT_USERNAME || 'edensecretdrop_bot';
+const MINI_APP_SHORT_NAME = process.env.MINI_APP_SHORT_NAME || 'shop';
+const MINI_APP_URL = process.env.MINI_APP_URL || `https://${process.env.DOMAIN || 'localhost'}`;
+
+/** Build Telegram Mini App deep link for a drop */
+function dropDeepLink(displayId: string): string {
+  return `https://t.me/${BOT_USERNAME}/${MINI_APP_SHORT_NAME}?startapp=drop_${displayId}`;
+}
 
 /* ===== Helper: generate SD-XXXX ===== */
 async function generateDisplayId(): Promise<string> {
@@ -111,6 +120,7 @@ export const dropRouter = t.router({
       brand: z.string().optional(),
       remaining: z.number().default(1),
       scheduledAt: z.string().optional(),
+      notifySubscribers: z.boolean().default(false),
     }))
     .mutation(async ({ input }) => {
       const displayId = await generateDisplayId();
@@ -126,12 +136,13 @@ export const dropRouter = t.router({
           brand: input.brand,
           remaining: input.remaining,
           scheduledAt: input.scheduledAt ? new Date(input.scheduledAt) : null,
+          notifySubscribers: input.notifySubscribers,
         })
         .returning();
       return drop;
     }),
 
-  /** Update drop */
+  /** Update drop (any field, no broadcast on status change) */
   update: adminProcedure
     .input(z.object({
       id: z.number(),
@@ -143,6 +154,8 @@ export const dropRouter = t.router({
       brand: z.string().optional(),
       remaining: z.number().optional(),
       scheduledAt: z.string().optional(),
+      archivedReason: z.enum(archivedReasons).optional(),
+      notifySubscribers: z.boolean().optional(),
     }))
     .mutation(async ({ input }) => {
       const updateData: Record<string, unknown> = {};
@@ -154,6 +167,13 @@ export const dropRouter = t.router({
       if (input.brand !== undefined) updateData.brand = input.brand;
       if (input.remaining !== undefined) updateData.remaining = input.remaining;
       if (input.scheduledAt !== undefined) updateData.scheduledAt = new Date(input.scheduledAt);
+      if (input.archivedReason !== undefined) updateData.archivedReason = input.archivedReason;
+      if (input.notifySubscribers !== undefined) updateData.notifySubscribers = input.notifySubscribers;
+
+      // If transitioning OUT of 'archived', clear archived_reason
+      if (input.status !== undefined && input.status !== 'archived') {
+        updateData.archivedReason = null;
+      }
 
       const [drop] = await db
         .update(drops)
@@ -161,24 +181,88 @@ export const dropRouter = t.router({
         .where(eq(drops.id, input.id))
         .returning();
 
-      // Increment counter + trigger broadcast when drop goes live (TZ 2.3, 2.5)
-      if (input.status === 'live' && drop) {
-        // Increment global drop counter
-        const [counter] = await db.update(dropCounter)
-          .set({ count: sql`count + 1`, updatedAt: new Date() })
-          .where(eq(dropCounter.id, 1))
-          .returning();
-        const miniAppUrl = process.env.MINI_APP_URL || `https://${process.env.DOMAIN || 'localhost'}`;
+      if (!drop) throw new Error('Drop not found');
+      return drop;
+    }),
+
+  /** Publish drop (draft→live / scheduled→live). Broadcast ONLY here. */
+  publish: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const [drop] = await db
+        .select()
+        .from(drops)
+        .where(eq(drops.id, input.id))
+        .limit(1);
+
+      if (!drop) throw new Error('Drop not found');
+      if (drop.status !== 'draft' && drop.status !== 'scheduled') {
+        throw new Error(`Cannot publish drop with status '${drop.status}'. Only draft or scheduled can be published.`);
+      }
+
+      const [updated] = await db
+        .update(drops)
+        .set({ status: 'live', isPublished: true, updatedAt: new Date() })
+        .where(eq(drops.id, input.id))
+        .returning();
+
+      // Increment global drop counter
+      await db.update(dropCounter)
+        .set({ count: sql`count + 1`, updatedAt: new Date() })
+        .where(eq(dropCounter.id, 1));
+
+      // Broadcast ONLY if notify_subscribers was requested
+      if (drop.notifySubscribers) {
+        const deepLink = dropDeepLink(drop.displayId);
         await enqueueBroadcast({
           dropId: drop.id,
           displayId: drop.displayId,
           title: drop.title,
           price: drop.price || '0',
-          miniAppUrl: `${miniAppUrl}/drop/${drop.displayId}`,
+          miniAppUrl: deepLink,
         });
       }
 
-      return drop;
+      return updated;
+    }),
+
+  /** Mark as sold (live→archived with reason='sold') */
+  markAsSold: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const [drop] = await db
+        .select()
+        .from(drops)
+        .where(eq(drops.id, input.id))
+        .limit(1);
+
+      if (!drop) throw new Error('Drop not found');
+      if (drop.status !== 'live') {
+        throw new Error(`Cannot mark as sold a drop with status '${drop.status}'. Only live drops can be marked as sold.`);
+      }
+
+      const [updated] = await db
+        .update(drops)
+        .set({ status: 'archived', archivedReason: 'sold', updatedAt: new Date() })
+        .where(eq(drops.id, input.id))
+        .returning();
+
+      return updated;
+    }),
+
+  /** Delete drop */
+  delete: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const [drop] = await db
+        .select()
+        .from(drops)
+        .where(eq(drops.id, input.id))
+        .limit(1);
+      if (!drop) throw new Error('Drop not found');
+
+      await db.delete(drops).where(eq(drops.id, input.id));
+      return { success: true };
     }),
 
   /** List all drops (admin) */
@@ -197,6 +281,25 @@ export const dropRouter = t.router({
         .orderBy(desc(drops.createdAt))
         .limit(input.limit)
         .offset(input.offset);
+    }),
+
+  /** Increment view counter (public) */
+  incrementViews: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const [drop] = await db
+        .select()
+        .from(drops)
+        .where(eq(drops.id, input.id))
+        .limit(1);
+      if (!drop) throw new Error('Drop not found');
+
+      await db
+        .update(drops)
+        .set({ views: sql`views + 1` })
+        .where(eq(drops.id, input.id));
+
+      return { success: true };
     }),
 });
 

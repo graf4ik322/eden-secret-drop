@@ -37,6 +37,7 @@ function DropForm({ drop, categories, onClose, onSaved }: {
   const [scheduledAt, setScheduledAt] = useState(
     drop?.scheduledAt ? new Date(String(drop.scheduledAt)).toISOString().slice(0, 16) : ''
   );
+  const [notifySubscribers, setNotifySubscribers] = useState(Boolean(drop?.notifySubscribers ?? false));
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -58,6 +59,7 @@ function DropForm({ drop, categories, onClose, onSaved }: {
         status,
         brand: brand || undefined,
         remaining,
+        notifySubscribers,
       };
       if (status === 'scheduled' && scheduledAt) {
         payload.scheduledAt = new Date(scheduledAt).toISOString();
@@ -140,7 +142,7 @@ function DropForm({ drop, categories, onClose, onSaved }: {
           <select value={status} onChange={(e) => setStatus(e.target.value)}
             className="w-full h-12 px-4 rounded-xl text-sm outline-none appearance-none cursor-pointer"
             style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            {['draft', 'scheduled', 'live', 'sold', 'archived'].map((s) => (
+            {['draft', 'scheduled', 'live', 'archived'].map((s) => (
               <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
             ))}
           </select>
@@ -154,6 +156,17 @@ function DropForm({ drop, categories, onClose, onSaved }: {
           </div>
         )}
       </div>
+      {(status === 'live' || status === 'scheduled') && (
+        <label className="flex items-center gap-3 p-3 rounded-xl cursor-pointer"
+          style={{ background: 'rgba(212,175,116,0.08)', border: '1px solid rgba(212,175,116,0.15)' }}>
+          <input type="checkbox" checked={notifySubscribers} onChange={(e) => setNotifySubscribers(e.target.checked)}
+            className="w-[18px] h-[18px] accent-[var(--gold)]" />
+          <div>
+            <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>Notify subscribers</span>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>Send push notification when this drop goes live</p>
+          </div>
+        </label>
+      )}
       <div className="flex gap-3 pt-2">
         <button type="button" onClick={onClose}
           className="flex-1 h-12 rounded-xl font-semibold text-sm"
@@ -336,7 +349,7 @@ export function StudioPage() {
 
   const analytics = useMemo(() => ({
     active: allDrops.filter(d => d.status === 'live').length,
-    sold: allDrops.filter(d => d.status === 'sold').length,
+    sold: allDrops.filter(d => d.status === 'archived' && d.archivedReason === 'sold').length,
     draft: allDrops.filter(d => d.status === 'draft').length,
     views: allDrops.reduce((s: number, d: Record<string, unknown>) => s + Number(d.views || 0), 0),
   }), [allDrops]);
@@ -351,10 +364,32 @@ export function StudioPage() {
   const handleArchive = async (drop: Record<string, unknown>) => {
     if (!confirm(`Archive ${String(drop.displayId || '')}?`)) return;
     try {
-      await trpcMutate('drop.update', { id: drop.id, status: 'archived' });
+      await trpcMutate('drop.update', { id: drop.id, status: 'archived', archivedReason: 'manual' });
       addActivity('Archived ' + String(drop.displayId || '') + ' - ' + String(drop.title || ''));
       refetch();
     } catch {}
+  };
+
+  const handlePublish = async (drop: Record<string, unknown>) => {
+    if (!confirm(`Publish ${String(drop.displayId || '')}? This will notify subscribers.`)) return;
+    try {
+      await trpcMutate('drop.publish', { id: drop.id });
+      addActivity('Published ' + String(drop.displayId || ''));
+      refetch();
+    } catch (err: any) {
+      alert(err?.message || 'Failed to publish');
+    }
+  };
+
+  const handleMarkAsSold = async (drop: Record<string, unknown>) => {
+    if (!confirm(`Mark ${String(drop.displayId || '')} as SOLD?`)) return;
+    try {
+      await trpcMutate('drop.markAsSold', { id: drop.id });
+      addActivity('Marked as sold ' + String(drop.displayId || ''));
+      refetch();
+    } catch (err: any) {
+      alert(err?.message || 'Failed to mark as sold');
+    }
   };
 
   return (
@@ -462,12 +497,26 @@ export function StudioPage() {
                 <p className="text-sm font-bold mt-0.5" style={{ color: 'var(--gold)' }}>{formatPrice(drop.price)}</p>
               </div>
               <div className="flex items-center gap-1">
+                {String(drop.status || '') === 'draft' && (
+                  <button onClick={() => handlePublish(drop)}
+                    className="h-9 px-3 rounded-lg text-xs font-bold"
+                    style={{ background: 'linear-gradient(135deg, var(--gold), var(--gold-light))', color: '#071A17' }}>
+                    Publish
+                  </button>
+                )}
+                {String(drop.status || '') === 'live' && (
+                  <button onClick={() => handleMarkAsSold(drop)}
+                    className="h-9 px-3 rounded-lg text-xs font-bold"
+                    style={{ background: 'rgba(255,107,107,0.2)', color: 'var(--danger)', border: '1px solid rgba(255,107,107,0.3)' }}>
+                    Sold
+                  </button>
+                )}
                 <button onClick={() => { setEditingDrop(drop); setShowDropModal(true); }}
                   className="w-9 h-9 rounded-lg flex items-center justify-center"
                   style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <Edit3 size={14} style={{ color: 'var(--text-secondary)' }} />
                 </button>
-                <button onClick={() => navigator.clipboard?.writeText(`https://secretdrop-app.edencore.cc/drop/${drop.displayId}`)}
+                <button onClick={() => navigator.clipboard?.writeText(`https://t.me/${import.meta.env.VITE_BOT_USERNAME || 'edensecretdrop_bot'}/${import.meta.env.VITE_MINI_APP_SHORT_NAME || 'shop'}?startapp=drop_${drop.displayId}`)}
                   className="w-9 h-9 rounded-lg flex items-center justify-center"
                   style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <Share2 size={14} style={{ color: 'var(--text-secondary)' }} />

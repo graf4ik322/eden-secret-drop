@@ -11,7 +11,7 @@ export interface PostTemplateData {
   categoryName?: string;
   imageUrl: string;
   status: string;
-  miniAppUrl: string;
+  miniAppUrl: string;  // Telegram deep link: https://t.me/<bot>/<app>?startapp=drop_SD-XXXX
 }
 
 export function renderPostCaption(data: PostTemplateData): string {
@@ -25,7 +25,7 @@ export function renderPostCaption(data: PostTemplateData): string {
     data.description,
     '',
     `━━━━━━━━━━━━━━`,
-    `🔗 EDEN Secret Drop \u2014 ID: ${data.displayId}`,
+    `🔗 EDEN Secret Drop — ID: ${data.displayId}`,
     '',
     `<a href="${data.miniAppUrl}">🔐 Open in Mini App</a>`,
   ].filter(Boolean).join('\n');
