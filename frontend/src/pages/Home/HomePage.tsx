@@ -88,15 +88,18 @@ export function HomePage() {
     <div className="min-h-dvh safe-top safe-bottom pb-24">
       <header className="flex items-center justify-between px-4 h-20">
         <div className="w-11" /> {/* spacer — balances search btn */}
-        <div className="flex items-center gap-3 absolute left-1/2 -translate-x-1/2">
+        <div className="flex items-center gap-4 absolute left-1/2 -translate-x-1/2">
           <div onClick={handleLogoTap} className="w-[60px] h-[60px] flex items-center justify-center cursor-pointer active:scale-95 transition-transform">
-            <img src="/logo.png" alt="E.D.S" className="w-full h-full object-contain" />
+            <img src="/logo.png" alt="EDEN SecretDrop" className="w-full h-full object-contain" />
           </div>
-          <span className="text-[50px] font-bold tracking-[0.08em] font-serif" style={{ color: 'var(--text)' }}>E.S.D</span>
-        </div>
-        <button onClick={() => { setShowSearch(!showSearch); setSearchQuery(''); }} className="w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all">
-          {showSearch ? <X size={20} style={{ color: 'var(--text-secondary)' }} /> : <Search size={20} style={{ color: 'var(--text-secondary)' }} />}
-        </button>
+          <div className="flex flex-col leading-tight">
+            <span className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>EDEN</span>
+            <span className="text-base font-medium" style={{ color: 'var(--gold)' }}>SecretDrop</span>
+          </div>
+          </div>
+          <button onClick={() => { setShowSearch(!showSearch); setSearchQuery(''); }} className="w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all">
+            {showSearch ? <X size={20} style={{ color: 'var(--text-secondary)' }} /> : <Search size={20} style={{ color: 'var(--text-secondary)' }} />}
+          </button>
       </header>
 
       {debugInfo && (
