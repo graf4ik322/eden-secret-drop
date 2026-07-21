@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getTrpcQueryOptions } from '@/lib/trpc';
+import { getTelegramAuth } from '@/lib/telegram-auth';
 
 export type AdminState = 
   | { status: 'loading' }
