@@ -17,7 +17,7 @@ WORKDIR /app
 COPY backend/package.json backend/package-lock.json ./
 RUN npm ci
 COPY backend/ .
-RUN npx tsc && npm prune --production
+RUN npx tsc && npx drizzle-kit generate --config=drizzle.config.ts && npm prune --production
 
 # ---- Stage 3: Build bot ----
 FROM node:22-alpine AS bot-builder
@@ -38,10 +38,8 @@ COPY --from=frontend-builder /app/dist /usr/share/nginx/html
 COPY --from=backend-builder /app/dist /app/backend/dist
 COPY --from=backend-builder /app/node_modules /app/backend/node_modules
 COPY --from=backend-builder /app/package.json /app/backend/package.json
-# Schema source + drizzle config for drizzle-kit push at runtime
-COPY --from=backend-builder /app/src/db/schema.ts /app/backend/src/db/schema.ts
-COPY --from=backend-builder /app/src/db/index.ts /app/backend/src/db/index.ts
-COPY --from=backend-builder /app/drizzle.config.ts /app/backend/drizzle.config.ts
+# Migrations (generated at build time)
+COPY --from=backend-builder /app/drizzle /app/backend/drizzle
 
 # Bot dist
 COPY --from=bot-builder /app/dist /app/bot/dist
@@ -56,7 +54,7 @@ RUN echo 'server {     listen 80;     root /usr/share/nginx/html;     index inde
 
 # Supervisor config — запускает nginx + backend + bot
 RUN mkdir -p /etc/supervisor.d/
-RUN echo '[supervisord]' > /etc/supervisor.d/eden.ini &&     echo 'nodaemon=true' >> /etc/supervisor.d/eden.ini &&     echo 'user=root' >> /etc/supervisor.d/eden.ini &&     echo '' >> /etc/supervisor.d/eden.ini &&     echo '[program:nginx]' >> /etc/supervisor.d/eden.ini &&     echo 'command=nginx -g "daemon off;"' >> /etc/supervisor.d/eden.ini &&     echo 'autostart=true' >> /etc/supervisor.d/eden.ini &&     echo 'autorestart=true' >> /etc/supervisor.d/eden.ini &&     echo 'stdout_logfile=/dev/stdout' >> /etc/supervisor.d/eden.ini &&     echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor.d/eden.ini &&     echo '' >> /etc/supervisor.d/eden.ini &&     echo '[program:backend]' >> /etc/supervisor.d/eden.ini &&     echo 'command=sh -c "cd /app/backend && npx drizzle-kit push --config=drizzle.config.ts 2>&1;  node dist/index.js"' >> /etc/supervisor.d/eden.ini &&     echo 'autostart=true' >> /etc/supervisor.d/eden.ini &&     echo 'autorestart=true' >> /etc/supervisor.d/eden.ini &&     echo 'directory=/app/backend' >> /etc/supervisor.d/eden.ini &&     echo 'stdout_logfile=/dev/stdout' >> /etc/supervisor.d/eden.ini &&     echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor.d/eden.ini &&     echo '' >> /etc/supervisor.d/eden.ini &&     echo '[program:bot]' >> /etc/supervisor.d/eden.ini &&     echo 'command=node /app/bot/dist/index.js' >> /etc/supervisor.d/eden.ini &&     echo 'autostart=true' >> /etc/supervisor.d/eden.ini &&     echo 'autorestart=true' >> /etc/supervisor.d/eden.ini &&     echo 'directory=/app/bot' >> /etc/supervisor.d/eden.ini &&     echo 'stdout_logfile=/dev/stdout' >> /etc/supervisor.d/eden.ini &&     echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor.d/eden.ini
+RUN echo '[supervisord]' > /etc/supervisor.d/eden.ini &&     echo 'nodaemon=true' >> /etc/supervisor.d/eden.ini &&     echo 'user=root' >> /etc/supervisor.d/eden.ini &&     echo '' >> /etc/supervisor.d/eden.ini &&     echo '[program:nginx]' >> /etc/supervisor.d/eden.ini &&     echo 'command=nginx -g "daemon off;"' >> /etc/supervisor.d/eden.ini &&     echo 'autostart=true' >> /etc/supervisor.d/eden.ini &&     echo 'autorestart=true' >> /etc/supervisor.d/eden.ini &&     echo 'stdout_logfile=/dev/stdout' >> /etc/supervisor.d/eden.ini &&     echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor.d/eden.ini &&     echo '' >> /etc/supervisor.d/eden.ini &&     echo '[program:backend]' >> /etc/supervisor.d/eden.ini &&     echo 'command=sh -c "cd /app/backend &&  node dist/index.js"' >> /etc/supervisor.d/eden.ini &&     echo 'autostart=true' >> /etc/supervisor.d/eden.ini &&     echo 'autorestart=true' >> /etc/supervisor.d/eden.ini &&     echo 'directory=/app/backend' >> /etc/supervisor.d/eden.ini &&     echo 'stdout_logfile=/dev/stdout' >> /etc/supervisor.d/eden.ini &&     echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor.d/eden.ini &&     echo '' >> /etc/supervisor.d/eden.ini &&     echo '[program:bot]' >> /etc/supervisor.d/eden.ini &&     echo 'command=node /app/bot/dist/index.js' >> /etc/supervisor.d/eden.ini &&     echo 'autostart=true' >> /etc/supervisor.d/eden.ini &&     echo 'autorestart=true' >> /etc/supervisor.d/eden.ini &&     echo 'directory=/app/bot' >> /etc/supervisor.d/eden.ini &&     echo 'stdout_logfile=/dev/stdout' >> /etc/supervisor.d/eden.ini &&     echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor.d/eden.ini
 
 EXPOSE 80
 CMD ["supervisord", "-c", "/etc/supervisor.d/eden.ini"]

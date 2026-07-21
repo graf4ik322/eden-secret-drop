@@ -1,10 +1,12 @@
 import 'dotenv/config';
+import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import { appRouter } from './trpc/router';
 import { createContext } from './trpc/context';
 import { startBroadcastWorker } from './queue/broadcast';
+import { db } from './db';
 
 const DOMAIN = process.env.DOMAIN || 'localhost:3001';
 const MINI_APP_URL = process.env.MINI_APP_URL || `https://${DOMAIN}`;
@@ -42,6 +44,14 @@ async function main() {
 
   // Start
   try {
+    // Run database migrations (generated at build time)
+    try {
+      await migrate(db, { migrationsFolder: './drizzle' });
+      console.log('✅ Migrations applied');
+    } catch (migrateErr) {
+      console.error('⚠️ Migration failed (non-fatal):', (migrateErr as Error).message);
+    }
+
     // Start broadcast worker (BullMQ)
     startBroadcastWorker();
 
