@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useIsAdminBool } from '@/lib/useIsAdmin';
+import { useIsAdminBool, useIsAdmin } from '@/lib/useIsAdmin';
 import { getTelegramAuth } from '@/lib/telegram-auth';
 import { Search, ArrowRight, Home, Grid3X3, User, X } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui';
 
 export function HomePage() {
   const isAdmin = useIsAdminBool();
+  const adminState = useIsAdmin();
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
   const [selectedSubcategory, setSelectedSubcategory] = useState<number | undefined>(undefined);
@@ -18,23 +19,35 @@ export function HomePage() {
   const [tapCount, setTapCount] = useState(0);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  const { data: authCheck } = useQuery(getTrpcQueryOptions('auth.checkAdmin'));
-
   const handleLogoTap = async () => {
     const newCount = tapCount + 1;
     setTapCount(newCount);
     if (newCount >= 5) {
       setTapCount(0);
       const auth = getTelegramAuth();
-      const backend = authCheck as any;
+      // Fetch debug info from backend
+      let debugExtra = '';
+      try {
+        const res = await fetch('/trpc/auth.debug');
+        const json = await res.json();
+        const d = Array.isArray(json) ? json[0]?.result?.data || json[0] || json : json?.result?.data || json;
+        debugExtra = `\nraw ADMIN_IDS: ${d.adminIdsRaw}\n` +
+          `receivedUserId: ${d.receivedUserId}\n` +
+          `receivedType: ${d.receivedType}\n` +
+          `ids types: ${JSON.stringify(d.adminIdsTypes)}\n` +
+          `match check: ${JSON.stringify(d.match)}\n` +
+          `hasBotToken: ${d.hasBotToken}\n` +
+          `nodeEnv: ${d.nodeEnv}`;
+      } catch (e) { debugExtra = '\n(auth.debug failed)'; }
       setDebugInfo(
         `🔐 Auth Debug\n` +
+        `build: ${__BUILD_SHA__}\n` +
         `local userId: ${auth.userId || '❌'}\n` +
-        `local initData: ${auth.initData ? auth.initData.substring(0, 50) + '...' : '❌'}\n` +
-        `backend userId: ${backend?.userId || '❌'}\n` +
-        `backend isAdmin: ${backend?.isAdmin ?? '❌'}\n` +
-        `isAdmin from hook: ${isAdmin}\n` +
-        `hash: ${window.location.hash.substring(0, 80)}...`
+        `local initData: ${auth.initData ? auth.initData.substring(0, 40) + '...' : '❌'}\n` +
+        `adminState: ${adminState.status}${adminState.status === 'checked' ? ` userId=${adminState.userId} isAdmin=${adminState.isAdmin}` : ''}\n` +
+        `isAdmin bool: ${isAdmin}\n` +
+        `hash: ${window.location.hash.substring(0, 60)}` +
+        debugExtra
       );
     }
   };

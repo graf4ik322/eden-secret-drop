@@ -279,45 +279,28 @@ export const subscriberRouter = t.router({
 /* ===== Auth Router (TZ 2.7) ===== */
 export const authRouter = t.router({
   checkAdmin: publicProcedure
-    .input(z.object({
-      initData: z.string().optional(),
-      userId: z.string().optional(),
-    }).optional())
-    .query(async ({ ctx, input }) => {
-      // Primary: ctx auth (from headers/query params)
-      let isAdmin = ctx.isAdmin;
-      let effectiveUserId = ctx.tgUserId;
-      let effectiveUser = ctx.userData;
-
-      // Fallback: userId from input (bypasses Cloudflare header stripping)
-      if (!effectiveUserId && input?.userId) {
-        effectiveUserId = input.userId;
-        const adminIds = (process.env.ADMIN_IDS || '').split(',').map(id => id.trim()).filter(Boolean);
-        isAdmin = adminIds.includes(effectiveUserId);
-        effectiveUser = {
-          id: parseInt(effectiveUserId, 10) || 0,
-          firstName: '',
-        };
-        console.log('[Auth] checkAdmin via input - userId:', effectiveUserId, 'isAdmin:', isAdmin);
-      }
-
+    .query(async ({ ctx }) => {
       return {
-        isAdmin,
-        userId: effectiveUserId,
-        user: effectiveUser,
+        isAdmin: ctx.isAdmin,
+        userId: ctx.tgUserId,
+        user: ctx.userData,
       };
     }),
   debug: publicProcedure
     .query(async ({ ctx }) => {
-      const adminIds = (process.env.ADMIN_IDS || '').split(',').map(id => id.trim()).filter(Boolean);
+      const raw = process.env.ADMIN_IDS || '(empty)';
+      const adminIds = raw === '(empty)' ? [] : raw.split(',').map(id => id.trim()).filter(Boolean);
+      const receivedId = ctx.tgUserId;
       return {
-        tgUserId: ctx.tgUserId,
+        receivedUserId: receivedId,
+        receivedType: typeof receivedId,
         isAdmin: ctx.isAdmin,
-        adminIds,
+        adminIdsRaw: raw,
+        adminIdsArray: adminIds,
+        adminIdsTypes: adminIds.map(id => typeof id),
+        match: receivedId ? adminIds.includes(receivedId) : 'no id to match',
         hasBotToken: !!process.env.BOT_TOKEN,
-        isDev: process.env.NODE_ENV === 'development' || process.env.DEV_MODE === 'true',
         nodeEnv: process.env.NODE_ENV,
-        devMode: process.env.DEV_MODE,
       };
     }),
 });

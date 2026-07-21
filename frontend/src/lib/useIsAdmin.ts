@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { getTrpcQueryOptions } from '@/lib/trpc';
-import { getTelegramAuth } from '@/lib/telegram-auth';
 
 export type AdminState = 
   | { status: 'loading' }
@@ -13,9 +12,8 @@ export type AdminState =
  * Handles loading state properly — returns AdminState, not a plain boolean.
  */
 export function useIsAdmin(): AdminState {
-  const localAuth = getTelegramAuth();
   const { data, isLoading, error } = useQuery({
-    ...getTrpcQueryOptions('auth.checkAdmin', { userId: localAuth.userId || undefined }),
+    ...getTrpcQueryOptions('auth.checkAdmin'),
     retry: 3,
     staleTime: 60 * 1000,
     retryDelay: 1000,

@@ -20,18 +20,10 @@ async function trpcCall(path: string, options: { method?: 'GET' | 'POST'; body?:
   if (tgData.username) headers['x-tg-username'] = tgData.username;
 
   let url = `${BASE_URL}/trpc/${path}`;
-  
-  // Append Telegram auth as query params (survives proxies/Cloudflare)
-  const qp: string[] = [];
-  if (tgData.userId) qp.push(`__tg_uid=${encodeURIComponent(tgData.userId)}`);
-  if (tgData.firstName) qp.push(`__tg_fn=${encodeURIComponent(tgData.firstName)}`);
-  if (tgData.username) qp.push(`__tg_un=${encodeURIComponent(tgData.username)}`);
-  
+
   if (options.method === 'GET' && options.body) {
     const input = encodeURIComponent(JSON.stringify(options.body));
-    url += '?input=' + input + (qp.length ? '&' + qp.join('&') : '');
-  } else if (qp.length) {
-    url += '?' + qp.join('&');
+    url += '?input=' + input;
   }
 
   const res = await fetch(url, {
