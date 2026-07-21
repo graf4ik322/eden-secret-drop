@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, User, MessageCircle, Calendar, Shield, Home, Sparkles } from 'lucide-react';
+import { ArrowLeft, User, MessageCircle, Calendar, Shield, Home, Sparkles, Package } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 import { getTelegramAuth } from '@/lib/telegram-auth';
 import { GlassCard } from '@/components/ui';
@@ -88,6 +88,7 @@ export function ProfilePage() {
 
       <nav className="fixed bottom-4 left-4 right-4 h-16 bottom-nav flex items-center justify-around px-2 z-50">
         <button onClick={() => navigate('/')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Home size={22} /><span className="text-[10px] font-medium">Home</span></button>
+        <button onClick={() => navigate('/catalog')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Package size={22} /><span className="text-[10px] font-medium">Catalog</span></button>
         {showAdminBadge && (
           <button onClick={() => navigate('/studio')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Sparkles size={22} /><span className="text-[10px] font-medium">Studio</span></button>
         )}
