@@ -15,6 +15,13 @@
       "when": 1784601482768,
       "tag": "0001_chunky_firebird",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784676915622,
+      "tag": "0002_add-mockups",
+      "breakpoints": true
     }
   ]
 }

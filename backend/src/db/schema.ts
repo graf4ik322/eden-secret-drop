@@ -44,14 +44,17 @@ export const drops = pgTable('drops', {
   specifications: text('specifications'),             // JSON string of key-value pairs
   remaining: integer('remaining').default(1),        // "Remaining N pcs"
   brand: varchar('brand', { length: 255 }),
-  publishedMessageId: integer('published_message_id'), // Telegram message ID for edit
+  publishedMessageId: integer('published_message_id'),
   scheduledAt: timestamp('scheduled_at'),
-  archivedReason: varchar('archived_reason', { length: 10 }),  // 'sold' | 'manual' (nullable — only when status='archived')
+  archivedReason: varchar('archived_reason', { length: 10 }),
   notifySubscribers: boolean('notify_subscribers').default(false),
   isPublished: boolean('is_published').default(false),
   views: integer('views').default(0),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
+  // FR-10/11
+  mockupId: integer('mockup_id'),
+  photos: text('photos'),                     // JSON array of up to 4 photo URLs
 });
 
 export const dropsRelations = relations(drops, ({ one }) => ({
@@ -84,5 +87,14 @@ export const admins = pgTable('admins', {
 export const dropCounter = pgTable('drop_counter', {
   id: serial('id').primaryKey(),
   count: integer('count').notNull().default(0),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+/* ===== Mockups (FR-11) ===== */
+export const mockups = pgTable('mockups', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  imageUrl: varchar('image_url', { length: 512 }),
+  createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });

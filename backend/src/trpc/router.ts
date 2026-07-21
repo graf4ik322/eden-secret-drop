@@ -1,6 +1,6 @@
 import { initTRPC } from '@trpc/server';
 import { z } from 'zod';
-import { db, drops, categories, dropStatus, archivedReasons, subscribers, dropCounter } from '../db';
+import { db, drops, categories, dropStatus, archivedReasons, subscribers, dropCounter, mockups } from '../db';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import type { Context } from './context';
 import { registerSubscriber, listActiveSubscribers, deactivateSubscriber } from '../services/subscriber';
@@ -357,6 +357,36 @@ export const categoryRouter = t.router({
     }),
 });
 
+/* ===== Mockups (FR-11) ===== */
+export const mockupRouter = t.router({
+  list: publicProcedure
+    .query(async ({ ctx }) => {
+      return ctx.db.select().from(mockups).orderBy(mockups.createdAt);
+    }),
+  create: adminProcedure
+    .input(z.object({ name: z.string().min(1), imageUrl: z.string().max(512).optional() }))
+    .mutation(async ({ ctx, input }) => {
+      const [m] = await ctx.db.insert(mockups).values({ name: input.name, imageUrl: input.imageUrl }).returning();
+      return m;
+    }),
+  update: adminProcedure
+    .input(z.object({ id: z.number(), name: z.string().min(1).optional(), imageUrl: z.string().max(512).optional() }))
+    .mutation(async ({ ctx, input }) => {
+      const [m] = await ctx.db.update(mockups).set({
+        ...(input.name && { name: input.name }),
+        ...(input.imageUrl !== undefined && { imageUrl: input.imageUrl }),
+        updatedAt: new Date(),
+      }).where(eq(mockups.id, input.id)).returning();
+      return m;
+    }),
+  delete: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.delete(mockups).where(eq(mockups.id, input.id));
+      return { ok: true };
+    }),
+});
+
 /* ===== Subscriber Router (TZ 2.5) ===== */
 export const subscriberRouter = t.router({
   register: publicProcedure
@@ -414,6 +444,7 @@ export const authRouter = t.router({
 export const appRouter = t.router({
   drop: dropRouter,
   category: categoryRouter,
+  mockup: mockupRouter,
   subscriber: subscriberRouter,
   auth: authRouter,
   health: publicProcedure.query(() => ({ status: 'ok', timestamp: new Date().toISOString() })),

@@ -18,9 +18,10 @@ function formatPrice(price: unknown): string {
 }
 
 /* ===== Drop Form (unchanged) ===== */
-function DropForm({ drop, categories, onClose, onSaved }: {
+function DropForm({ drop, categories, mockups: mockupList, onClose, onSaved }: {
   drop: Record<string, unknown> | null;
   categories: Record<string, unknown>[];
+  mockups: Record<string, unknown>[];
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -37,6 +38,10 @@ function DropForm({ drop, categories, onClose, onSaved }: {
   );
   const [notifySubscribers, setNotifySubscribers] = useState(Boolean(drop?.notifySubscribers));
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [mockupId, setMockupId] = useState(Number(drop?.mockupId || 0));
+  const [photos, setPhotos] = useState<string[]>(() => {
+    try { const p = drop?.photos; return p ? JSON.parse(String(p)) : []; } catch { return []; }
+  });
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -57,6 +62,8 @@ function DropForm({ drop, categories, onClose, onSaved }: {
         remaining: remaining || undefined,
         notifySubscribers,
         ...(scheduledAt ? { scheduledAt: new Date(scheduledAt).toISOString() } : {}),
+        ...(mockupId ? { mockupId } : {}),
+        ...(photos.length > 0 ? { photos: JSON.stringify(photos.filter(Boolean)) } : {}),
       };
       if (isEdit) {
         await trpcMutate('drop.update', { id: drop!.id, ...payload });
@@ -144,6 +151,38 @@ function DropForm({ drop, categories, onClose, onSaved }: {
         </label>
       )}
       
+      {/* Mockup selector */}
+      {mockupList.length > 0 && (
+        <div>
+          <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-secondary)' }}>Mockup</label>
+          <select value={mockupId} onChange={(e) => setMockupId(Number(e.target.value))}
+            className="w-full h-11 px-4 rounded-[var(--radius-input)] text-sm outline-none appearance-none"
+            style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <option value={0}>No mockup</option>
+            {mockupList.map((m: Record<string, unknown>) => (
+              <option key={String(m.id)} value={Number(m.id)}>{String(m.name || '')}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* Photo URLs (up to 4) */}
+      <div>
+        <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-secondary)' }}>Photos (up to 4, paste URLs)</label>
+        <div className="space-y-2">
+          {[0, 1, 2, 3].map((idx) => (
+            <input key={idx} value={photos[idx] || ''} onChange={(e) => {
+              const next = [...photos];
+              next[idx] = e.target.value;
+              setPhotos(next);
+            }}
+              className="w-full h-10 px-4 rounded-[var(--radius-input)] text-xs outline-none"
+              style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.06)' }}
+              placeholder={`Photo ${idx + 1} URL`} />
+          ))}
+        </div>
+      </div>
+
       <CategoryPicker
         open={showCategoryPicker}
         onClose={() => setShowCategoryPicker(false)}
@@ -176,11 +215,13 @@ export function DropsSection() {
   const statusParam = activeFilter === 'All' ? undefined : activeFilter.toLowerCase() === 'active' ? 'live' : activeFilter.toLowerCase();
   const { data: allDropsRaw } = useQuery(getTrpcQueryOptions('drop.listAll', { limit: 100 }));
   const { data: catsRaw } = useQuery(getTrpcQueryOptions('category.list'));
+  const { data: mockupsRaw } = useQuery(getTrpcQueryOptions('mockup.list'));
   const { data: subsRaw } = useQuery(getTrpcQueryOptions('subscriber.list'));
   const { activities } = useActivityStore();
 
   const allDrops = (Array.isArray(allDropsRaw) ? allDropsRaw : []) as Record<string, unknown>[];
   const categories = (Array.isArray(catsRaw) ? catsRaw : []) as Record<string, unknown>[];
+  const mockups = (Array.isArray(mockupsRaw) ? mockupsRaw : []) as Record<string, unknown>[];
   const subscribers = (Array.isArray(subsRaw) ? subsRaw : []) as Record<string, unknown>[];
 
   const filteredDrops = useMemo(() => {
@@ -371,7 +412,7 @@ export function DropsSection() {
       {/* Drop Form Modal */}
       <Modal open={showDropModal} onClose={() => { setShowDropModal(false); setEditingDrop(null); }}
         title={editingDrop ? 'Edit Drop' : 'New Drop'}>
-        <DropForm drop={editingDrop} categories={categories} onClose={() => { setShowDropModal(false); setEditingDrop(null); }} onSaved={refetch} />
+        <DropForm drop={editingDrop} categories={categories} mockups={mockups} onClose={() => { setShowDropModal(false); setEditingDrop(null); }} onSaved={refetch} />
       </Modal>
 
       {/* FAB (FR-08) */}

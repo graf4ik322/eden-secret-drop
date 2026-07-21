@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Share2, ShieldCheck, Award, Verified, Truck, Clock, Eye, Package, MapPin } from 'lucide-react';
@@ -87,6 +88,17 @@ export function DropDetailPage() {
   const isSold = drop.status === 'sold';
   const remaining = Number(drop.remaining ?? 1);
 
+  // Gallery: collect primary image + photos array
+  const allImages: string[] = [];
+  if (drop.cutoutUrl) allImages.push(String(drop.cutoutUrl));
+  if (drop.imageUrl && !allImages.includes(String(drop.imageUrl))) allImages.push(String(drop.imageUrl));
+  try {
+    const extra: string[] = drop.photos ? JSON.parse(String(drop.photos)) : [];
+    extra.filter(Boolean).forEach((url: string) => { if (!allImages.includes(url)) allImages.push(url); });
+  } catch {}
+  const [galleryIdx, setGalleryIdx] = useState(0);
+  const currentImage = allImages[galleryIdx] || null;
+
   return (
     <div className="min-h-dvh safe-top scroll-safe">
       <header className="app-header flex items-center justify-between px-4">
@@ -100,10 +112,8 @@ export function DropDetailPage() {
       </header>
 
       <section className="mx-4 mt-8 relative h-[340px] flex items-center justify-center overflow-hidden" style={{ background: 'var(--surface)', borderRadius: 'var(--radius-card)' }}>
-        {drop.cutoutUrl ? (
-          <img src={String(drop.cutoutUrl)} alt={String(drop.title || '')} className="h-full w-auto object-contain max-w-none" style={{ filter: 'drop-shadow(0 0 40px rgba(31,139,116,0.35))' }} />
-        ) : drop.imageUrl ? (
-          <img src={String(drop.imageUrl)} alt={String(drop.title || '')} className="w-full h-full object-cover" />
+        {currentImage ? (
+          <img src={currentImage} alt={String(drop.title || '')} className="h-full w-auto object-contain max-w-none" style={{ filter: 'drop-shadow(0 0 40px rgba(31,139,116,0.35))' }} />
         ) : (
           <span className="text-6xl opacity-20">{'\u2726'}</span>
         )}
@@ -112,10 +122,15 @@ export function DropDetailPage() {
         </Badge>
       </section>
 
-      <div className="flex justify-center gap-1.5 mt-3">
-        <div className="w-2 h-2 rounded-full" style={{ background: 'var(--gold)' }} />
-        <div className="w-2 h-2 rounded-full" style={{ background: 'var(--surface-light)' }} />
-      </div>
+      {allImages.length > 1 && (
+        <div className="flex justify-center gap-1.5 mt-3">
+          {allImages.map((_, idx) => (
+            <button key={idx} onClick={() => setGalleryIdx(idx)}
+              className="w-2 h-2 rounded-full transition-all"
+              style={{ background: idx === galleryIdx ? 'var(--gold)' : 'var(--surface-light)' }} />
+          ))}
+        </div>
+      )}
 
       <section className="px-4 mt-5">
         <h1 className="text-3xl font-bold leading-tight" style={{ color: 'var(--text)' }}>{String(drop.title || '')}</h1>
