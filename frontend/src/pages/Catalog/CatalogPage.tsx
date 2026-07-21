@@ -10,12 +10,21 @@ export function CatalogPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<number | undefined>(undefined);
 
-  const { data: activeDrops } = useQuery(getTrpcQueryOptions('drop.listActive', { limit: 50 }));
+  const { data: activeDrops } = useQuery(getTrpcQueryOptions('drop.listActive', { limit: 50, categoryId: selectedSubcategory ?? selectedCategory }));
   const { data: categoriesData } = useQuery(getTrpcQueryOptions('drop.getCategories'));
 
   const drops = (Array.isArray(activeDrops) ? activeDrops : []) as Record<string, unknown>[];
   const categories = (Array.isArray(categoriesData) ? categoriesData : []) as Record<string, unknown>[];
+
+  const selectedCatObj = categories.find(c => c.id === selectedCategory);
+  const subcategories: Record<string, unknown>[] = (selectedCatObj?.subcategories as Record<string, unknown>[]) || [];
+
+  const handleCategoryClick = (catId: number | undefined) => {
+    setSelectedCategory(catId);
+    setSelectedSubcategory(undefined);
+  };
 
   const formatPrice = (price: unknown) => {
     if (!price) return '';
@@ -53,19 +62,34 @@ export function CatalogPage() {
       </section>
 
       {/* Category chips */}
-      <section className="mx-4 mt-3 flex gap-2 overflow-x-auto pb-2 scrollbar-none">
-        <button onClick={() => setSelectedCategory(undefined)}
-          className={`px-4 h-8 rounded-full text-xs font-medium whitespace-nowrap transition-all ${!selectedCategory
-            ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
-            : 'glass-card text-[var(--text-secondary)]'}`}>All</button>
-        {categories.map((cat: Record<string, unknown>) => (
-          <button key={String(cat.id)} onClick={() => setSelectedCategory(Number(cat.id))}
-            className={`px-4 h-8 rounded-full text-xs font-medium whitespace-nowrap transition-all ${selectedCategory === Number(cat.id)
-              ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
-              : 'glass-card text-[var(--text-secondary)]'}`}>
-            {String(cat.icon || '')} {String(cat.name || '')}
-          </button>
-        ))}
+      <section className="mx-4 mt-3">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+          <button onClick={() => handleCategoryClick(undefined)}
+            className={`px-4 h-[34px] rounded-full text-xs font-medium whitespace-nowrap transition-all flex-shrink-0 ${
+              !selectedCategory
+                ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
+                : 'glass-card text-[var(--text-secondary)]'}`}>All</button>
+          {categories.map((cat: Record<string, unknown>) => (
+            <button key={String(cat.id)} onClick={() => handleCategoryClick(Number(cat.id))}
+              className={`px-4 h-[34px] rounded-full text-xs font-medium whitespace-nowrap transition-all flex-shrink-0 ${
+                selectedCategory === Number(cat.id)
+                  ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
+                  : 'glass-card text-[var(--text-secondary)]'}`}>
+              {String(cat.icon || '')} {String(cat.name || '')}</button>
+          ))}
+        </div>
+        {subcategories.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none mt-2">
+            {subcategories.map((sub: Record<string, unknown>) => (
+              <button key={String(sub.id)} onClick={() => setSelectedSubcategory(Number(sub.id))}
+                className={`px-4 h-[34px] rounded-full text-xs font-medium whitespace-nowrap transition-all flex-shrink-0 ${
+                  selectedSubcategory === Number(sub.id)
+                    ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
+                    : 'glass-card text-[var(--text-secondary)]'}`}>
+                {String(sub.icon || '')} {String(sub.name || '')}</button>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Drop list */}

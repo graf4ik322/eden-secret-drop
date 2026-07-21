@@ -12,3 +12,5 @@ export type { InputProps } from './Input';
 export { Toggle } from './Toggle';
 export { Modal } from './Modal';
 export { Drawer } from './Drawer';
+export { CategoryPicker } from './CategoryPicker';
+export { FabButton } from './FabButton';
