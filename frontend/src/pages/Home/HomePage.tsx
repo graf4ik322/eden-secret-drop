@@ -7,7 +7,10 @@ import { ArrowRight, Home, Sparkles, User, Package } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 import { Button } from '@/components/ui';
 
+import { useTranslation } from 'react-i18next';
+
 export function HomePage() {
+  const { t } = useTranslation();
   const isAdmin = useIsAdminBool();
   const adminState = useIsAdmin();
   const navigate = useNavigate();
@@ -281,13 +284,13 @@ export function HomePage() {
       </section>
 
       <nav className="h-16 bottom-nav flex items-center justify-around px-2 z-50 fixed">
-        <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}><Home size={22} /><span className="text-[10px] font-medium">Home</span></button>
-        <button onClick={() => navigate('/catalog')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Package size={22} /><span className="text-[10px] font-medium">Catalog</span></button>
-        <button onClick={() => navigate('/profile')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><User size={22} /><span className="text-[10px] font-medium">Profile</span></button>
+        <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}><Home size={22} /><span className="text-[10px] font-medium">{t('nav.home')}</span></button>
+        <button onClick={() => navigate('/catalog')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Package size={22} /><span className="text-[10px] font-medium">{t('nav.catalog')}</span></button>
+        <button onClick={() => navigate('/profile')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><User size={22} /><span className="text-[10px] font-medium">{t('nav.profile')}</span></button>
         {isAdmin && (
           <button onClick={() => navigate('/studio')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}>
             <Sparkles size={22} />
-            <span className="text-[10px] font-medium">Studio</span>
+            <span className="text-[10px] font-medium">{t('nav.studio')}</span>
           </button>
         )}
       </nav>

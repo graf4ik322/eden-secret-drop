@@ -1,19 +1,20 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
-import { Menu, Home } from 'lucide-react';
+import { Menu, Home, Package, Folder } from 'lucide-react';
 import { Drawer } from '@/components/ui';
-import { Package, Folder } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const DRAWER_ITEMS = [
-  { id: 'drops', label: 'Дропы', icon: Package, path: '/studio/drops' },
-  { id: 'categories', label: 'Категории', icon: Folder, path: '/studio/categories' },
-  { id: 'mockups', label: 'Мокапы', icon: Package, path: '/studio/mockups' },
+  { id: 'drops', labelKey: 'studio.drops', icon: Package, path: '/studio/drops' },
+  { id: 'categories', labelKey: 'studio.categories', icon: Folder, path: '/studio/categories' },
+  { id: 'mockups', labelKey: 'studio.mockups', icon: Package, path: '/studio/mockups' },
 ];
 
 export function StudioLayout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const { t } = useTranslation();
 
   const currentPath = location.pathname;
 
@@ -46,7 +47,7 @@ export function StudioLayout({ children }: { children: React.ReactNode }) {
               }`}
             >
               <item.icon size={18} />
-              {item.label}
+              {t(item.labelKey)}
             </button>
           ))}
         </div>

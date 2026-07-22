@@ -15,7 +15,10 @@ const SORT_OPTIONS = [
 
 type SortBy = (typeof SORT_OPTIONS)[number]['value'];
 
+import { useTranslation } from 'react-i18next';
+
 export function CatalogPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
@@ -236,13 +239,13 @@ export function CatalogPage() {
 
       {/* Bottom navigation */}
       <nav className="h-16 bottom-nav flex items-center justify-around px-2 z-50 fixed">
-        <button onClick={() => navigate('/')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Home size={22} /><span className="text-[10px] font-medium">Home</span></button>
-        <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}><Package size={22} /><span className="text-[10px] font-medium">Catalog</span></button>
-        <button onClick={() => navigate('/profile')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><User size={22} /><span className="text-[10px] font-medium">Profile</span></button>
+        <button onClick={() => navigate('/')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Home size={22} /><span className="text-[10px] font-medium">{t('nav.home')}</span></button>
+        <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}><Package size={22} /><span className="text-[10px] font-medium">{t('nav.catalog')}</span></button>
+        <button onClick={() => navigate('/profile')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><User size={22} /><span className="text-[10px] font-medium">{t('nav.profile')}</span></button>
         {isAdmin && (
           <button onClick={() => navigate('/studio')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}>
             <Sparkles size={22} />
-            <span className="text-[10px] font-medium">Studio</span>
+            <span className="text-[10px] font-medium">{t('nav.studio')}</span>
           </button>
         )}
       </nav>
