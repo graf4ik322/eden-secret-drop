@@ -179,8 +179,8 @@ export function HomePage() {
         </div>
         <div className="relative z-10 flex flex-col items-center justify-center h-full gap-5">
           <p className="text-base font-normal leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-            Only the Best Deals —<br />
-            <span className="text-[var(--gold)]">Selected electronics for members only</span>
+            {t('home.tagline')}<br />
+            <span className="text-[var(--gold)]">{t('home.taglineSub')}</span>
           </p>
           <Button variant="primary" className="!h-14" style={{ borderRadius: '18px', padding: '0 32px' }}
             onClick={() => featuredDrop ? navigate(`/drop/${featuredDrop.displayId}`) : undefined}>
@@ -192,7 +192,7 @@ export function HomePage() {
       {/* FR-03/FR-16: Counter — allTime + active (separate metrics) */}
       <section className="mx-4 mt-6 glass-card px-5 py-4">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium" style={{ color: 'var(--muted)' }}>Total drops all time</span>
+          <span className="text-sm font-medium" style={{ color: 'var(--muted)' }}>{t('home.allTime')}</span>
           <span className="text-lg font-bold" style={{ color: 'var(--gold)' }}>{dropStats.allTime}</span>
         </div>
         <div className="flex items-center justify-between">

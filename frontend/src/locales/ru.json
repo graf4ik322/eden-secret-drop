@@ -13,10 +13,14 @@
     "latest": "Последние дропы",
     "noDrops": "Ещё нет дропов",
     "noDropsAvailable": "Пока нет доступных дропов",
-    "allTime": "За всё время",
+    "allTime": "Всего дропов за всё время",
     "active": "Активных",
     "nextDrop": "Следующий дроп",
-    "settings": "Настройки"
+    "settings": "Настройки",
+    "tagline": "Лучшие предложения —",
+    "taglineSub": "Избранная электроника только для участников",
+    "featuredSubtitle": "От Eden",
+    "featuredDesc": "Каждый товар отобран вручную и верифицирован. Мы гарантируем подлинность каждого дропа."
   },
   "catalog": {
     "title": "Каталог",
@@ -54,7 +58,14 @@
       "fastDelivery": "Fast Delivery"
     },
     "shareText": "🔥 {{title}} — €{{price}}",
-    "notFound": "Дроп не найден"
+    "notFound": "Дроп не найден",
+    "info": "Информация о дропе",
+    "viewed": "Просмотров: {{count}}",
+    "remaining": "Осталось: {{count}} шт.",
+    "estimatedDelivery": "Примерная доставка",
+    "deliveryText": "3-5 рабочих дней через DHL Express",
+    "buyNow": "Купить",
+    "na": "Н/Д"
   },
   "profile": {
     "title": "Профиль",
@@ -91,9 +102,9 @@
     "selectCategory": "Выберите категорию",
     "status": "Статус",
     "titleField": "Название",
-    "price": "Цена",
     "description": "Описание",
     "brand": "Бренд",
+    "price": "Цена (€)",
     "remaining": "Остаток",
     "scheduledAt": "Запланировано на",
     "notifySubscribers": "Уведомить подписчиков при публикации",
@@ -116,7 +127,13 @@
     "confirmDeleteCat": "Удалить категорию \"{{name}}\"?",
     "confirmDeleteMockup": "Удалить мокап \"{{name}}\"?",
     "view": "Смотреть",
-    "joinDrop": "Присоединиться"
+    "joinDrop": "Присоединиться",
+    "photos": "Фото (до 4)",
+    "tapToUpload": "Нажмите для загрузки",
+    "analyticsActive": "Активных",
+    "analyticsSold": "Продано",
+    "analyticsViews": "Просмотров",
+    "analyticsMembers": "Участников"
   },
   "mockup": {
     "add": "Добавить мокап",
@@ -132,7 +149,8 @@
     "delete": "Удалить",
     "confirm": "Подтвердить",
     "select": "Выбрать",
-    "noCategory": "Без категории"
+    "noCategory": "Без категории",
+    "search": "Поиск"
   },
   "subscriber": {
     "welcome": "Добро пожаловать! Вы зарегистрированы.",

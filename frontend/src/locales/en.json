@@ -13,10 +13,14 @@
     "latest": "Latest Drops",
     "noDrops": "No drops yet",
     "noDropsAvailable": "No drops available yet",
-    "allTime": "All Time",
+    "allTime": "Total drops all time",
     "active": "Active",
     "nextDrop": "Next drop",
-    "settings": "Settings"
+    "settings": "Settings",
+    "tagline": "Only the Best Deals —",
+    "taglineSub": "Selected electronics for members only",
+    "featuredSubtitle": "From Eden",
+    "featuredDesc": "Every item is handpicked and verified. Your satisfaction is guaranteed — we stand behind every drop with our authenticity promise."
   },
   "catalog": {
     "title": "Catalog",
@@ -54,7 +58,14 @@
       "fastDelivery": "Fast Delivery"
     },
     "shareText": "🔥 {{title}} — €{{price}}",
-    "notFound": "The drop you are looking for does not exist"
+    "notFound": "The drop you are looking for does not exist",
+    "info": "Drop Information",
+    "viewed": "Viewed {{count}} times",
+    "remaining": "Remaining {{count}} pcs",
+    "estimatedDelivery": "Estimated Delivery",
+    "deliveryText": "3-5 business days via DHL Express",
+    "buyNow": "Buy Now",
+    "na": "N/A"
   },
   "profile": {
     "title": "Profile",
@@ -90,12 +101,12 @@
     "addSubcategory": "Add Subcategory",
     "selectCategory": "Select Category",
     "status": "Status",
-    "title": "Title",
-    "price": "Price",
-    "description": "Description",
-    "status": "Status",
     "titleField": "Title",
-    "price": "Price",
+    "description": "Description",
+    "brand": "Brand",
+    "price": "Price (€)",
+    "remaining": "Stock",
+    "scheduledAt": "Scheduled at",
     "notifySubscribers": "Notify subscribers on publish",
     "mockup": "Mockup",
     "uploadImage": "Upload Image",
@@ -116,7 +127,13 @@
     "confirmDeleteCat": "Delete category \"{{name}}\"?",
     "confirmDeleteMockup": "Delete mockup \"{{name}}\"?",
     "view": "View",
-    "joinDrop": "Join Drop"
+    "joinDrop": "Join Drop",
+    "photos": "Photos (up to 4)",
+    "tapToUpload": "Tap to upload",
+    "analyticsActive": "Active",
+    "analyticsSold": "Sold",
+    "analyticsViews": "Views",
+    "analyticsMembers": "Members"
   },
   "mockup": {
     "add": "Add Mockup",
@@ -132,7 +149,8 @@
     "delete": "Delete",
     "confirm": "Confirm",
     "select": "Select",
-    "noCategory": "No category"
+    "noCategory": "No category",
+    "search": "Search"
   },
   "subscriber": {
     "welcome": "Welcome! You are now registered.",

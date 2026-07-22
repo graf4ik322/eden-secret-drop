@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
 interface ImageUploaderProps {
@@ -17,6 +18,7 @@ interface ImageUploaderProps {
  * Click/pick → upload via /api/upload → called onUploaded(url).
  */
 export function ImageUploader({ onUploaded, value, type = 'photos', className }: ImageUploaderProps) {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -75,7 +77,7 @@ export function ImageUploader({ onUploaded, value, type = 'photos', className }:
             <Upload size={24} style={{ color: 'var(--muted)' }} />
           )}
           <span className="text-xs" style={{ color: 'var(--muted)' }}>
-            {uploading ? 'Uploading...' : 'Tap to upload'}
+            {uploading ? t('common.loading') : t('studio.tapToUpload')}
           </span>
         </button>
       )}

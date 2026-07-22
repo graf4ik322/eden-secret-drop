@@ -54,7 +54,7 @@ export function DropDetailPage() {
   };
 
   const formatDate = (dateStr: unknown) => {
-    if (!dateStr) return 'N/A';
+    if (!dateStr) return t('drop.na');
     const hours = Math.floor((Date.now() - new Date(String(dateStr)).getTime()) / (1000 * 60 * 60));
     if (hours < 1) return t('drop.publishedLessThanHour');
     if (hours === 1) return t('drop.publishedHour');
@@ -240,21 +240,21 @@ export function DropDetailPage() {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2"><polygon points="12,2 22,8 22,18 12,24 2,18 2,8" /></svg>
           </div>
           <div>
-            <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>From Eden</p>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{t('home.featuredSubtitle')}</p>
             <p className="text-sm mt-1 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              Every item is handpicked and verified. Your satisfaction is guaranteed &mdash; we stand behind every drop with our authenticity promise.
+              {t('home.featuredDesc')}
             </p>
           </div>
         </div>
       </section>
 
       <section className="mx-4 mt-5 glass-card p-5">
-        <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Drop Information</h3>
+        <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>{t('drop.info')}</h3>
         <div className="space-y-2.5">
           <div className="flex items-center gap-3"><Package size={16} style={{ color: 'var(--gold)' }} /><span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{String(drop.displayId || '')}</span></div>
           <div className="flex items-center gap-3"><Clock size={16} style={{ color: 'var(--gold)' }} /><span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{formatDate(drop.publishedAt)}</span></div>
-          <div className="flex items-center gap-3"><Eye size={16} style={{ color: 'var(--gold)' }} /><span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Viewed {String(drop.views ?? 0)} times</span></div>
-          <div className="flex items-center gap-3"><Package size={16} style={{ color: 'var(--gold)' }} /><span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Remaining {remaining} pcs</span></div>
+          <div className="flex items-center gap-3"><Eye size={16} style={{ color: 'var(--gold)' }} /><span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t('drop.viewed', { count: String(drop.views ?? 0) })}</span></div>
+          <div className="flex items-center gap-3"><Package size={16} style={{ color: 'var(--gold)' }} /><span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t('drop.remaining', { count: remaining })}</span></div>
         </div>
       </section>
 
@@ -262,8 +262,8 @@ export function DropDetailPage() {
         <div className="flex items-center gap-3">
           <MapPin size={18} style={{ color: 'var(--gold)' }} />
           <div>
-            <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Estimated Delivery</p>
-            <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>3-5 business days via DHL Express</p>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{t('drop.estimatedDelivery')}</p>
+            <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>{t('drop.deliveryText')}</p>
           </div>
         </div>
       </section>
@@ -272,7 +272,7 @@ export function DropDetailPage() {
         <a href={deepLink} target="_blank" rel="noopener noreferrer"
           className="w-full h-16 flex items-center justify-center rounded-xl font-bold text-base gap-2 transition-all hover:opacity-90"
           style={{ background: 'linear-gradient(135deg, var(--gold), var(--gold-light))', color: '#071A17', boxShadow: 'var(--shadow-glow-gold)' }}>
-          Buy Now {formatPrice(drop.price)}
+          {t('drop.buyNow')} {formatPrice(drop.price)}
         </a>
       </div>
     </div>

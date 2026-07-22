@@ -26,7 +26,7 @@ export function StudioLayout({ children }: { children: React.ReactNode }) {
           className="w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all flex-shrink-0">
           <Menu size={20} style={{ color: 'var(--text-secondary)' }} />
         </button>
-        <h1 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Drop Studio</h1>
+        <h1 className="text-base font-semibold" style={{ color: 'var(--text)' }}>{t('studio.title')}</h1>
         <button onClick={() => navigate('/')}
           className="w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all flex-shrink-0">
           <Home size={20} style={{ color: 'var(--gold)' }} />
