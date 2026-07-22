@@ -1,7 +1,7 @@
 import { initTRPC } from '@trpc/server';
 import { z } from 'zod';
 import { db, drops, categories, dropStatus, archivedReasons, subscribers, dropCounter, mockups } from '../db';
-import { eq, and, desc, asc, sql, getTableColumns } from 'drizzle-orm';
+import { eq, and, or, inArray, desc, asc, sql, getTableColumns } from 'drizzle-orm';
 import type { Context } from './context';
 import { registerSubscriber, listActiveSubscribers, deactivateSubscriber } from '../services/subscriber';
 import { enqueueBroadcast } from '../queue/broadcast';
@@ -50,7 +50,15 @@ export const dropRouter = t.router({
     }))
     .query(async ({ input }) => {
       const conditions = [eq(drops.status, 'live')];
-      if (input.categoryId) conditions.push(eq(drops.categoryId, input.categoryId));
+      if (input.categoryId) {
+        // Include this category AND its subcategories
+        const subIds = await db
+          .select({ id: categories.id })
+          .from(categories)
+          .where(or(eq(categories.id, input.categoryId), eq(categories.parentId, input.categoryId)));
+        const ids = subIds.map(s => s.id);
+        if (ids.length > 0) conditions.push(inArray(drops.categoryId, ids));
+      }
 
       const orderBy = (() => {
         switch (input.sortBy) {
