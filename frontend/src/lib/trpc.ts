@@ -4,10 +4,15 @@ import { getTelegramAuth } from './telegram-auth';
 const BASE_URL = typeof window !== 'undefined' ? '' : 'http://localhost:3001';
 
 async function trpcCall(path: string, options: { method?: 'GET' | 'POST'; body?: unknown } = {}) {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const headers: Record<string, string> = {};
   
   const tgData = getTelegramAuth();
   
+  // Для POST нужно Content-Type, для GET — не шлём (чтобы избежать CORS preflight)
+  if (options.method === 'POST' && options.body) {
+    headers['Content-Type'] = 'application/json';
+  }
+
   if (tgData.userId) {
     headers['x-tg-user-id'] = tgData.userId;
   }
