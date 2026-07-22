@@ -7,7 +7,8 @@ import multipart from '@fastify/multipart';
 
 const UPLOAD_DIR = '/app/uploads';
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
-const MIN_DIM = 1200;
+const MIN_LONG_EDGE = 1200;  // upscale smaller images to this
+const MAX_LONG_EDGE = 2000;  // downscale larger images to this
 
 /** Ensure upload subdirectories exist */
 function ensureDir(type: string) {
@@ -42,7 +43,7 @@ export async function uploadRoutes(app: FastifyInstance) {
       // Read file buffer
       const buffer = await data.toBuffer();
 
-      // Validate dimensions via sharp
+      // Validate image via sharp
       let metadata;
       try {
         metadata = await sharp(buffer).metadata();
@@ -52,24 +53,33 @@ export async function uploadRoutes(app: FastifyInstance) {
       if (!metadata.width || !metadata.height) {
         return reply.status(400).send({ error: 'Could not read image dimensions' });
       }
-      if (metadata.width < MIN_DIM || metadata.height < MIN_DIM) {
-        return reply.status(400).send({ error: `Image must be at least ${MIN_DIM}×${MIN_DIM}px` });
+
+      // Normalize: upscale tiny images, downscale huge ones, always WebP
+      const longestEdge = Math.max(metadata.width, metadata.height);
+      let resizeOpts: sharp.ResizeOptions = { withoutEnlargement: false };
+      if (longestEdge > MAX_LONG_EDGE) {
+        // Downscale so longest edge = MAX_LONG_EDGE
+        resizeOpts = { width: metadata.width >= metadata.height ? MAX_LONG_EDGE : undefined, height: metadata.height > metadata.width ? MAX_LONG_EDGE : undefined, fit: 'inside', withoutEnlargement: true };
+      } else if (longestEdge < MIN_LONG_EDGE) {
+        // Upscale so longest edge = MIN_LONG_EDGE
+        resizeOpts = { width: metadata.width >= metadata.height ? MIN_LONG_EDGE : undefined, height: metadata.height > metadata.width ? MIN_LONG_EDGE : undefined, fit: 'inside', withoutEnlargement: false };
       }
 
-      // Determine upload type: mockup or photo
-      const type = (req.query as any).type || 'photos';
+      // Determine upload type
+      const type: string = (req as any).params?.type || (req.query as any)?.type || 'photos';
       const dir = ensureDir(type);
-
-      // Convert to WebP and save
       const filename = `${randomUUID()}.webp`;
-      const outputPath = join(dir, filename);
+      const outPath = join(dir, filename);
 
+      // Resize → WebP quality 85 → write
       await sharp(buffer)
-        .webp({ quality: 85 })
-        .toFile(outputPath);
+        .resize(resizeOpts)
+        .webp({ quality: 85, effort: 4 })
+        .toFile(outPath);
 
-      const url = `/uploads/${type}/${filename}`;
-      return { url };
+      console.log(`  ✅ Uploaded: ${type}/${filename} (${resizeOpts.width || 'auto'}×${resizeOpts.height || 'auto'} → WebP)`);
+
+      return { url: `/uploads/${type}/${filename}` };
     } catch (err: any) {
       req.log.error(err, 'Upload failed');
       return reply.status(500).send({ error: err?.message || 'Upload failed' });
