@@ -68,18 +68,33 @@ export async function uploadRoutes(app: FastifyInstance) {
       // Determine upload type
       const type: string = (req as any).params?.type || (req.query as any)?.type || 'photos';
       const dir = ensureDir(type);
-      const filename = `${randomUUID()}.webp`;
-      const outPath = join(dir, filename);
+      const filename = `${randomUUID()}`;
+      const webpPath = join(dir, `${filename}.webp`);
 
       // Resize → WebP quality 85 → write
       await sharp(buffer)
         .resize(resizeOpts)
         .webp({ quality: 85, effort: 4 })
-        .toFile(outPath);
+        .toFile(webpPath);
 
-      console.log(`  ✅ Uploaded: ${type}/${filename} (${resizeOpts.width || 'auto'}×${resizeOpts.height || 'auto'} → WebP)`);
+      console.log(`  ✅ Uploaded: ${type}/${filename}.webp (${resizeOpts.width || 'auto'}×${resizeOpts.height || 'auto'} → WebP)`);
 
-      return { url: `/uploads/${type}/${filename}` };
+      const result: { url: string; jpegUrl?: string } = {
+        url: `/uploads/${type}/${filename}.webp`,
+      };
+
+      // FR-03/BUG-29: generate JPEG alongside WebP for Telegram Bot API (sendPhoto rejects WebP)
+      if (type === 'mockups') {
+        const jpegPath = join(dir, `${filename}.jpg`);
+        await sharp(buffer)
+          .resize(resizeOpts)
+          .jpeg({ quality: 88, mozjpeg: true })
+          .toFile(jpegPath);
+        result.jpegUrl = `/uploads/${type}/${filename}.jpg`;
+        console.log(`  ✅ Uploaded: ${type}/${filename}.jpg (JPEG for Telegram)`);
+      }
+
+      return result;
     } catch (err: any) {
       req.log.error(err, 'Upload failed');
       return reply.status(500).send({ error: err?.message || 'Upload failed' });

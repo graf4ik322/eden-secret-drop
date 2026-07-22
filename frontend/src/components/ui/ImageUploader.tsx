@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 interface ImageUploaderProps {
   /** Called with the uploaded URL after successful upload */
-  onUploaded: (url: string) => void;
+  onUploaded: (url: string, jpegUrl?: string) => void;
   /** Existing image URL (for preview) */
   value?: string;
   /** Upload type: 'mockups' or 'photos' */
@@ -42,7 +42,7 @@ export function ImageUploader({ onUploaded, value, type = 'photos', className }:
       }
 
       const data = await res.json();
-      onUploaded(data.url);
+      onUploaded(data.url, data.jpegUrl);
     } catch (err: any) {
       setError(err?.message || 'Upload failed');
     } finally {

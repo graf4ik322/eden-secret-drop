@@ -195,7 +195,16 @@ function DropForm({ drop, categories, mockups: mockupList, onClose, onSaved }: {
         onClose={() => setShowCategoryPicker(false)}
         onSelect={(cat) => setCategoryId(cat?.id ?? 0)}
         selectedId={categoryId || undefined}
-        categories={categories.map((c: Record<string, unknown>) => ({ id: Number(c.id), name: String(c.name || ''), icon: String(c.icon || '') }))}
+        categories={categories.map((c: Record<string, unknown>) => ({
+          id: Number(c.id),
+          name: String(c.name || ''),
+          icon: String(c.icon || ''),
+          subcategories: (c.subcategories as Record<string, unknown>[] || []).map((s: Record<string, unknown>) => ({
+            id: Number(s.id),
+            name: String(s.name || ''),
+            icon: String(s.icon || ''),
+          })),
+        }))}
       />
 
       <div className="flex gap-3 pt-2">

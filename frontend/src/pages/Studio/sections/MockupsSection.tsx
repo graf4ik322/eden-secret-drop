@@ -92,6 +92,7 @@ function MockupFormModal({ open, onClose, mockup, onSaved }: {
 }) {
   const [name, setName] = useState(String(mockup?.name || ''));
   const [imageUrl, setImageUrl] = useState(String(mockup?.imageUrl || ''));
+  const [jpegUrl, setJpegUrl] = useState(String(mockup?.jpegUrl || ''));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -104,14 +105,15 @@ function MockupFormModal({ open, onClose, mockup, onSaved }: {
     setError('');
     try {
       if (isEdit) {
-        await trpcMutate('mockup.update', { id: Number(mockup.id), name: name.trim(), imageUrl: imageUrl || undefined });
+        await trpcMutate('mockup.update', { id: Number(mockup.id), name: name.trim(), imageUrl: imageUrl || undefined, jpegUrl: jpegUrl || undefined });
       } else {
-        await trpcMutate('mockup.create', { name: name.trim(), imageUrl: imageUrl || undefined });
+        await trpcMutate('mockup.create', { name: name.trim(), imageUrl: imageUrl || undefined, jpegUrl: jpegUrl || undefined });
       }
       onSaved();
       onClose();
       setName('');
       setImageUrl('');
+      setJpegUrl('');
     } catch (err: any) { setError(err?.message || 'Failed'); }
     finally { setSaving(false); }
   };
@@ -129,7 +131,7 @@ function MockupFormModal({ open, onClose, mockup, onSaved }: {
         </div>
         <div>
           <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-secondary)' }}>Image</label>
-          <ImageUploader value={imageUrl} onUploaded={(url) => setImageUrl(url)} type="mockups" />
+          <ImageUploader value={imageUrl} onUploaded={(url, jpeg) => { setImageUrl(url); if (jpeg) setJpegUrl(jpeg); }} type="mockups" />
         </div>
         <div className="flex gap-3 pt-2">
           <button type="button" onClick={onClose}

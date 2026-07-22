@@ -1,9 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useIsAdminBool, useIsAdmin } from '@/lib/useIsAdmin';
 import { getTelegramAuth } from '@/lib/telegram-auth';
-import { Search, ArrowRight, Home, Sparkles, User, X, Package } from 'lucide-react';
+import { ArrowRight, Home, Sparkles, User, Package } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 import { Button } from '@/components/ui';
 
@@ -11,13 +11,8 @@ export function HomePage() {
   const isAdmin = useIsAdminBool();
   const adminState = useIsAdmin();
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<number | undefined>(undefined);
-  const [showSearch, setShowSearch] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [debugInfo, setDebugInfo] = useState<string>('');
   const [tapCount, setTapCount] = useState(0);
-  const searchRef = useRef<HTMLInputElement>(null);
 
   const handleLogoTap = async () => {
     const newCount = tapCount + 1;
@@ -52,31 +47,19 @@ export function HomePage() {
     }
   };
 
-  const { data: categoriesData } = useQuery(
-    getTrpcQueryOptions('drop.listCategories'),
-  );
-  const { data: activeDrops, isLoading: dropsLoading } = useQuery(
-    getTrpcQueryOptions('drop.listActive', { limit: 20, categoryId: selectedSubcategory ?? selectedCategory }),
-  );
   const { data: latestDrops, isLoading: latestLoading } = useQuery(
     getTrpcQueryOptions('drop.latest', { limit: 10 }),
   );
   const { data: nextScheduled } = useQuery(
     getTrpcQueryOptions('drop.nextScheduled'),
   );
+  const { data: stats } = useQuery(
+    getTrpcQueryOptions('drop.stats'),
+  );
 
-  const featuredDrop: Record<string, unknown> | undefined = Array.isArray(activeDrops) ? activeDrops[0] : undefined;
-  const categories: Record<string, unknown>[] = Array.isArray(categoriesData) ? categoriesData : [];
-  const latest: Record<string, unknown>[] = Array.isArray(latestDrops) ? latestDrops : [];
-  const drops: Record<string, unknown>[] = Array.isArray(activeDrops) ? activeDrops : [];
-
-  const selectedCatObj = categories.find(c => c.id === selectedCategory);
-  const subcategories: Record<string, unknown>[] = (selectedCatObj?.subcategories as Record<string, unknown>[]) || [];
-
-  const handleCategoryClick = (catId: number | undefined) => {
-    setSelectedCategory(catId);
-    setSelectedSubcategory(undefined);
-  };
+  const drops: Record<string, unknown>[] = Array.isArray(latestDrops) ? latestDrops : [];
+  const featuredDrop: Record<string, unknown> | undefined = drops[0];
+  const dropStats = (stats || { allTime: 0, active: 0 }) as { allTime: number; active: number };
 
   const formatPrice = (price: unknown) => {
     if (!price) return '';
@@ -97,11 +80,7 @@ export function HomePage() {
             <span className="text-[14px] font-medium" style={{ color: 'var(--gold)' }}>SecretDrop</span>
           </div>
         </div>
-        <div className="flex-1 flex justify-end">
-          <button onClick={() => { setShowSearch(!showSearch); setSearchQuery(''); }} className="w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all flex-shrink-0">
-            {showSearch ? <X size={20} style={{ color: 'var(--text-secondary)' }} /> : <Search size={20} style={{ color: 'var(--text-secondary)' }} />}
-          </button>
-        </div>
+        <div className="flex-1 flex justify-end" />
       </header>
 
       {debugInfo && (
@@ -111,20 +90,8 @@ export function HomePage() {
         </section>
       )}
 
-      {showSearch && (
-        <section className="mx-4 mt-2 px-4 py-3 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <input
-            ref={searchRef}
-            type="text"
-            placeholder="Search drops by name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-transparent text-sm outline-none"
-            style={{ color: 'var(--text)' }}
-            autoFocus
-          />
-        </section>
-      )}
+      {/* FR-03/FR-14: Search removed from Home */}
+
       <section className="mx-4 mt-2 glass-card p-6 text-center relative overflow-hidden" style={{ height: '220px' }}>
         <div className="absolute top-0 left-4 right-4 h-[1px] bg-gradient-to-r from-transparent via-[var(--gold)]/50 to-transparent" />
         <div className="absolute top-3 right-3 opacity-[0.06]">
@@ -144,65 +111,38 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="mx-4 mt-6 flex items-center justify-between glass-card px-5 py-4">
-        <span className="text-lg font-bold" style={{ color: 'var(--gold)' }}>
-          {dropsLoading ? 'DROP #----' : `DROP #${String(drops.length).padStart(4, '0')}`}
-        </span>
-        <div className="text-right">
-          <span className="text-sm" style={{ color: 'var(--muted)' }}>
-            {drops.length > 0 ? `${drops.length} active` : 'No drops'}
-          </span>
-          {(() => {
-            const scheduled = nextScheduled as Record<string, unknown> | null;
-            if (scheduled?.scheduledAt) {
-              const nextTime = new Date(String(scheduled.scheduledAt));
-              const now = Date.now();
-              const diff = nextTime.getTime() - now;
-              if (diff > 0) {
-                const hours = Math.floor(diff / 3600000);
-                const mins = Math.floor((diff % 3600000) / 60000);
-                return (
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--gold)' }}>
-                    Next update: {hours}h {mins}m
-                  </p>
-                );
-              }
-            }
-            return null;
-          })()}
+      {/* FR-03/FR-16: Counter — allTime + active (separate metrics) */}
+      <section className="mx-4 mt-6 glass-card px-5 py-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium" style={{ color: 'var(--muted)' }}>Total drops all time</span>
+          <span className="text-lg font-bold" style={{ color: 'var(--gold)' }}>{dropStats.allTime}</span>
         </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium" style={{ color: 'var(--muted)' }}>Active now</span>
+          <span className="text-lg font-bold" style={{ color: 'var(--emerald)' }}>{dropStats.active}</span>
+        </div>
+        {(() => {
+          const scheduled = nextScheduled as Record<string, unknown> | null;
+          if (scheduled?.scheduledAt) {
+            const nextTime = new Date(String(scheduled.scheduledAt));
+            const now = Date.now();
+            const diff = nextTime.getTime() - now;
+            if (diff > 0) {
+              const hours = Math.floor(diff / 3600000);
+              const mins = Math.floor((diff % 3600000) / 60000);
+              return (
+                <div className="flex items-center justify-between mt-2 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span className="text-sm font-medium" style={{ color: 'var(--muted)' }}>Next update</span>
+                  <span className="text-sm font-bold" style={{ color: 'var(--gold)' }}>{hours}h {mins}m</span>
+                </div>
+              );
+            }
+          }
+          return null;
+        })()}
       </section>
 
-      <section className="mx-4 mt-5">
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
-          <button onClick={() => handleCategoryClick(undefined)}
-            className={`px-4 h-[42px] rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-              selectedCategory === undefined
-                ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
-                : 'glass-card text-[var(--text-secondary)]'
-            }`}>All</button>
-          {categories.map((cat: Record<string, unknown>) => (
-            <button key={String(cat.id)} onClick={() => handleCategoryClick(Number(cat.id))}
-              className={`px-4 h-[42px] rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                selectedCategory === cat.id
-                  ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
-                  : 'glass-card text-[var(--text-secondary)]'
-              }`}>{String(cat.icon || '')} {String(cat.name || '')}</button>
-          ))}
-        </div>
-        {subcategories.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none mt-2">
-            {subcategories.map((sub: Record<string, unknown>) => (
-              <button key={String(sub.id)} onClick={() => setSelectedSubcategory(Number(sub.id))}
-                className={`px-4 h-[42px] rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                  selectedSubcategory === sub.id
-                    ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
-                    : 'glass-card text-[var(--text-secondary)]'
-                }`}>{String(sub.icon || '')} {String(sub.name || '')}</button>
-            ))}
-          </div>
-        )}
-      </section>
+      {/* FR-03/FR-15: Category filters removed from Home */}
 
       {featuredDrop && (
         <section className="mx-4 mt-6">
@@ -240,10 +180,10 @@ export function HomePage() {
             </div>
           </div>
         ))}
-        {!latestLoading && latest.length === 0 && (
+        {!latestLoading && drops.length === 0 && (
           <p className="text-center py-8 text-sm" style={{ color: 'var(--muted)' }}>No drops available yet</p>
         )}
-        {latest.map((drop: Record<string, unknown>) => (
+        {drops.map((drop: Record<string, unknown>) => (
           <div key={String(drop.id)} className="glass-card mb-2 cursor-pointer transition-all"
             onClick={() => navigate(`/drop/${drop.displayId}`)}>
             <div className="flex items-center gap-3 p-3">

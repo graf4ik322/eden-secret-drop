@@ -33,14 +33,15 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
-      {/* Sheet */}
+      {/* Sheet — solid bg to prevent transparency (BUG-23) */}
       <div
         className={cn(
           'relative z-10 w-full max-w-lg rounded-t-[var(--radius-card)] sm:rounded-[var(--radius-card)]',
-          'glass-card border-b-0 sm:border',
+          'border-b-0 sm:border',
           'max-h-[90dvh] overflow-y-auto p-6 animate-fade-up',
           className,
         )}
+        style={{ background: 'var(--bg)', border: '1px solid rgba(255,255,255,0.06)' }}
       >
         {/* Header */}
         {title && (

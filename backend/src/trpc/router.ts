@@ -281,16 +281,17 @@ export const dropRouter = t.router({
       if (shouldNotify) {
         const deepLink = dropDeepLink(drop.displayId);
 
-        // Resolve best image: mockup > cutoutUrl > imageUrl
+        // Resolve best image for Telegram: jpegUrl > imageUrl (WebP rejected by sendPhoto)
         let broadcastImage: string | undefined;
         if (drop.mockupId) {
           try {
             const [mockup] = await db
-              .select({ imageUrl: mockups.imageUrl })
+              .select({ imageUrl: mockups.imageUrl, jpegUrl: mockups.jpegUrl })
               .from(mockups)
               .where(eq(mockups.id, drop.mockupId))
               .limit(1);
-            if (mockup?.imageUrl) broadcastImage = mockup.imageUrl;
+            if (mockup?.jpegUrl) broadcastImage = mockup.jpegUrl;
+            else if (mockup?.imageUrl) broadcastImage = mockup.imageUrl;
           } catch (err) {
             console.error('[Publish] Failed to fetch mockup image:', err);
           }
@@ -401,6 +402,19 @@ export const dropRouter = t.router({
 
       return { success: true };
     }),
+
+  /** Drop stats for Home counter (FR-16) */
+  stats: publicProcedure.query(async () => {
+    const [{ allTime }] = await db
+      .select({ allTime: sql<number>`count(*)::int` })
+      .from(drops)
+      .where(inArray(drops.status, ['live', 'archived']));
+    const [{ active }] = await db
+      .select({ active: sql<number>`count(*)::int` })
+      .from(drops)
+      .where(eq(drops.status, 'live'));
+    return { allTime, active };
+  }),
 });
 
 /* ===== Category Router ===== */
@@ -462,17 +476,18 @@ export const mockupRouter = t.router({
       return ctx.db.select().from(mockups).orderBy(mockups.createdAt);
     }),
   create: adminProcedure
-    .input(z.object({ name: z.string().min(1), imageUrl: z.string().max(512).optional() }))
+    .input(z.object({ name: z.string().min(1), imageUrl: z.string().max(512).optional(), jpegUrl: z.string().max(512).optional() }))
     .mutation(async ({ ctx, input }) => {
-      const [m] = await ctx.db.insert(mockups).values({ name: input.name, imageUrl: input.imageUrl }).returning();
+      const [m] = await ctx.db.insert(mockups).values({ name: input.name, imageUrl: input.imageUrl, jpegUrl: input.jpegUrl }).returning();
       return m;
     }),
   update: adminProcedure
-    .input(z.object({ id: z.number(), name: z.string().min(1).optional(), imageUrl: z.string().max(512).optional() }))
+    .input(z.object({ id: z.number(), name: z.string().min(1).optional(), imageUrl: z.string().max(512).optional(), jpegUrl: z.string().max(512).optional() }))
     .mutation(async ({ ctx, input }) => {
       const [m] = await ctx.db.update(mockups).set({
         ...(input.name && { name: input.name }),
         ...(input.imageUrl !== undefined && { imageUrl: input.imageUrl }),
+        ...(input.jpegUrl !== undefined && { jpegUrl: input.jpegUrl }),
         updatedAt: new Date(),
       }).where(eq(mockups.id, input.id)).returning();
       return m;

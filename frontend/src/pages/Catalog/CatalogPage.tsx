@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Search, ArrowRight, Package, X, ArrowUpDown } from 'lucide-react';
+import { Search, ArrowRight, Package, X, Home, User, Sparkles, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
+import { useIsAdminBool } from '@/lib/useIsAdmin';
+import { Modal } from '@/components/ui/Modal';
 
 const SORT_OPTIONS = [
   { value: 'newest', label: 'Newest' },
@@ -19,6 +21,8 @@ export function CatalogPage() {
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
   const [selectedSubcategory, setSelectedSubcategory] = useState<number | undefined>(undefined);
   const [sortBy, setSortBy] = useState<SortBy>('newest');
+  const [showFilters, setShowFilters] = useState(false);
+  const isAdmin = useIsAdminBool();
 
   const { data: activeDrops } = useQuery(
     getTrpcQueryOptions('drop.listActive', {
@@ -31,13 +35,47 @@ export function CatalogPage() {
   const drops = (Array.isArray(activeDrops) ? activeDrops : []) as Record<string, unknown>[];
   const categories = (Array.isArray(categoriesData) ? categoriesData : []) as Record<string, unknown>[];
 
-  const selectedCatObj = categories.find(c => c.id === selectedCategory);
-  const subcategories: Record<string, unknown>[] = (selectedCatObj?.subcategories as Record<string, unknown>[]) || [];
+  const selectedCatObj = categories.find((c: Record<string, unknown>) => c.id === selectedCategory);
 
   const handleCategoryClick = (catId: number | undefined) => {
     setSelectedCategory(catId);
     setSelectedSubcategory(undefined);
   };
+
+  // Build category ID map for filtering (root → rootId + all subIds)
+  const categoryIdMap = useMemo(() => {
+    const map = new Map<number, number[]>();
+    for (const root of categories) {
+      const subs = (root.subcategories as Record<string, unknown>[] || []).map(s => Number(s.id));
+      map.set(Number(root.id), [Number(root.id), ...subs]);
+    }
+    return map;
+  }, [categories]);
+
+  const activeFilterIds = useMemo(() => {
+    const ids = selectedCategory !== undefined ? (categoryIdMap.get(selectedCategory) || [selectedCategory]) : [];
+    if (selectedSubcategory !== undefined) ids.push(selectedSubcategory);
+    return ids;
+  }, [categoryIdMap, selectedCategory, selectedSubcategory]);
+
+  // Client-side filter
+  const filteredDrops = useMemo(() => {
+    let list = drops;
+    // Search filter
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(d => String(d.title || '').toLowerCase().includes(q));
+    }
+    // Category filter
+    if (activeFilterIds.length > 0) {
+      list = list.filter(d => activeFilterIds.includes(Number(d.categoryId)));
+    }
+    return list;
+  }, [drops, searchQuery, activeFilterIds]);
+
+  const activeFilterCount = (selectedCategory ? 1 : 0) + (sortBy !== 'newest' ? 1 : 0);
+
+  const activeLabel = selectedCatObj ? String(selectedCatObj.name || '') : '';
 
   const formatPrice = (price: unknown) => {
     if (!price) return '';
@@ -45,38 +83,11 @@ export function CatalogPage() {
     return `€${num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
   };
 
-  // Build lookup: root category ID → all valid drop category IDs (root + subcategories)
-  const categoryIdMap = useMemo(() => {
-    const map: Record<number, number[]> = {};
-    categories.forEach((cat: Record<string, unknown>) => {
-      const rootId = Number(cat.id);
-      if (!isNaN(rootId)) {
-        const ids: number[] = [rootId];
-        const subs = (cat.subcategories as Record<string, unknown>[]) || [];
-        subs.forEach((s: Record<string, unknown>) => {
-          const sid = Number(s.id);
-          if (!isNaN(sid)) ids.push(sid);
-        });
-        map[rootId] = ids;
-      }
-    });
-    return map;
-  }, [categories]);
-
-  const filtered = drops.filter((drop: Record<string, unknown>) => {
-    const q = searchQuery.toLowerCase();
-    if (q && !String(drop.title || '').toLowerCase().includes(q)) return false;
-    if (selectedCategory) {
-      const validIds = categoryIdMap[selectedCategory] || [selectedCategory];
-      if (selectedSubcategory) {
-        if (Number(drop.categoryId) !== selectedSubcategory) return false;
-      } else if (!validIds.includes(Number(drop.categoryId))) return false;
-    }
-    return true;
-  });
+  const SORT_LABELS: Record<string, string> = { newest: 'Newest', oldest: 'Oldest', price_asc: 'Price ↑', price_desc: 'Price ↓' };
 
   return (
     <div className="min-h-dvh safe-top scroll-safe">
+      {/* Header */}
       <header className="app-header flex items-center justify-between px-4">
         <button onClick={() => navigate(-1)} className="back-btn w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all">
           <ArrowRight size={20} style={{ color: 'var(--text-secondary)', transform: 'rotate(180deg)' }} />
@@ -97,63 +108,45 @@ export function CatalogPage() {
         </div>
       </section>
 
-      {/* Category chips */}
-      <section className="mx-4 mt-3">
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
-          <button onClick={() => handleCategoryClick(undefined)}
-            className={`px-4 h-[34px] rounded-full text-xs font-medium whitespace-nowrap transition-all flex-shrink-0 ${
-              !selectedCategory
-                ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
-                : 'glass-card text-[var(--text-secondary)]'}`}>All</button>
-          {categories.map((cat: Record<string, unknown>) => (
-            <button key={String(cat.id)} onClick={() => handleCategoryClick(Number(cat.id))}
-              className={`px-4 h-[34px] rounded-full text-xs font-medium whitespace-nowrap transition-all flex-shrink-0 ${
-                selectedCategory === Number(cat.id)
-                  ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
-                  : 'glass-card text-[var(--text-secondary)]'}`}>
-              {String(cat.icon || '')} {String(cat.name || '')}</button>
-          ))}
-        </div>
-        {subcategories.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none mt-2">
-            {subcategories.map((sub: Record<string, unknown>) => (
-              <button key={String(sub.id)} onClick={() => setSelectedSubcategory(Number(sub.id))}
-                className={`px-4 h-[34px] rounded-full text-xs font-medium whitespace-nowrap transition-all flex-shrink-0 ${
-                  selectedSubcategory === Number(sub.id)
-                    ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
-                    : 'glass-card text-[var(--text-secondary)]'}`}>
-                {String(sub.icon || '')} {String(sub.name || '')}</button>
-            ))}
-          </div>
+      {/* Filters button + active chips */}
+      <section className="mx-4 mt-3 flex items-center gap-2">
+        <button onClick={() => setShowFilters(true)}
+          className="h-[34px] px-4 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all flex-shrink-0"
+          style={{ background: activeFilterCount > 0 ? 'var(--gold)' : 'var(--surface)', color: activeFilterCount > 0 ? '#071A17' : 'var(--text-secondary)' }}>
+          <SlidersHorizontal size={14} />
+          Filters
+          {activeFilterCount > 0 && (
+            <span className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: 'rgba(0,0,0,0.2)', color: '#071A17' }}>
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
+
+        {activeLabel && (
+          <span className="h-[34px] px-3 rounded-full text-xs font-medium flex items-center gap-1.5"
+            style={{ background: 'var(--surface)', color: 'var(--text-secondary)' }}>
+            {activeLabel}
+            <button onClick={() => handleCategoryClick(undefined)}><X size={12} /></button>
+          </span>
+        )}
+        {sortBy !== 'newest' && (
+          <span className="h-[34px] px-3 rounded-full text-xs font-medium flex items-center gap-1.5"
+            style={{ background: 'var(--surface)', color: 'var(--text-secondary)' }}>
+            {SORT_LABELS[sortBy]}
+            <button onClick={() => setSortBy('newest')}><X size={12} /></button>
+          </span>
         )}
       </section>
 
-      {/* Sort chips */}
-      <section className="mx-4 mt-3">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          <ArrowUpDown size={13} style={{ color: 'var(--muted)', flexShrink: 0 }} />
-          {SORT_OPTIONS.map((opt) => (
-            <button key={opt.value} onClick={() => setSortBy(opt.value)}
-              className={`px-3 h-[30px] rounded-full text-[11px] font-medium whitespace-nowrap transition-all flex-shrink-0 ${
-                sortBy === opt.value
-                  ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
-                  : 'glass-card text-[var(--text-secondary)]'}`}>
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* Drop list */}
-      <section className="mx-4 mt-3 mb-6">
-        {filtered.length === 0 && (
+      {/* Drops list */}
+      <section className="mx-4 mt-5 space-y-2">
+        {filteredDrops.length === 0 && (
           <div className="text-center py-16">
-            <Package size={40} style={{ color: 'var(--muted)' }} className="mx-auto mb-3 opacity-40" />
             <p className="text-sm" style={{ color: 'var(--muted)' }}>No drops found</p>
           </div>
         )}
-        {filtered.map((drop: Record<string, unknown>) => (
-          <div key={String(drop.id)} className="glass-card mb-2 cursor-pointer transition-all"
+        {filteredDrops.map((drop: Record<string, unknown>) => (
+          <div key={String(drop.id)} className="glass-card cursor-pointer transition-all"
             onClick={() => navigate(`/drop/${drop.displayId}`)}>
             <div className="flex items-center gap-3 p-3">
               <div className="w-16 h-16 rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center" style={{ background: 'var(--surface)' }}>
@@ -173,6 +166,86 @@ export function CatalogPage() {
           </div>
         ))}
       </section>
+
+      {/* Filters Modal */}
+      <Modal open={showFilters} onClose={() => setShowFilters(false)} title="Filters">
+        {/* Sort */}
+        <h3 className="text-xs font-semibold mb-2 mt-1" style={{ color: 'var(--muted)' }}>Sort by</h3>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {SORT_OPTIONS.map(opt => (
+            <button key={opt.value} onClick={() => setSortBy(opt.value)}
+              className={`px-4 h-[34px] rounded-full text-xs font-medium transition-all ${
+                sortBy === opt.value
+                  ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
+                  : 'glass-card text-[var(--text-secondary)]'
+              }`}>
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Categories */}
+        <h3 className="text-xs font-semibold mb-2" style={{ color: 'var(--muted)' }}>Category</h3>
+        <div className="space-y-0.5 max-h-[40dvh] overflow-y-auto">
+          <button onClick={() => handleCategoryClick(undefined)}
+            className={`w-full flex items-center gap-3 px-4 h-11 rounded-xl text-sm transition-all ${
+              selectedCategory === undefined
+                ? 'bg-gradient-to-r from-[var(--gold)]/10 to-transparent text-[var(--gold)]'
+                : 'hover:bg-[var(--surface)] text-[var(--text)]'
+            }`}>
+            <span className="flex-1 text-left font-medium">All categories</span>
+          </button>
+          {categories.map((root: Record<string, unknown>) => {
+            const subs = (root.subcategories as Record<string, unknown>[] || []);
+            return (
+              <div key={String(root.id)}>
+                <button onClick={() => handleCategoryClick(Number(root.id))}
+                  className={`w-full flex items-center gap-3 px-4 h-11 rounded-xl text-sm transition-all ${
+                    Number(root.id) === selectedCategory
+                      ? 'bg-gradient-to-r from-[var(--gold)]/10 to-transparent text-[var(--gold)]'
+                      : 'hover:bg-[var(--surface)] text-[var(--text)]'
+                  }`}
+                  style={{ fontWeight: 600 }}>
+                  <span>{String(root.icon || '📁')}</span>
+                  <span className="flex-1 text-left">{String(root.name || '')}</span>
+                  <ChevronDown size={14} style={{ color: 'var(--muted)', opacity: 0.5 }} />
+                </button>
+                {subs.length > 0 && (
+                  <div style={{ borderLeft: '1px solid rgba(255,255,255,0.06)', marginLeft: '16px', paddingLeft: '8px' }}>
+                    {subs.map((sub: Record<string, unknown>) => (
+                      <button key={String(sub.id)} onClick={() => {
+                        setSelectedCategory(Number(root.id));
+                        setSelectedSubcategory(Number(sub.id));
+                      }}
+                        className={`w-full flex items-center gap-3 px-4 h-10 rounded-xl text-sm transition-all ${
+                          Number(sub.id) === selectedSubcategory
+                            ? 'bg-gradient-to-r from-[var(--gold)]/10 to-transparent text-[var(--gold)]'
+                            : 'hover:bg-[var(--surface)] text-[var(--text-secondary)]'
+                        }`}>
+                        <span>{String(sub.icon || '📁')}</span>
+                        <span className="flex-1 text-left">{String(sub.name || '')}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </Modal>
+
+      {/* Bottom navigation */}
+      <nav className="h-16 bottom-nav flex items-center justify-around px-2 z-50 fixed">
+        <button onClick={() => navigate('/')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Home size={22} /><span className="text-[10px] font-medium">Home</span></button>
+        <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}><Package size={22} /><span className="text-[10px] font-medium">Catalog</span></button>
+        <button onClick={() => navigate('/profile')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><User size={22} /><span className="text-[10px] font-medium">Profile</span></button>
+        {isAdmin && (
+          <button onClick={() => navigate('/studio')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}>
+            <Sparkles size={22} />
+            <span className="text-[10px] font-medium">Studio</span>
+          </button>
+        )}
+      </nav>
     </div>
   );
 }

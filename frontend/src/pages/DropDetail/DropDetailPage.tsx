@@ -59,9 +59,41 @@ export function DropDetailPage() {
     return 'Published ' + hours + ' hours ago';
   };
 
-  const deeplink = drop
-    ? 'https://t.me/edensecretdrop?text=Hi!%20I%27m%20interested%20in%20' + drop.displayId + '%20-%20' + encodeURIComponent(String(drop.title || ''))
+  const deepLink = drop?.displayId
+    ? `https://t.me/edensecretdrop?startapp=drop_${drop.displayId}`
     : '';
+
+  const shareText = drop
+    ? `🔥 ${drop.title} — €${String(drop.price || '0')}\n\n${deepLink}`
+    : '';
+
+  const handleShare = async () => {
+    if (!drop) return;
+    try {
+      // 1. Try Web Share API (native mobile share sheet)
+      if (navigator.share) {
+        await navigator.share({
+          title: String(drop.title || 'EDEN Secret Drop'),
+          text: shareText,
+          url: deepLink,
+        });
+        return;
+      }
+      // 2. Try Telegram Mini App share (HapticFeedback + shareURL)
+      const tg = (window as any).Telegram?.WebApp;
+      if (tg?.shareURL) {
+        tg.shareURL(deepLink, `🔥 ${drop.title}`);
+        return;
+      }
+    } catch { /* user cancelled — ignore */ }
+    // 3. Fallback: copy to clipboard
+    try {
+      await navigator.clipboard.writeText(shareText);
+      alert('Link copied to clipboard!');
+    } catch {
+      prompt('Copy this link:', deepLink);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -127,7 +159,7 @@ export function DropDetailPage() {
         </button>
         <div className="flex-1" />
         <div className="flex gap-2">
-          <button className="w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all"><Share2 size={20} style={{ color: 'var(--text-secondary)' }} /></button>
+          <button onClick={handleShare} className="w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all"><Share2 size={20} style={{ color: 'var(--text-secondary)' }} /></button>
         </div>
       </header>
 
@@ -149,7 +181,10 @@ export function DropDetailPage() {
           {allImages.map((_, idx) => (
             <button key={idx} onClick={() => setGalleryIdx(idx)}
               className="w-2 h-2 rounded-full transition-all"
-              style={{ background: idx === galleryIdx ? 'var(--gold)' : 'var(--surface-light)' }} />
+              style={{
+                background: idx === galleryIdx ? 'var(--gold)' : 'transparent',
+                border: idx === galleryIdx ? 'none' : '1.5px solid var(--muted)',
+              }} />
           ))}
         </div>
       )}
@@ -232,7 +267,7 @@ export function DropDetailPage() {
       </section>
 
       <div className="sticky bottom-0 left-0 right-0 p-4 pb-6 z-10" style={{ background: 'linear-gradient(to top, var(--bg) 60%, transparent)' }}>
-        <a href={deeplink} target="_blank" rel="noopener noreferrer"
+        <a href={deepLink} target="_blank" rel="noopener noreferrer"
           className="w-full h-16 flex items-center justify-center rounded-xl font-bold text-base gap-2 transition-all hover:opacity-90"
           style={{ background: 'linear-gradient(135deg, var(--gold), var(--gold-light))', color: '#071A17', boxShadow: 'var(--shadow-glow-gold)' }}>
           Buy Now {formatPrice(drop.price)}

@@ -95,6 +95,7 @@ export const mockups = pgTable('mockups', {
   id: serial('id').primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
   imageUrl: varchar('image_url', { length: 512 }),
+  jpegUrl: varchar('jpeg_url', { length: 512 }),   // FR-03/BUG-29: JPEG для Telegram Bot API
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
