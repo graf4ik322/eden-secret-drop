@@ -4,10 +4,12 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Share2, ShieldCheck, Award, Verified, Truck, Clock, Eye, Package, MapPin } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 import { GlassCard, Badge } from '@/components/ui';
+import { useTranslation } from 'react-i18next';
 
 export function DropDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const { data: dropRaw, isLoading, error } = useQuery({
     ...getTrpcQueryOptions('drop.getByDisplayId', { displayId: id || '' }),
@@ -39,10 +41,10 @@ export function DropDetailPage() {
   }
 
   const trustItems = [
-    { icon: ShieldCheck, label: 'Original' },
-    { icon: Award, label: 'Warranty' },
-    { icon: Verified, label: 'Verified' },
-    { icon: Truck, label: 'Fast Delivery' },
+    { icon: ShieldCheck, labelKey: 'drop.trust.original' },
+    { icon: Award, labelKey: 'drop.trust.warranty' },
+    { icon: Verified, labelKey: 'drop.trust.verified' },
+    { icon: Truck, labelKey: 'drop.trust.fastDelivery' },
   ];
 
   const formatPrice = (price: unknown) => {
@@ -122,9 +124,9 @@ export function DropDetailPage() {
     return (
       <div className="min-h-dvh safe-top flex items-center justify-center px-4">
         <div className="text-center">
-          <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Drop not found</p>
-          <p className="text-sm mt-2" style={{ color: 'var(--muted)' }}>The drop you are looking for does not exist</p>
-          <button onClick={() => navigate('/')} className="mt-6 px-6 py-3 rounded-xl font-semibold" style={{ background: 'var(--emerald)', color: 'var(--text)' }}>Go Home</button>
+          <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{t('common.error')}</p>
+          <p className="text-sm mt-2" style={{ color: 'var(--muted)' }}>{t('drop.notFound')}</p>
+          <button onClick={() => navigate('/')} className="mt-6 px-6 py-3 rounded-xl font-semibold" style={{ background: 'var(--emerald)', color: 'var(--text)' }}>{t('nav.home')}</button>
         </div>
       </div>
     );
@@ -207,7 +209,7 @@ export function DropDetailPage() {
           {trustItems.map((item, i) => (
             <div key={i} className="flex flex-col items-center gap-1.5">
               <item.icon size={20} style={{ color: 'var(--gold)' }} />
-              <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>{item.label}</span>
+              <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>{t(item.labelKey)}</span>
             </div>
           ))}
         </div>

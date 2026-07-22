@@ -196,7 +196,7 @@ export function HomePage() {
           <span className="text-lg font-bold" style={{ color: 'var(--gold)' }}>{dropStats.allTime}</span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium" style={{ color: 'var(--muted)' }}>Active now</span>
+          <span className="text-sm font-medium" style={{ color: 'var(--muted)' }}>{t('home.active')}</span>
           <span className="text-lg font-bold" style={{ color: 'var(--emerald)' }}>{dropStats.active}</span>
         </div>
         {(() => {
@@ -224,7 +224,7 @@ export function HomePage() {
 
       {featuredDrop && (
         <section className="mx-4 mt-6">
-          <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--text)' }}>Featured</h2>
+          <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--text)' }}>{t('home.featured')}</h2>
           <div className="glass-card overflow-hidden cursor-pointer transition-all"
             onClick={() => navigate(`/drop/${featuredDrop.displayId}`)}>
             <div className="relative h-[200px] flex items-center justify-center overflow-hidden" style={{ background: 'var(--surface)' }}>
@@ -249,7 +249,7 @@ export function HomePage() {
         </section>
       )}
       <section className="mx-4 mt-6">
-        <h2 className="text-lg font-semibold mb-3" style={{ color: 'var(--text)' }}>Latest Drops</h2>
+        <h2 className="text-lg font-semibold mb-3" style={{ color: 'var(--text)' }}>{t('home.latest')}</h2>
         {latestLoading && [1, 2, 3].map((i) => (
           <div key={i} className="glass-card p-3 h-[88px] mb-2 animate-pulse">
             <div className="flex items-center gap-3">

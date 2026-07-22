@@ -51,7 +51,8 @@
       "verified": "Verified",
       "fastDelivery": "Fast Delivery"
     },
-    "shareText": "🔥 {{title}} — €{{price}}"
+    "shareText": "🔥 {{title}} — €{{price}}",
+    "notFound": "The drop you are looking for does not exist"
   },
   "profile": {
     "title": "Profile",
@@ -60,6 +61,8 @@
     "userId": "User ID",
     "username": "Username",
     "language": "Language",
+    "memberSince": "Member Since",
+    "memberSinceDate": "July 2026",
     "languages": {
       "ru": "Русский",
       "en": "English"

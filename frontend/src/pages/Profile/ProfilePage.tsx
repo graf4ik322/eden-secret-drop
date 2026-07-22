@@ -53,7 +53,7 @@ export function ProfilePage() {
         <button onClick={() => navigate(-1)} className="back-btn w-11 h-11 rounded-full glass-card flex items-center justify-center">
           <ArrowLeft size={20} style={{ color: 'var(--text-secondary)' }} />
         </button>
-        <h1 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Profile</h1>
+        <h1 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>{t('profile.title')}</h1>
         <div className="w-[44px]" />
       </header>
 
@@ -93,7 +93,7 @@ export function ProfilePage() {
           <div className="flex items-center gap-3">
             <MessageCircle size={18} style={{ color: 'var(--gold)' }} />
             <div>
-              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--muted)' }}>Telegram ID</p>
+              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{t('profile.userId')}</p>
               <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{displayUserId || '—'}</p>
             </div>
           </div>
@@ -115,8 +115,8 @@ export function ProfilePage() {
           <div className="flex items-center gap-3">
             <Calendar size={18} style={{ color: 'var(--gold)' }} />
             <div>
-              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--muted)' }}>Member Since</p>
-              <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>July 2026</p>
+              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{t('profile.memberSince')}</p>
+              <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{t('profile.memberSinceDate')}</p>
             </div>
           </div>
         </GlassCard>

@@ -30,7 +30,7 @@ bot.command('debug', async (ctx) => {
 });
 
 /** Register subscriber via backend tRPC */
-async function registerSubscriber(tgUserId: string, username?: string, firstName?: string) {
+async function registerSubscriber(tgUserId: string, username?: string, firstName?: string, locale?: string) {
   try {
     const url = `${BACKEND_URL}/trpc/subscriber.register`;
     const response = await fetch(url, {
@@ -40,6 +40,7 @@ async function registerSubscriber(tgUserId: string, username?: string, firstName
         tgUserId,
         username,
         firstName,
+        locale,
       }),
     });
     if (!response.ok) {
@@ -62,6 +63,7 @@ bot.command('start', async (ctx) => {
     user.id.toString(),
     user.username,
     user.first_name,
+    user.language_code,
   );
 
   const fullscreenUrl = `https://t.me/${BOT_USERNAME.replace('@', '')}?startapp`;

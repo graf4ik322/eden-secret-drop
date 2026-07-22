@@ -51,7 +51,8 @@
       "verified": "Верифицировано",
       "fastDelivery": "Быстрая доставка"
     },
-    "shareText": "🔥 {{title}} — €{{price}}"
+    "shareText": "🔥 {{title}} — €{{price}}",
+    "notFound": "Дроп не найден"
   },
   "profile": {
     "title": "Профиль",
@@ -60,6 +61,8 @@
     "userId": "ID пользователя",
     "username": "Имя пользователя",
     "language": "Язык",
+    "memberSince": "Участник с",
+    "memberSinceDate": "Июль 2026",
     "languages": {
       "ru": "Русский",
       "en": "English"

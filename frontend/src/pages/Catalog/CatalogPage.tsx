@@ -95,7 +95,7 @@ export function CatalogPage() {
         <button onClick={() => navigate(-1)} className="back-btn w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all">
           <ArrowRight size={20} style={{ color: 'var(--text-secondary)', transform: 'rotate(180deg)' }} />
         </button>
-        <h1 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Catalog</h1>
+        <h1 className="text-base font-semibold" style={{ color: 'var(--text)' }}>{t('catalog.title')}</h1>
         <div className="w-11" />
       </header>
 
@@ -103,7 +103,7 @@ export function CatalogPage() {
       <section className="mx-4 mt-2">
         <div className="flex items-center gap-3 px-4 h-10 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.04)' }}>
           <Search size={16} style={{ color: 'var(--muted)' }} />
-          <input type="text" placeholder="Search drops..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+          <input type="text" placeholder={t('catalog.search')} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
             className="flex-1 bg-transparent text-sm outline-none" style={{ color: 'var(--text)' }} />
           {searchQuery && (
             <button onClick={() => setSearchQuery('')}><X size={14} style={{ color: 'var(--muted)' }} /></button>
