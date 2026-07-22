@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Check, X, ChevronRight } from 'lucide-react';
+import { Search, Check, X, ChevronRight, Tag } from 'lucide-react';
 import { Modal } from './Modal';
 
 interface CategoryItem {
@@ -85,7 +85,7 @@ export function CategoryPicker({ open, onClose, onSelect, selectedId, categories
                   ? 'bg-gradient-to-r from-[var(--gold)]/10 to-transparent text-[var(--gold)]'
                   : 'hover:bg-[var(--surface)] text-[var(--text)]'
               }`}>
-              <span>{cat.icon || '📁'}</span>
+              <span><Tag size={16} style={{ color: 'var(--muted)' }} /></span>
               <span className="flex-1 text-left">{cat.name}</span>
               {selectedId === cat.id && <Check size={16} style={{ color: 'var(--gold)' }} />}
             </button>
@@ -105,7 +105,7 @@ export function CategoryPicker({ open, onClose, onSelect, selectedId, categories
                       : 'hover:bg-[var(--surface)] text-[var(--text)]'
                   }`}
                   style={{ fontWeight: isRootSelected || subs.length === 0 ? 600 : 600 }}>
-                  <span>{root.icon || '📁'}</span>
+                  <span>{root.icon ? <span>{root.icon}</span> : <Tag size={16} style={{ color: 'var(--muted)' }} />}</span>
                   <span className="flex-1 text-left">{root.name}</span>
                   {subs.length > 0 && (
                     <ChevronRight size={14} style={{ color: 'var(--muted)', opacity: 0.5 }} />
@@ -121,7 +121,7 @@ export function CategoryPicker({ open, onClose, onSelect, selectedId, categories
                             ? 'bg-gradient-to-r from-[var(--gold)]/10 to-transparent text-[var(--gold)]'
                             : 'hover:bg-[var(--surface)] text-[var(--text-secondary)]'
                         }`}>
-                        <span>{sub.icon || '📁'}</span>
+                        <span>{sub.icon ? <span>{sub.icon}</span> : <Tag size={16} style={{ color: 'var(--muted)' }} />}</span>
                         <span className="flex-1 text-left">{sub.name}</span>
                         {selectedId === sub.id && <Check size={16} style={{ color: 'var(--gold)' }} />}
                       </button>

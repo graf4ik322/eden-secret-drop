@@ -98,7 +98,11 @@ function DropForm({ drop, categories, mockups: mockupList, onClose, onSaved }: {
         <button type="button" onClick={() => setShowCategoryPicker(true)}
           className="w-full flex items-center justify-between h-11 px-4 rounded-[var(--radius-input)] text-sm outline-none"
           style={{ background: 'var(--surface)', color: categoryId ? 'var(--text)' : 'var(--muted)', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <span>{categoryId ? String(categories.find((c: Record<string, unknown>) => c.id === categoryId)?.name || 'Select') : 'Select category'}</span>
+          <span>{categoryId ? (() => {
+            const cat = categories.find((c: Record<string, unknown>) => c.id === categoryId) ||
+              categories.flatMap((c: Record<string, unknown>) => (c.subcategories as Record<string, unknown>[] || [])).find((s: Record<string, unknown>) => s.id === categoryId);
+            return String(cat?.name || 'Select');
+          })() : 'Select category'}</span>
           <ChevronDown size={14} style={{ color: 'var(--muted)' }} />
         </button>
       </div>
@@ -230,7 +234,7 @@ export function DropsSection() {
 
   const statusParam = activeFilter === 'All' ? undefined : activeFilter.toLowerCase() === 'active' ? 'live' : activeFilter.toLowerCase();
   const { data: allDropsRaw } = useQuery(getTrpcQueryOptions('drop.listAll', { limit: 100 }));
-  const { data: catsRaw } = useQuery(getTrpcQueryOptions('category.list'));
+  const { data: catsRaw } = useQuery(getTrpcQueryOptions('drop.listCategories'));
   const { data: mockupsRaw } = useQuery(getTrpcQueryOptions('mockup.list'));
   const { data: subsRaw } = useQuery(getTrpcQueryOptions('subscriber.list'));
   const { activities } = useActivityStore();

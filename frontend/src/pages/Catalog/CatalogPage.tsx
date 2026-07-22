@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Search, ArrowRight, Package, X, Home, User, Sparkles, SlidersHorizontal, ChevronDown } from 'lucide-react';
+import { Search, ArrowRight, Package, X, Home, User, Sparkles, SlidersHorizontal, ChevronDown, Tag } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 import { useIsAdminBool } from '@/lib/useIsAdmin';
 import { Modal } from '@/components/ui/Modal';
@@ -206,7 +206,7 @@ export function CatalogPage() {
                       : 'hover:bg-[var(--surface)] text-[var(--text)]'
                   }`}
                   style={{ fontWeight: 600 }}>
-                  <span>{String(root.icon || '📁')}</span>
+                  <span>{String(root.icon || '') || <Tag size={16} style={{ color: 'var(--muted)' }} />}</span>
                   <span className="flex-1 text-left">{String(root.name || '')}</span>
                   <ChevronDown size={14} style={{ color: 'var(--muted)', opacity: 0.5 }} />
                 </button>
@@ -222,7 +222,7 @@ export function CatalogPage() {
                             ? 'bg-gradient-to-r from-[var(--gold)]/10 to-transparent text-[var(--gold)]'
                             : 'hover:bg-[var(--surface)] text-[var(--text-secondary)]'
                         }`}>
-                        <span>{String(sub.icon || '📁')}</span>
+                        <span>{String(sub.icon || '') || <Tag size={16} style={{ color: 'var(--muted)' }} />}</span>
                         <span className="flex-1 text-left">{String(sub.name || '')}</span>
                       </button>
                     ))}
