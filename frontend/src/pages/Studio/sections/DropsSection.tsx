@@ -178,9 +178,11 @@ function DropForm({ drop, categories, mockups: mockupList, onClose, onSaved }: {
             <ImageUploader key={idx}
               value={photos[idx] || ''}
               onUploaded={(url) => {
-                const next = [...photos];
-                next[idx] = url;
-                setPhotos(next);
+                setPhotos(prev => {
+                  const next = [...prev];
+                  next[idx] = url;
+                  return next;
+                });
               }}
               type="photos"
             />
