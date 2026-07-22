@@ -1,19 +1,33 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Search, ArrowRight, Home, Sparkles, User, X, Package } from 'lucide-react';
+import { Search, ArrowRight, Package, X, ArrowUpDown } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
-import { useIsAdminBool } from '@/lib/useIsAdmin';
+
+const SORT_OPTIONS = [
+  { value: 'newest', label: 'Newest' },
+  { value: 'oldest', label: 'Oldest' },
+  { value: 'price_asc', label: 'Price ↑' },
+  { value: 'price_desc', label: 'Price ↓' },
+] as const;
+
+type SortBy = (typeof SORT_OPTIONS)[number]['value'];
 
 export function CatalogPage() {
-  const isAdmin = useIsAdminBool();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>(undefined);
   const [selectedSubcategory, setSelectedSubcategory] = useState<number | undefined>(undefined);
+  const [sortBy, setSortBy] = useState<SortBy>('newest');
 
-  const { data: activeDrops } = useQuery(getTrpcQueryOptions('drop.listActive', { limit: 50, categoryId: selectedSubcategory ?? selectedCategory }));
-  const { data: categoriesData } = useQuery(getTrpcQueryOptions('drop.getCategories'));
+  const { data: activeDrops } = useQuery(
+    getTrpcQueryOptions('drop.listActive', {
+      limit: 50,
+      categoryId: selectedSubcategory ?? selectedCategory,
+      sortBy,
+    })
+  );
+  const { data: categoriesData } = useQuery(getTrpcQueryOptions('drop.listCategories'));
 
   const drops = (Array.isArray(activeDrops) ? activeDrops : []) as Record<string, unknown>[];
   const categories = (Array.isArray(categoriesData) ? categoriesData : []) as Record<string, unknown>[];
@@ -92,8 +106,24 @@ export function CatalogPage() {
         )}
       </section>
 
+      {/* Sort chips */}
+      <section className="mx-4 mt-3">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          <ArrowUpDown size={13} style={{ color: 'var(--muted)', flexShrink: 0 }} />
+          {SORT_OPTIONS.map((opt) => (
+            <button key={opt.value} onClick={() => setSortBy(opt.value)}
+              className={`px-3 h-[30px] rounded-full text-[11px] font-medium whitespace-nowrap transition-all flex-shrink-0 ${
+                sortBy === opt.value
+                  ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
+                  : 'glass-card text-[var(--text-secondary)]'}`}>
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
       {/* Drop list */}
-      <section className="mx-4 mt-4">
+      <section className="mx-4 mt-3 mb-6">
         {filtered.length === 0 && (
           <div className="text-center py-16">
             <Package size={40} style={{ color: 'var(--muted)' }} className="mx-auto mb-3 opacity-40" />
@@ -114,26 +144,13 @@ export function CatalogPage() {
               </div>
               <button onClick={(e: React.MouseEvent) => { e.stopPropagation(); navigate(`/drop/${drop.displayId}`); }}
                 className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110"
-                style={{ background: 'var(--surface-light)', border: 'none' }}>
-                <ArrowRight size={16} style={{ color: 'var(--gold)' }} />
+                style={{ background: 'var(--surface-light)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <ArrowRight size={14} style={{ color: 'var(--muted)' }} />
               </button>
             </div>
           </div>
         ))}
       </section>
-
-      {/* Bottom nav */}
-      <nav className="h-16 bottom-nav flex items-center justify-around px-2 z-50 fixed">
-        <button onClick={() => navigate('/')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Home size={22} /><span className="text-[10px] font-medium">Home</span></button>
-        <button onClick={() => navigate('/catalog')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}><Package size={22} /><span className="text-[10px] font-medium">Catalog</span></button>
-        <button onClick={() => navigate('/profile')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><User size={22} /><span className="text-[10px] font-medium">Profile</span></button>
-        {isAdmin && (
-          <button onClick={() => navigate('/studio')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}>
-            <Sparkles size={22} />
-            <span className="text-[10px] font-medium">Studio</span>
-          </button>
-        )}
-      </nav>
     </div>
   );
 }

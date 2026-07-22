@@ -1,7 +1,7 @@
 import { initTRPC } from '@trpc/server';
 import { z } from 'zod';
 import { db, drops, categories, dropStatus, archivedReasons, subscribers, dropCounter, mockups } from '../db';
-import { eq, and, desc, sql, getTableColumns } from 'drizzle-orm';
+import { eq, and, desc, asc, sql, getTableColumns } from 'drizzle-orm';
 import type { Context } from './context';
 import { registerSubscriber, listActiveSubscribers, deactivateSubscriber } from '../services/subscriber';
 import { enqueueBroadcast } from '../queue/broadcast';
@@ -44,12 +44,22 @@ export const dropRouter = t.router({
   listActive: publicProcedure
     .input(z.object({
       categoryId: z.number().optional(),
+      sortBy: z.enum(['newest', 'oldest', 'price_asc', 'price_desc']).default('newest'),
       limit: z.number().default(20),
       offset: z.number().default(0),
     }))
     .query(async ({ input }) => {
       const conditions = [eq(drops.status, 'live')];
       if (input.categoryId) conditions.push(eq(drops.categoryId, input.categoryId));
+
+      const orderBy = (() => {
+        switch (input.sortBy) {
+          case 'oldest': return asc(drops.createdAt);
+          case 'price_asc': return asc(drops.price);
+          case 'price_desc': return desc(drops.price);
+          default: return desc(drops.createdAt);
+        }
+      })();
 
       return db
         .select({
@@ -59,9 +69,9 @@ export const dropRouter = t.router({
         .from(drops)
         .leftJoin(mockups, eq(drops.mockupId, mockups.id))
         .where(and(...conditions))
+        .orderBy(orderBy)
         .limit(input.limit)
-        .offset(input.offset)
-        .orderBy(desc(drops.createdAt));
+        .offset(input.offset);
     }),
 
   /** Get single drop by display ID */
