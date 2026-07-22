@@ -94,10 +94,16 @@ export function DropDetailPage() {
   if (drop.mockupImageUrl) allImages.push(String(drop.mockupImageUrl));
   if (drop.cutoutUrl && !allImages.includes(String(drop.cutoutUrl))) allImages.push(String(drop.cutoutUrl));
   if (drop.imageUrl && !allImages.includes(String(drop.imageUrl))) allImages.push(String(drop.imageUrl));
-  try {
-    const extra: string[] = drop.photos ? JSON.parse(String(drop.photos)) : [];
+  // photos — может прийти как string (JSON) или уже как массив
+  if (drop.photos) {
+    let extra: string[] = [];
+    if (Array.isArray(drop.photos)) {
+      extra = drop.photos as string[];
+    } else if (typeof drop.photos === 'string') {
+      try { extra = JSON.parse(drop.photos); } catch {}
+    }
     extra.filter(Boolean).forEach((url: string) => { if (!allImages.includes(url)) allImages.push(url); });
-  } catch {}
+  }
   const currentImage = allImages[galleryIdx] || null;
 
   return (

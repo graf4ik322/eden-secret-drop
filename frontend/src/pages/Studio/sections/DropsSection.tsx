@@ -40,7 +40,11 @@ function DropForm({ drop, categories, mockups: mockupList, onClose, onSaved }: {
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [mockupId, setMockupId] = useState(Number(drop?.mockupId || 0));
   const [photos, setPhotos] = useState<string[]>(() => {
-    try { const p = drop?.photos; return p ? JSON.parse(String(p)) : []; } catch { return []; }
+    const p = drop?.photos;
+    if (!p) return [];
+    if (Array.isArray(p)) return p as string[];
+    if (typeof p === 'string') { try { return JSON.parse(p); } catch {} }
+    return [];
   });
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
