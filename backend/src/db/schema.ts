@@ -100,3 +100,15 @@ export const mockups = pgTable('mockups', {
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
+
+/* ===== Translations (FR-04/FR-20) ===== */
+export const translations = pgTable('translations', {
+  id: serial('id').primaryKey(),
+  key: varchar('key', { length: 255 }).notNull(),
+  locale: varchar('locale', { length: 5 }).notNull(),
+  value: text('value'),
+  section: varchar('section', { length: 50 }),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  uniqueKeyLocale: uniqueIndex('uq_translations_key_locale').on(table.key, table.locale),
+}));

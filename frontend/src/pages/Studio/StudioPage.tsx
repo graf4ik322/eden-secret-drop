@@ -3,6 +3,7 @@ import { StudioLayout } from './StudioLayout';
 import { DropsSection } from './sections/DropsSection';
 import { CategoriesSection } from './sections/CategoriesSection';
 import { MockupsSection } from './sections/MockupsSection';
+import { TranslationsPage } from './TranslationsPage';
 
 export default function StudioPage() {
   const location = useLocation();
@@ -21,6 +22,8 @@ export default function StudioPage() {
         return <CategoriesSection />;
       case '/studio/mockups':
         return <MockupsSection />;
+      case '/studio/translations':
+        return <TranslationsPage />;
       default:
         return <Navigate to="/studio/drops" replace />;
     }

@@ -20,6 +20,7 @@ export const routes: Route[] = [
   { path: '/studio/drops', Component: StudioPage, title: 'Studio Drops' },
   { path: '/studio/categories', Component: StudioPage, title: 'Categories' },
   { path: '/studio/mockups', Component: StudioPage, title: 'Mockups' },
+  { path: '/studio/translations', Component: StudioPage, title: 'Translations' },
   { path: '/studio/new', Component: StudioPage, title: 'New Drop' },
   { path: '/studio/edit/:id', Component: StudioPage, title: 'Edit Drop' },
   { path: '/profile', Component: ProfilePage, title: 'Profile' },

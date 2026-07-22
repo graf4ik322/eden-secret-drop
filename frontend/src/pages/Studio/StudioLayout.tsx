@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
-import { Menu, Home, Package, Folder } from 'lucide-react';
+import { Menu, Home, Package, Folder, Languages } from 'lucide-react';
 import { Drawer } from '@/components/ui';
 import { useTranslation } from 'react-i18next';
 
@@ -8,6 +8,7 @@ const DRAWER_ITEMS = [
   { id: 'drops', labelKey: 'studio.drops', icon: Package, path: '/studio/drops' },
   { id: 'categories', labelKey: 'studio.categories', icon: Folder, path: '/studio/categories' },
   { id: 'mockups', labelKey: 'studio.mockups', icon: Package, path: '/studio/mockups' },
+  { id: 'translations', labelKey: 'Переводы', icon: Languages, path: '/studio/translations' },
 ];
 
 export function StudioLayout({ children }: { children: React.ReactNode }) {

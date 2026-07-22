@@ -4,6 +4,7 @@ import { db, drops, categories, dropStatus, archivedReasons, subscribers, dropCo
 import { eq, and, or, inArray, desc, asc, sql, getTableColumns } from 'drizzle-orm';
 import type { Context } from './context';
 import { registerSubscriber, setSubscriberLocale, listActiveSubscribers, deactivateSubscriber } from '../services/subscriber';
+import { getDictionary, listKeys, updateValue, seedTranslations } from '../services/i18n';
 import { enqueueBroadcast } from '../queue/broadcast';
 
 const t = initTRPC.context<Context>().create();
@@ -583,13 +584,40 @@ export const authRouter = t.router({
     }),
 });
 
-/* ===== Main App Router ===== */
+/* ===== i18n Router (FR-04/FR-20) ===== */
+const i18nRouter = t.router({
+  getDictionary: publicProcedure
+    .input(z.object({ locale: z.string().default('en') }))
+    .query(async ({ input }) => {
+      const dict = await getDictionary(input.locale);
+      if (Object.keys(dict).length === 0) {
+        // Seed on first call if empty — defaults are in services/i18n.ts
+        const { i18nDefaults } = await import('../services/i18n');
+        await seedTranslations(i18nDefaults);
+        return getDictionary(input.locale);
+      }
+      return dict;
+    }),
+  listKeys: adminProcedure
+    .query(async () => {
+      return listKeys(true);
+    }),
+  updateValue: adminProcedure
+    .input(z.object({ key: z.string(), locale: z.string(), value: z.string() }))
+    .mutation(async ({ input }) => {
+      await updateValue(input.key, input.locale, input.value);
+      return { success: true };
+    }),
+});
+
+/* ===== App Router ===== */
 export const appRouter = t.router({
   drop: dropRouter,
   category: categoryRouter,
   mockup: mockupRouter,
   subscriber: subscriberRouter,
   auth: authRouter,
+  i18n: i18nRouter,
   health: publicProcedure.query(() => ({ status: 'ok', timestamp: new Date().toISOString() })),
 });
 
