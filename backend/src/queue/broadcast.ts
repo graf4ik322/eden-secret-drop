@@ -55,7 +55,9 @@ async function sendTelegramPhoto(chatId: number, imageUrl: string | undefined, c
       const err = await res.json() as Record<string, unknown>;
       const errDesc = String(err?.description || '');
       if (errDesc.includes('blocked') || errDesc.includes('Forbidden')) return false;
-      console.warn(`[Broadcast] sendPhoto error for ${chatId}: ${errDesc} — falling back to text`);
+      console.warn(`[Broadcast] sendPhoto error for ${chatId}: ${errDesc} — photo URL: ${imageUrl}`);
+      // Append error to caption so user sees it
+      caption += `\n\n📎 Photo failed: ${errDesc}`;
     } catch (err) {
       console.warn(`[Broadcast] sendPhoto network error for ${chatId}:`, err, '— falling back to text');
     }

@@ -307,6 +307,8 @@ export const dropRouter = t.router({
           broadcastImage = undefined;
         }
 
+        console.log(`[Publish] Broadcast image: ${broadcastImage ?? '⚠️ none — text-only'}`);
+
         await enqueueBroadcast({
           dropId: drop.id,
           displayId: drop.displayId,
