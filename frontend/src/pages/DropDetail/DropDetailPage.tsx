@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Share2, ShieldCheck, Award, Verified, Truck, Clock, Eye, Package, MapPin } from 'lucide-react';
@@ -8,9 +8,6 @@ import { GlassCard, Badge } from '@/components/ui';
 export function DropDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-
-  // Scroll to top on mount (HashRouter может восстановить позицию с предыдущей страницы)
-  useEffect(() => { window.scrollTo(0, 0); }, []);
 
   const { data: dropRaw, isLoading, error } = useQuery({
     ...getTrpcQueryOptions('drop.getByDisplayId', { displayId: id || '' }),

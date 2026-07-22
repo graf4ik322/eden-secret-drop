@@ -254,11 +254,11 @@ body {
   min-height: 64px;
 }
 
-/* ===== Back Button (TZ §3, FR-03 BUG-25/26) ===== */
+/* ===== Back Button (TZ §3) ===== */
 .back-btn {
-  /* NOT absolute — flex child inside .app-header (flex items-center) */
-  position: relative;
-  flex-shrink: 0;
+  position: absolute;
+  top: calc(max(var(--safe-top), 8px) + 16px);
+  left: 24px;
 }
 
 /* ===== Responsive Header (TZ §8) ===== */
