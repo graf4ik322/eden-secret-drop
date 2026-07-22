@@ -25,7 +25,14 @@ export function HomePage() {
       // Fetch debug info from backend
       let debugExtra = '';
       try {
-        const res = await fetch('/trpc/auth.debug');
+        const res = await fetch('/trpc/auth.debug', {
+          headers: {
+            'authorization': 'tma ' + auth.initData,
+            'x-tg-user-id': auth.userId,
+            'x-tg-first-name': auth.firstName || '',
+            'x-tg-username': auth.username || '',
+          },
+        });
         const json = await res.json();
         const d = Array.isArray(json) ? json[0]?.result?.data || json[0] || json : json?.result?.data || json;
         debugExtra =
