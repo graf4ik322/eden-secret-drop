@@ -5,6 +5,9 @@ import { routes } from '@/navigation/routes';
 /** Wraps route content with fade-in transition (TZ §16) */
 function AnimatedOutlet({ children }: { children: React.ReactNode }) {
   const location = useLocation();
+  // HashRouter НЕ сбрасывает scroll при навигации — делаем вручную
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { window.scrollTo(0, 0); }, [location.pathname]);
   return (
     <div key={location.pathname} className="animate-fade-in">
       {children}
