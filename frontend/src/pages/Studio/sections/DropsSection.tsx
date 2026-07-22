@@ -175,7 +175,7 @@ function DropForm({ drop, categories, mockups: mockupList, onClose, onSaved }: {
               value={photos[idx] || ''}
               onUploaded={(url) => {
                 const next = [...photos];
-                if (url) { next[idx] = url; } else { next.splice(idx, 1); }
+                next[idx] = url;
                 setPhotos(next);
               }}
               type="photos"
