@@ -280,13 +280,26 @@ export const dropRouter = t.router({
       const shouldNotify = input.notifySubscribers ?? drop.notifySubscribers;
       if (shouldNotify) {
         const deepLink = dropDeepLink(drop.displayId);
+
+        // Resolve best image: mockup > cutoutUrl > imageUrl
+        let broadcastImage: string | undefined;
+        if (drop.mockupId) {
+          const [mockup] = await db
+            .select({ imageUrl: mockups.imageUrl })
+            .from(mockups)
+            .where(eq(mockups.id, drop.mockupId))
+            .limit(1);
+          if (mockup?.imageUrl) broadcastImage = mockup.imageUrl;
+        }
+        if (!broadcastImage) broadcastImage = drop.cutoutUrl || drop.imageUrl || undefined;
+
         await enqueueBroadcast({
           dropId: drop.id,
           displayId: drop.displayId,
           title: drop.title,
           price: drop.price || '0',
           miniAppUrl: deepLink,
-          imageUrl: drop.cutoutUrl || drop.imageUrl || undefined,
+          imageUrl: broadcastImage,
         });
       }
 
