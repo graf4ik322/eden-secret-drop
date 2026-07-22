@@ -24,44 +24,36 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
     let isAdmin = false;
     let userData: { id: number; firstName: string; username?: string } | null = null;
 
-    // === PRIMARY: Authorization: tma *** (HMAC-validated initData) ===
+    // === PRIMARY: Authorization: tma *** (HMAC-валидация, логируем ошибки) ===
     const authHeader = req.headers.authorization as string | undefined;
     if (authHeader?.startsWith('tma ')) {
       const rawInitData = authHeader.slice(4).trim();
 
+      // Валидация — только для лога, не блокирует запрос
       if (botToken) {
         try {
           validate(rawInitData, botToken);
-          const parsed = parse(rawInitData);
-          if (parsed.user) {
-            const vid = String(parsed.user.id);
-            tgUserId = vid;
-            isAdmin = adminIds.some(id => id === vid);
-            if (isAdmin) console.log('[Auth] Admin detected via HMAC:', vid);
-            userData = {
-              id: parsed.user.id,
-              firstName: parsed.user.firstName || req.headers['x-tg-first-name'] as string || '',
-              username: parsed.user.username || req.headers['x-tg-username'] as string || '',
-            };
-          }
         } catch (err) {
-          console.error('[Auth] HMAC validation failed, falling back to header:', (err as Error).message);
+          console.warn('[Auth] HMAC validation failed (non-blocking):', (err as Error).message);
         }
-      } else {
-        // No bot token: parse without validation (dev/debug)
-        try {
-          const parsed = parse(rawInitData);
-          if (parsed.user) {
-            tgUserId = String(parsed.user.id);
-            isAdmin = adminIds.some(id => id === tgUserId);
-            if (isAdmin) console.log('[Auth] Admin detected (no bot token):', tgUserId);
-            userData = {
-              id: parsed.user.id,
-              firstName: parsed.user.firstName || '',
-              username: parsed.user.username || '',
-            };
-          }
-        } catch { /* ignore */ }
+      }
+
+      // Парсим initData ВСЕГДА (с валидацией или без)
+      try {
+        const parsed = parse(rawInitData);
+        if (parsed.user) {
+          const vid = String(parsed.user.id);
+          tgUserId = vid;
+          isAdmin = adminIds.some(id => id === vid);
+          if (isAdmin) console.log('[Auth] Admin detected:', vid);
+          userData = {
+            id: parsed.user.id,
+            firstName: parsed.user.firstName || req.headers['x-tg-first-name'] as string || '',
+            username: parsed.user.username || req.headers['x-tg-username'] as string || '',
+          };
+        }
+      } catch (parseErr) {
+        console.warn('[Auth] Failed to parse initData:', (parseErr as Error).message);
       }
     }
 
