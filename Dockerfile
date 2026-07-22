@@ -13,6 +13,7 @@ RUN npm run build
 
 # ---- Stage 2: Build backend ----
 FROM node:22-alpine AS backend-builder
+RUN apk add --no-cache python3 make g++
 WORKDIR /app
 COPY backend/package.json backend/package-lock.json ./
 RUN npm ci
@@ -54,6 +55,9 @@ COPY infra/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Supervisor config
 COPY infra/supervisord.conf /etc/supervisor.d/eden.ini
+
+# Uploads directory (FR-10/11)
+RUN mkdir -p /app/uploads && chmod 755 /app/uploads
 
 EXPOSE 80
 CMD ["supervisord", "-c", "/etc/supervisor.d/eden.ini"]

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trash2, Pencil } from 'lucide-react';
 import { getTrpcQueryOptions, trpcMutate } from '@/lib/trpc';
-import { GlassCard, Modal, FabButton } from '@/components/ui';
+import { GlassCard, Modal, FabButton, ImageUploader } from '@/components/ui';
 
 export function MockupsSection() {
   const { data: raw } = useQuery(getTrpcQueryOptions('mockup.list'));
@@ -128,11 +128,8 @@ function MockupFormModal({ open, onClose, mockup, onSaved }: {
             placeholder="iPhone 17 Pro" />
         </div>
         <div>
-          <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-secondary)' }}>Image URL</label>
-          <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)}
-            className="w-full h-11 px-4 rounded-[var(--radius-input)] text-sm outline-none"
-            style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.06)' }}
-            placeholder="https://example.com/mockup.webp" />
+          <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-secondary)' }}>Image</label>
+          <ImageUploader value={imageUrl} onUploaded={(url) => setImageUrl(url)} type="mockups" />
         </div>
         <div className="flex gap-3 pt-2">
           <button type="button" onClick={onClose}

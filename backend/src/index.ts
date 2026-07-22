@@ -48,6 +48,9 @@ async function main() {
     credentials: true,
   });
 
+  // Upload routes (FR-10/11)
+  await server.register(require('./routes/upload'));
+
   // tRPC plugin
   await server.register(fastifyTRPCPlugin, {
     prefix: '/trpc',

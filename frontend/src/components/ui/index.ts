@@ -14,3 +14,4 @@ export { Modal } from './Modal';
 export { Drawer } from './Drawer';
 export { CategoryPicker } from './CategoryPicker';
 export { FabButton } from './FabButton';
+export { ImageUploader } from './ImageUploader';

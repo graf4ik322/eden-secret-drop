@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Search, Edit3, Share2, Archive, Package, ChevronDown } from 'lucide-react';
 import { getTrpcQueryOptions, trpcMutate } from '@/lib/trpc';
 import { useActivityStore } from '@/store/auth';
-import { FabButton, GlassCard, Modal, StatusDot, CategoryPicker } from '@/components/ui';
+import { FabButton, GlassCard, Modal, StatusDot, CategoryPicker, ImageUploader } from '@/components/ui';
 import type { StatusType } from '@/components/ui';
 
 const FILTERS = ['All', 'Active', 'Scheduled', 'Draft', 'Archived'] as const;
@@ -166,19 +166,20 @@ function DropForm({ drop, categories, mockups: mockupList, onClose, onSaved }: {
         </div>
       )}
 
-      {/* Photo URLs (up to 4) */}
+      {/* Photos (up to 4) — upload via ImageUploader */}
       <div>
-        <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-secondary)' }}>Photos (up to 4, paste URLs)</label>
-        <div className="space-y-2">
+        <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-secondary)' }}>Photos (up to 4)</label>
+        <div className="grid grid-cols-2 gap-2">
           {[0, 1, 2, 3].map((idx) => (
-            <input key={idx} value={photos[idx] || ''} onChange={(e) => {
-              const next = [...photos];
-              next[idx] = e.target.value;
-              setPhotos(next);
-            }}
-              className="w-full h-10 px-4 rounded-[var(--radius-input)] text-xs outline-none"
-              style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.06)' }}
-              placeholder={`Photo ${idx + 1} URL`} />
+            <ImageUploader key={idx}
+              value={photos[idx] || ''}
+              onUploaded={(url) => {
+                const next = [...photos];
+                if (url) { next[idx] = url; } else { next.splice(idx, 1); }
+                setPhotos(next);
+              }}
+              type="photos"
+            />
           ))}
         </div>
       </div>
