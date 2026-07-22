@@ -23,7 +23,6 @@ export function CatalogPage() {
   const { data: activeDrops } = useQuery(
     getTrpcQueryOptions('drop.listActive', {
       limit: 50,
-      categoryId: selectedSubcategory ?? selectedCategory,
       sortBy,
     })
   );
@@ -49,7 +48,19 @@ export function CatalogPage() {
   const filtered = drops.filter((drop: Record<string, unknown>) => {
     const q = searchQuery.toLowerCase();
     if (q && !String(drop.title || '').toLowerCase().includes(q)) return false;
-    if (selectedCategory && Number(drop.categoryId) !== selectedCategory) return false;
+    if (selectedCategory) {
+      // Show drops from selected category AND its subcategories
+      const rootCat = categories.find(c => c.id === selectedCategory);
+      const validIds: number[] = [selectedCategory];
+      if (rootCat) {
+        const subs = (rootCat.subcategories as Record<string, unknown>[]) || [];
+        subs.forEach((s: Record<string, unknown>) => validIds.push(Number(s.id)));
+      }
+      if (selectedSubcategory) {
+        // Subcategory chip is active — narrow to that exact subcategory
+        if (Number(drop.categoryId) !== selectedSubcategory) return false;
+      } else if (!validIds.includes(Number(drop.categoryId))) return false;
+    }
     return true;
   });
 
