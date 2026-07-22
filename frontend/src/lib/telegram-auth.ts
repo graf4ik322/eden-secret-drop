@@ -14,10 +14,11 @@ interface AuthData {
   userId: string;
   firstName: string;
   username: string;
+  photoUrl: string;
 }
 
 function parseAuthFromUrl(): AuthData {
-  const empty: AuthData = { initData: '', userId: '', firstName: '', username: '' };
+  const empty: AuthData = { initData: '', userId: '', firstName: '', username: '', photoUrl: '' };
   if (typeof window === 'undefined') return empty;
 
   const rawHash = window.location.hash;
@@ -41,6 +42,7 @@ function parseAuthFromUrl(): AuthData {
         userId: String(user.id),
         firstName: user.first_name || '',
         username: user.username || '',
+        photoUrl: user.photo_url || '',
       };
     } catch {
       return null;
@@ -73,6 +75,7 @@ function parseAuthFromUrl(): AuthData {
         userId: String(tg.initDataUnsafe.user.id),
         firstName: tg.initDataUnsafe.user.first_name || '',
         username: tg.initDataUnsafe.user.username || '',
+        photoUrl: tg.initDataUnsafe.user.photo_url || '',
       };
     }
   } catch { /* ignore */ }

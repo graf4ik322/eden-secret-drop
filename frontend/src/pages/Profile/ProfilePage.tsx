@@ -22,6 +22,7 @@ export function ProfilePage() {
   const displayName = firstName || localAuth.firstName || 'Telegram Explorer';
   const displayUsername = tgUsername || localAuth.username || '';
   const displayUserId = userId || localAuth.userId;
+  const avatarUrl = localAuth.photoUrl;
 
   // Пока проверка админа не завершена — не показываем статус Member (TZ 2.7)
   const showAdminBadge = isAdmin;
@@ -38,11 +39,15 @@ export function ProfilePage() {
       </header>
 
       <section className="mx-4 mt-2 glass-card p-6 text-center">
-        {/* Avatar — из telegram-auth если есть */}
-        <div className="w-20 h-20 mx-auto rounded-full overflow-hidden" style={{ background: 'var(--emerald)', border: '2px solid rgba(212,175,116,0.3)' }}>
-          <div className="w-full h-full flex items-center justify-center">
-            <User size={36} style={{ color: 'var(--gold)' }} />
-          </div>
+        {/* Avatar — из telegram-auth если есть (photo_url из initData) */}
+        <div className="w-20 h-20 mx-auto rounded-full overflow-hidden" style={{ background: 'var(--surface)', border: '2px solid rgba(212,175,116,0.3)' }}>
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <User size={36} style={{ color: 'var(--gold)' }} />
+            </div>
+          )}
         </div>
         <h2 className="text-xl font-bold mt-4" style={{ color: 'var(--text)' }}>
           {displayName}
