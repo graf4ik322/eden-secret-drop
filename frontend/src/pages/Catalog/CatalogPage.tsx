@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search, ArrowRight, Package, X, ArrowUpDown } from 'lucide-react';
@@ -45,19 +45,30 @@ export function CatalogPage() {
     return `€${num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
   };
 
+  // Build lookup: root category ID → all valid drop category IDs (root + subcategories)
+  const categoryIdMap = useMemo(() => {
+    const map: Record<number, number[]> = {};
+    categories.forEach((cat: Record<string, unknown>) => {
+      const rootId = Number(cat.id);
+      if (!isNaN(rootId)) {
+        const ids: number[] = [rootId];
+        const subs = (cat.subcategories as Record<string, unknown>[]) || [];
+        subs.forEach((s: Record<string, unknown>) => {
+          const sid = Number(s.id);
+          if (!isNaN(sid)) ids.push(sid);
+        });
+        map[rootId] = ids;
+      }
+    });
+    return map;
+  }, [categories]);
+
   const filtered = drops.filter((drop: Record<string, unknown>) => {
     const q = searchQuery.toLowerCase();
     if (q && !String(drop.title || '').toLowerCase().includes(q)) return false;
     if (selectedCategory) {
-      // Show drops from selected category AND its subcategories
-      const rootCat = categories.find(c => c.id === selectedCategory);
-      const validIds: number[] = [selectedCategory];
-      if (rootCat) {
-        const subs = (rootCat.subcategories as Record<string, unknown>[]) || [];
-        subs.forEach((s: Record<string, unknown>) => validIds.push(Number(s.id)));
-      }
+      const validIds = categoryIdMap[selectedCategory] || [selectedCategory];
       if (selectedSubcategory) {
-        // Subcategory chip is active — narrow to that exact subcategory
         if (Number(drop.categoryId) !== selectedSubcategory) return false;
       } else if (!validIds.includes(Number(drop.categoryId))) return false;
     }
