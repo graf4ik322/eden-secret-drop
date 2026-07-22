@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { db, drops, categories, dropStatus, archivedReasons, subscribers, dropCounter, mockups } from '../db';
 import { eq, and, or, inArray, desc, asc, sql, getTableColumns } from 'drizzle-orm';
 import type { Context } from './context';
-import { registerSubscriber, listActiveSubscribers, deactivateSubscriber } from '../services/subscriber';
+import { registerSubscriber, setSubscriberLocale, listActiveSubscribers, deactivateSubscriber } from '../services/subscriber';
 import { enqueueBroadcast } from '../queue/broadcast';
 
 const t = initTRPC.context<Context>().create();
@@ -503,19 +503,18 @@ export const mockupRouter = t.router({
 /* ===== Subscriber Router (TZ 2.5) ===== */
 export const subscriberRouter = t.router({
   register: publicProcedure
-    .input(z.object({
-      tgUserId: z.string(),
-      username: z.string().optional(),
-      firstName: z.string().optional(),
-    }))
+    .input(z.object({ tgUserId: z.string(), username: z.string().optional(), firstName: z.string().optional(), locale: z.string().optional() }))
     .mutation(async ({ input }) => {
       return registerSubscriber(input);
     }),
-
+  setLocale: publicProcedure
+    .input(z.object({ tgUserId: z.string(), locale: z.string() }))
+    .mutation(async ({ input }) => {
+      return setSubscriberLocale(input.tgUserId, input.locale);
+    }),
   list: adminProcedure.query(async () => {
     return listActiveSubscribers();
   }),
-
   deactivate: adminProcedure
     .input(z.object({ tgUserId: z.string() }))
     .mutation(async ({ input }) => {

@@ -71,6 +71,7 @@ export const subscribers = pgTable('subscribers', {
   username: varchar('username', { length: 255 }),
   firstName: varchar('first_name', { length: 255 }),
   isActive: boolean('is_active').default(true),
+  locale: varchar('locale', { length: 5 }).default('en'),
   subscribedAt: timestamp('subscribed_at').defaultNow(),
   lastNotifiedAt: timestamp('last_notified_at'),
 });

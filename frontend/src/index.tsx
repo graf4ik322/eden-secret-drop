@@ -6,6 +6,9 @@ import { queryClient } from './lib/trpc';
 import { App } from './App';
 import { init } from './init';
 
+// Initialize i18n (eager — triggers language detection)
+import './lib/i18n';
+
 import './index.css';
 
 // Initialize Telegram Mini App

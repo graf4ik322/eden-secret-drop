@@ -1,12 +1,18 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, User, MessageCircle, Calendar, Shield, Home, Sparkles, Package } from 'lucide-react';
+import { ArrowLeft, User, MessageCircle, Calendar, Shield, Home, Sparkles, Package, Globe, ChevronRight } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 import { getTelegramAuth } from '@/lib/telegram-auth';
 import { GlassCard } from '@/components/ui';
+import { LanguagePicker } from '@/components/ui/LanguagePicker';
+import { useTranslation } from 'react-i18next';
+import i18n from '@/lib/i18n';
 
 export function ProfilePage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const [langPickerOpen, setLangPickerOpen] = useState(false);
   const { data: authData, isLoading: authLoading } = useQuery(getTrpcQueryOptions('auth.checkAdmin'));
   const auth = authData as Record<string, unknown> | null | undefined;
   
@@ -27,6 +33,19 @@ export function ProfilePage() {
   // Пока проверка админа не завершена — не показываем статус Member (TZ 2.7)
   const showAdminBadge = isAdmin;
   const showMemberBadge = !authLoading && !isAdmin && !!displayUserId;
+
+  const handleLanguageChange = (code: string) => {
+    i18n.changeLanguage(code);
+    localStorage.setItem('i18nextLng', code);
+    // Optionally save to backend (async)
+    if (displayUserId) {
+      fetch('/trpc/subscriber.setLocale', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tgUserId: displayUserId, locale: code }),
+      }).catch(() => {});
+    }
+  };
 
   return (
     <div className="min-h-dvh safe-top scroll-safe">
@@ -80,6 +99,18 @@ export function ProfilePage() {
           </div>
         </GlassCard>
 
+        {/* Language selector (FR-18) */}
+        <GlassCard className="p-4 cursor-pointer" onClick={() => setLangPickerOpen(true)}>
+          <div className="flex items-center gap-3">
+            <Globe size={18} style={{ color: 'var(--gold)' }} />
+            <div className="flex-1">
+              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{t('profile.language')}</p>
+              <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{t('profile.languages.' + (i18n.language || 'en'))}</p>
+            </div>
+            <ChevronRight size={16} style={{ color: 'var(--muted)' }} />
+          </div>
+        </GlassCard>
+
         <GlassCard className="p-4">
           <div className="flex items-center gap-3">
             <Calendar size={18} style={{ color: 'var(--gold)' }} />
@@ -99,6 +130,13 @@ export function ProfilePage() {
           <button onClick={() => navigate('/studio')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Sparkles size={22} /><span className="text-[10px] font-medium">Studio</span></button>
         )}
       </nav>
+
+      <LanguagePicker
+        open={langPickerOpen}
+        onClose={() => setLangPickerOpen(false)}
+        current={i18n.language || 'en'}
+        onSelect={handleLanguageChange}
+      />
     </div>
   );
 }

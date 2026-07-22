@@ -1,0 +1,93 @@
+{
+  "app": {
+    "name": "EDEN Secret Drop"
+  },
+  "nav": {
+    "home": "Home",
+    "catalog": "Catalog",
+    "studio": "Studio",
+    "profile": "Profile"
+  },
+  "home": {
+    "featured": "Featured Drop",
+    "latest": "Latest Drops",
+    "noDrops": "No drops yet",
+    "noDropsAvailable": "No drops available yet",
+    "allTime": "All Time",
+    "active": "Active",
+    "nextDrop": "Next drop",
+    "settings": "Settings"
+  },
+  "catalog": {
+    "title": "Catalog",
+    "search": "Search drops...",
+    "filters": "Filters",
+    "noResults": "No drops found",
+    "sort": {
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "priceLow": "Price: Low to High",
+      "priceHigh": "Price: High to Low"
+    },
+    "categories": "Categories",
+    "all": "All"
+  },
+  "drop": {
+    "live": "LIVE",
+    "sold": "SOLD",
+    "limited": "LIMITED",
+    "priceOnRequest": "Price on request",
+    "description": "Description",
+    "specifications": "Specifications",
+    "brand": "Brand",
+    "category": "Category",
+    "views": "views",
+    "published": "Published {{hours}} hours ago",
+    "publishedLessThanHour": "Published less than an hour ago",
+    "publishedHour": "Published 1 hour ago",
+    "trust": {
+      "original": "Original",
+      "warranty": "Warranty",
+      "verified": "Verified",
+      "fastDelivery": "Fast Delivery"
+    },
+    "shareText": "🔥 {{title}} — €{{price}}"
+  },
+  "profile": {
+    "title": "Profile",
+    "member": "Member",
+    "admin": "Admin",
+    "userId": "User ID",
+    "username": "Username",
+    "language": "Language",
+    "languages": {
+      "ru": "Русский",
+      "en": "English"
+    },
+    "selectLanguage": "Select Language",
+    "notifications": "Notifications",
+    "about": "About"
+  },
+  "studio": {
+    "title": "Drop Studio",
+    "drops": "Drops",
+    "categories": "Categories",
+    "mockups": "Mockups"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "close": "Close",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "select": "Select",
+    "noCategory": "No category"
+  },
+  "subscriber": {
+    "welcome": "✨ Welcome to *EDEN Secret Drop*!\n\nYou are now registered. You'll receive notifications about exclusive drops.\n\nTap the button below to open the full-screen Mini App:",
+    "openApp": "🔐 Open EDEN"
+  }
+}

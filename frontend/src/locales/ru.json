@@ -1,0 +1,93 @@
+{
+  "app": {
+    "name": "EDEN Secret Drop"
+  },
+  "nav": {
+    "home": "Главная",
+    "catalog": "Каталог",
+    "studio": "Студия",
+    "profile": "Профиль"
+  },
+  "home": {
+    "featured": "Избранный дроп",
+    "latest": "Последние дропы",
+    "noDrops": "Ещё нет дропов",
+    "noDropsAvailable": "Пока нет доступных дропов",
+    "allTime": "За всё время",
+    "active": "Активных",
+    "nextDrop": "Следующий дроп",
+    "settings": "Настройки"
+  },
+  "catalog": {
+    "title": "Каталог",
+    "search": "Поиск дропов...",
+    "filters": "Фильтры",
+    "noResults": "Дропы не найдены",
+    "sort": {
+      "newest": "Сначала новые",
+      "oldest": "Сначала старые",
+      "priceLow": "Цена: по возрастанию",
+      "priceHigh": "Цена: по убыванию"
+    },
+    "categories": "Категории",
+    "all": "Все"
+  },
+  "drop": {
+    "live": "В ПРОДАЖЕ",
+    "sold": "ПРОДАНО",
+    "limited": "ЛИМИТИРОВАНО",
+    "priceOnRequest": "Цена по запросу",
+    "description": "Описание",
+    "specifications": "Характеристики",
+    "brand": "Бренд",
+    "category": "Категория",
+    "views": "просмотров",
+    "published": "Опубликовано {{hours}} ч. назад",
+    "publishedLessThanHour": "Опубликовано менее часа назад",
+    "publishedHour": "Опубликовано 1 час назад",
+    "trust": {
+      "original": "Оригинал",
+      "warranty": "Гарантия",
+      "verified": "Верифицировано",
+      "fastDelivery": "Быстрая доставка"
+    },
+    "shareText": "🔥 {{title}} — €{{price}}"
+  },
+  "profile": {
+    "title": "Профиль",
+    "member": "Участник",
+    "admin": "Админ",
+    "userId": "ID пользователя",
+    "username": "Имя пользователя",
+    "language": "Язык",
+    "languages": {
+      "ru": "Русский",
+      "en": "English"
+    },
+    "selectLanguage": "Выберите язык",
+    "notifications": "Уведомления",
+    "about": "О приложении"
+  },
+  "studio": {
+    "title": "Drop Studio",
+    "drops": "Дропы",
+    "categories": "Категории",
+    "mockups": "Мокапы"
+  },
+  "common": {
+    "loading": "Загрузка...",
+    "error": "Произошла ошибка",
+    "close": "Закрыть",
+    "back": "Назад",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "confirm": "Подтвердить",
+    "select": "Выбрать",
+    "noCategory": "Без категории"
+  },
+  "subscriber": {
+    "welcome": "✨ Добро пожаловать в *EDEN Secret Drop*!\n\nВы зарегистрированы и будете получать уведомления об эксклюзивных дропах.\n\nНажмите кнопку ниже, чтобы открыть полноэкранное Mini App:",
+    "openApp": "🔐 Открыть EDEN"
+  }
+}

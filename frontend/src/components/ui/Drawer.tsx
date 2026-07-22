@@ -28,8 +28,9 @@ export function Drawer({ open, onClose, children }: DrawerProps) {
               'bg-[var(--bg)]/98 backdrop-blur-xl',
               'border-r border-[var(--surface-light)]',
               'animate-fade-up',
-              'p-6 pt-16',
+              'p-6',
             )}
+            style={{ paddingTop: `calc(var(--safe-top, 0px) + 24px)` }}
           >
             {/* Close btn */}
             <button onClick={onClose}
