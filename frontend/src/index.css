@@ -1,11 +1,10 @@
-/* Space Grotesk — self-hosted woff2 (TZ 3.3) */
+/* Space Grotesk — self-hosted woff2 (локально, без внешних доменов для Telegram) */
 @font-face {
   font-family: 'Space Grotesk';
   font-style: normal;
   font-weight: 300 700;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4Cw.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  src: url(/fonts/SpaceGrotesk-Variable.woff2) format('woff2');
 }
 
 /* Playfair Display — serif для брендовой аббревиатуры E.S.D (альтернатива Adallyn Serif) */
@@ -14,8 +13,7 @@
   font-style: normal;
   font-weight: 400 700;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/playfairdisplay/v37/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  src: url(/fonts/PlayfairDisplay-Variable.woff2) format('woff2');
 }
 
 /* ===== Tailwind v4 ===== */

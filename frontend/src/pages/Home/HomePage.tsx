@@ -76,17 +76,17 @@ export function HomePage() {
         }
       } catch {}
 
-      const sentAuth = auth.initData ? `${auth.initData.substring(0, 24)}...(${auth.initData.length} chars)` : '❌';
+      const sentAuthFull = auth.initData ? `tma ${auth.initData}` : '❌';
 
       const fullTextLines = [
-        `🔐 Auth Debug`,
-        `build: ${__BUILD_SHA__}`,
-        ``,
-        `── Frontend sent ──`,
-        `local userId: ${auth.userId || '❌'}`,
-        `Authorization: ${sentAuth}`,
-        `x-tg-user-id: ${auth.userId || '❌'}`,
-        `hash: ${window.location.hash.substring(0, 60)}`,
+            `🔐 Auth Debug`,
+            `build: ${__BUILD_SHA__}`,
+            ``,
+            `── Frontend sent ──`,
+            `local userId: ${auth.userId || '❌'}`,
+            `Authorization: ${sentAuthFull}`,
+            `x-tg-user-id: ${auth.userId || '❌'}`,
+            `hash: ${window.location.hash}`,
         `adminState: ${adminState.status}${adminState.status === 'checked' ? ` id=${adminState.userId} admin=${adminState.isAdmin}` : ''}`,
         `isAdmin bool: ${isAdmin}`,
       ];
@@ -94,8 +94,12 @@ export function HomePage() {
       if (tgInfo) fullTextLines.push(tgInfo.trim());
       const fullText = fullTextLines.join('\n') + debugExtra;
 
+      // Display text (truncated for screen) — just show shorter hash
+      const displayTextLines = fullTextLines.map(l =>
+        l.startsWith('hash: ') ? `hash: ${window.location.hash.substring(0, 60)}` : l
+      );
       fullDebugRef.current = fullText;
-      setDebugInfo(fullText);
+      setDebugInfo(displayTextLines.join('\n') + debugExtra);
     }
   };
 
