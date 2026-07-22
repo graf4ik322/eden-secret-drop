@@ -39,13 +39,11 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
       }
     }
 
-    // === FALLBACK 2: x-tg-user-id header ===
+    // === FALLBACK 2: x-tg-user-id header — только для userData, НЕ для isAdmin ===
     if (!tgUserId) {
       const rawUserId = req.headers['x-tg-user-id'] as string | undefined;
       if (rawUserId) {
-        tgUserId = rawUserId;
-        isAdmin = adminIds.some(id => id === rawUserId);
-        if (isAdmin) console.log('[Auth] Admin detected via x-tg-user-id:', rawUserId);
+        // Не используем для isAdmin — только для отображения в профиле
         userData = {
           id: parseInt(rawUserId, 10) || 0,
           firstName: req.headers['x-tg-first-name'] as string || '',
