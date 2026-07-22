@@ -293,6 +293,11 @@ export const dropRouter = t.router({
         }
         if (!broadcastImage) broadcastImage = drop.cutoutUrl || drop.imageUrl || undefined;
 
+        // Telegram sendPhoto требует абсолютный URL
+        if (broadcastImage && broadcastImage.startsWith('/')) {
+          broadcastImage = `${MINI_APP_URL}${broadcastImage}`;
+        }
+
         await enqueueBroadcast({
           dropId: drop.id,
           displayId: drop.displayId,

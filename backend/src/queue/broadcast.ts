@@ -50,17 +50,14 @@ async function sendTelegramPhoto(chatId: number, imageUrl: string | undefined, c
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) {
-        const err = await res.json() as Record<string, unknown>;
-        const errDesc = String(err?.description || '');
-        if (errDesc.includes('blocked') || errDesc.includes('Forbidden')) return false;
-        console.error(`[Broadcast] TG API error for ${chatId}:`, errDesc);
-        return true;
-      }
-      return true;
+      if (res.ok) return true;
+      // Photo failed — log and fall through to text-only
+      const err = await res.json() as Record<string, unknown>;
+      const errDesc = String(err?.description || '');
+      if (errDesc.includes('blocked') || errDesc.includes('Forbidden')) return false;
+      console.warn(`[Broadcast] sendPhoto error for ${chatId}: ${errDesc} — falling back to text`);
     } catch (err) {
-      console.error(`[Broadcast] Network error for ${chatId}:`, err);
-      return true;
+      console.warn(`[Broadcast] sendPhoto network error for ${chatId}:`, err, '— falling back to text');
     }
   }
 
