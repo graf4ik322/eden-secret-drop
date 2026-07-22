@@ -15,6 +15,7 @@ export function DropDetailPage() {
   });
 
   const drop = dropRaw as Record<string, unknown> | null | undefined;
+  const [galleryIdx, setGalleryIdx] = useState(0);
 
   let specs: { key: string; value: string }[] = [];
   if (drop?.specifications) {
@@ -96,7 +97,6 @@ export function DropDetailPage() {
     const extra: string[] = drop.photos ? JSON.parse(String(drop.photos)) : [];
     extra.filter(Boolean).forEach((url: string) => { if (!allImages.includes(url)) allImages.push(url); });
   } catch {}
-  const [galleryIdx, setGalleryIdx] = useState(0);
   const currentImage = allImages[galleryIdx] || null;
 
   return (

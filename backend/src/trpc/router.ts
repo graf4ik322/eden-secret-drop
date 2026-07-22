@@ -123,6 +123,12 @@ export const dropRouter = t.router({
       remaining: z.number().default(1),
       scheduledAt: z.string().optional(),
       notifySubscribers: z.boolean().default(false),
+      // FR-10/11: image & mockup fields
+      imageUrl: z.string().optional(),
+      cutoutUrl: z.string().optional(),
+      mockupId: z.number().optional(),
+      photos: z.string().optional(),
+      specifications: z.string().optional(),
     }))
     .mutation(async ({ input }) => {
       const displayId = await generateDisplayId();
@@ -139,6 +145,11 @@ export const dropRouter = t.router({
           remaining: input.remaining,
           scheduledAt: input.scheduledAt ? new Date(input.scheduledAt) : null,
           notifySubscribers: input.notifySubscribers,
+          imageUrl: input.imageUrl,
+          cutoutUrl: input.cutoutUrl,
+          mockupId: input.mockupId,
+          photos: input.photos,
+          specifications: input.specifications,
         })
         .returning();
       return drop;
@@ -158,6 +169,12 @@ export const dropRouter = t.router({
       scheduledAt: z.string().optional(),
       archivedReason: z.enum(archivedReasons).optional(),
       notifySubscribers: z.boolean().optional(),
+      // FR-10/11: image & mockup fields
+      imageUrl: z.string().optional(),
+      cutoutUrl: z.string().optional(),
+      mockupId: z.number().optional(),
+      photos: z.string().optional(),
+      specifications: z.string().optional(),
     }))
     .mutation(async ({ input }) => {
       const updateData: Record<string, unknown> = {};
@@ -171,6 +188,15 @@ export const dropRouter = t.router({
       if (input.scheduledAt !== undefined) updateData.scheduledAt = new Date(input.scheduledAt);
       if (input.archivedReason !== undefined) updateData.archivedReason = input.archivedReason;
       if (input.notifySubscribers !== undefined) updateData.notifySubscribers = input.notifySubscribers;
+      // FR-10/11: image & mockup fields
+      if (input.imageUrl !== undefined) updateData.imageUrl = input.imageUrl;
+      if (input.cutoutUrl !== undefined) updateData.cutoutUrl = input.cutoutUrl;
+      if (input.mockupId !== undefined) updateData.mockupId = input.mockupId;
+      if (input.photos !== undefined) updateData.photos = input.photos;
+      if (input.specifications !== undefined) updateData.specifications = input.specifications;
+
+      // Always bump updatedAt on any update
+      updateData.updatedAt = new Date();
 
       // If transitioning OUT of 'archived', clear archived_reason
       if (input.status !== undefined && input.status !== 'archived') {
