@@ -284,18 +284,27 @@ export const dropRouter = t.router({
         // Resolve best image: mockup > cutoutUrl > imageUrl
         let broadcastImage: string | undefined;
         if (drop.mockupId) {
-          const [mockup] = await db
-            .select({ imageUrl: mockups.imageUrl })
-            .from(mockups)
-            .where(eq(mockups.id, drop.mockupId))
-            .limit(1);
-          if (mockup?.imageUrl) broadcastImage = mockup.imageUrl;
+          try {
+            const [mockup] = await db
+              .select({ imageUrl: mockups.imageUrl })
+              .from(mockups)
+              .where(eq(mockups.id, drop.mockupId))
+              .limit(1);
+            if (mockup?.imageUrl) broadcastImage = mockup.imageUrl;
+          } catch (err) {
+            console.error('[Publish] Failed to fetch mockup image:', err);
+          }
         }
         if (!broadcastImage) broadcastImage = drop.cutoutUrl || drop.imageUrl || undefined;
 
         // Telegram sendPhoto требует абсолютный URL
         if (broadcastImage && broadcastImage.startsWith('/')) {
           broadcastImage = `${MINI_APP_URL}${broadcastImage}`;
+        }
+        // Если MINI_APP_URL некорректный — не шлём битую ссылку
+        if (broadcastImage && !/^https?:\/\/./.test(broadcastImage)) {
+          console.warn(`[Publish] Invalid broadcastImage "${broadcastImage}" — falling back to text-only`);
+          broadcastImage = undefined;
         }
 
         await enqueueBroadcast({
