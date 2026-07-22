@@ -600,7 +600,13 @@ const i18nRouter = t.router({
     }),
   listKeys: adminProcedure
     .query(async () => {
-      return listKeys(true);
+      const groups = await listKeys(true);
+      if (groups.length === 0) {
+        const { i18nDefaults } = await import('../services/i18n');
+        await seedTranslations(i18nDefaults);
+        return listKeys(true);
+      }
+      return groups;
     }),
   updateValue: adminProcedure
     .input(z.object({ key: z.string(), locale: z.string(), value: z.string() }))

@@ -53,12 +53,12 @@ export function DropDetailPage() {
     return '\u20AC' + num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   };
 
-  const timeAgo = (dateStr: unknown) => {
+  const formatDate = (dateStr: unknown) => {
     if (!dateStr) return 'N/A';
     const hours = Math.floor((Date.now() - new Date(String(dateStr)).getTime()) / (1000 * 60 * 60));
-    if (hours < 1) return 'Published less than an hour ago';
-    if (hours === 1) return 'Published 1 hour ago';
-    return 'Published ' + hours + ' hours ago';
+    if (hours < 1) return t('drop.publishedLessThanHour');
+    if (hours === 1) return t('drop.publishedHour');
+    return t('drop.published', { hours });
   };
 
   const deepLink = drop?.displayId
@@ -174,7 +174,7 @@ export function DropDetailPage() {
           <span className="text-6xl opacity-20">{'\u2726'}</span>
         )}
         <Badge variant={isLive ? 'new' : isSold ? 'default' : 'limited'} className="absolute top-4 left-4">
-          {isLive ? 'LIVE' : isSold ? 'SOLD' : 'LIMITED'}
+          {isLive ? t('drop.live') : isSold ? t('drop.sold') : t('drop.limited')}
         </Badge>
       </section>
 
@@ -200,7 +200,7 @@ export function DropDetailPage() {
         <span className="text-4xl font-bold" style={{ color: 'var(--gold)' }}>{formatPrice(drop.price)}</span>
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full" style={{ background: 'var(--success)' }} />
-          <span className="text-sm" style={{ color: 'var(--success)' }}>{remaining > 0 ? 'In Stock (' + remaining + ')' : 'Sold Out'}</span>
+          <span className="text-sm" style={{ color: 'var(--success)' }}>{remaining > 0 ? t('drop.inStock', { count: remaining }) : t('drop.soldOut')}</span>
         </div>
       </section>
 
@@ -252,7 +252,7 @@ export function DropDetailPage() {
         <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Drop Information</h3>
         <div className="space-y-2.5">
           <div className="flex items-center gap-3"><Package size={16} style={{ color: 'var(--gold)' }} /><span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{String(drop.displayId || '')}</span></div>
-          <div className="flex items-center gap-3"><Clock size={16} style={{ color: 'var(--gold)' }} /><span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{timeAgo(drop.publishedAt)}</span></div>
+          <div className="flex items-center gap-3"><Clock size={16} style={{ color: 'var(--gold)' }} /><span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{formatDate(drop.publishedAt)}</span></div>
           <div className="flex items-center gap-3"><Eye size={16} style={{ color: 'var(--gold)' }} /><span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Viewed {String(drop.views ?? 0)} times</span></div>
           <div className="flex items-center gap-3"><Package size={16} style={{ color: 'var(--gold)' }} /><span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Remaining {remaining} pcs</span></div>
         </div>

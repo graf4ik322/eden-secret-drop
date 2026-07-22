@@ -45,6 +45,8 @@
     "published": "Published {{hours}} hours ago",
     "publishedLessThanHour": "Published less than an hour ago",
     "publishedHour": "Published 1 hour ago",
+    "inStock": "In Stock ({{count}})",
+    "soldOut": "Sold Out",
     "trust": {
       "original": "Original",
       "warranty": "Warranty",
@@ -75,7 +77,28 @@
     "title": "Drop Studio",
     "drops": "Drops",
     "categories": "Categories",
-    "mockups": "Mockups"
+    "mockups": "Mockups",
+    "translations": "Translations",
+    "newDrop": "New Drop",
+    "editDrop": "Edit Drop",
+    "save": "Save",
+    "delete": "Delete",
+    "searchPlaceholder": "Search Drop...",
+    "noMockup": "No mockup",
+    "categoryName": "Category name",
+    "addCategory": "Add Category",
+    "addSubcategory": "Add Subcategory",
+    "selectCategory": "Select Category",
+    "status": "Status",
+    "title": "Title",
+    "price": "Price",
+    "description": "Description",
+    "brand": "Brand",
+    "remaining": "Remaining",
+    "scheduledAt": "Scheduled At",
+    "notifySubscribers": "Notify subscribers on publish",
+    "mockup": "Mockup",
+    "uploadImage": "Upload Image"
   },
   "common": {
     "loading": "Loading...",
@@ -90,7 +113,7 @@
     "noCategory": "No category"
   },
   "subscriber": {
-    "welcome": "✨ Welcome to *EDEN Secret Drop*!\n\nYou are now registered. You'll receive notifications about exclusive drops.\n\nTap the button below to open the full-screen Mini App:",
-    "openApp": "🔐 Open EDEN"
+    "welcome": "Welcome! You are now registered.",
+    "openApp": "Open EDEN"
   }
 }

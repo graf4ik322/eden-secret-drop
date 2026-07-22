@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Search, Check, X, ChevronRight, Tag } from 'lucide-react';
 import { Modal } from './Modal';
+import { useTranslation } from 'react-i18next';
 
 interface CategoryItem {
   id: number;
@@ -29,6 +30,7 @@ interface CategoryPickerProps {
  */
 export function CategoryPicker({ open, onClose, onSelect, selectedId, categories, allowNull }: CategoryPickerProps) {
   const [search, setSearch] = useState('');
+  const { t } = useTranslation();
 
   // Flatten for search mode
   const allCats = categories.flatMap(c => [c, ...(c.subcategories || [])]);
@@ -40,7 +42,7 @@ export function CategoryPicker({ open, onClose, onSelect, selectedId, categories
   });
 
   return (
-    <Modal open={open} onClose={onClose} title="Select Category">
+    <Modal open={open} onClose={onClose} title={t('studio.selectCategory')}>
       {/* Search input */}
       <div className="flex items-center gap-2 px-3 h-10 rounded-xl mb-3"
         style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.04)' }}>

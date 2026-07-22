@@ -171,7 +171,7 @@ export function CatalogPage() {
       </section>
 
       {/* Filters Modal */}
-      <Modal open={showFilters} onClose={() => setShowFilters(false)} title="Filters">
+      <Modal open={showFilters} onClose={() => setShowFilters(false)} title={t('catalog.filters')}>
         {/* Sort */}
         <h3 className="text-xs font-semibold mb-2 mt-1" style={{ color: 'var(--muted)' }}>Sort by</h3>
         <div className="flex flex-wrap gap-2 mb-4">
