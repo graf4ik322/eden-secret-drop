@@ -8,34 +8,24 @@ async function trpcCall(path: string, options: { method?: 'GET' | 'POST'; body?:
   
   const tgData = getTelegramAuth();
   
-  // Для POST нужно Content-Type, для GET — не шлём (чтобы избежать CORS preflight)
+  // Для POST нужно Content-Type, для GET — не шлём
   if (options.method === 'POST' && options.body) {
     headers['Content-Type'] = 'application/json';
   }
 
-  if (tgData.userId) {
-    headers['x-tg-user-id'] = tgData.userId;
-  }
-  
-  if (tgData.initData) {
-    headers['authorization'] = 'tma ' + tgData.initData;
-  }
-
-  if (tgData.firstName) headers['x-tg-first-name'] = tgData.firstName;
-  if (tgData.username) headers['x-tg-username'] = tgData.username;
-
+  // Auth — только через URL query params (Authorization header срезается прокси при URL-encoded initData)
   let url = `${BASE_URL}/trpc/${path}`;
 
+  const qp: Record<string, string> = {};
   if (options.method === 'GET' && options.body) {
-    const input = encodeURIComponent(JSON.stringify(options.body));
-    url += '?input=' + input;
-    // Also pass auth as query params (bypasses proxy header stripping)
-    const qp = new URLSearchParams();
-    if (tgData.initData) qp.set('__tg_initData', tgData.initData);
-    if (tgData.userId) qp.set('__tg_userId', tgData.userId);
-    const qs = qp.toString();
-    if (qs) url += '&' + qs;
+    qp.input = JSON.stringify(options.body);
   }
+  // Always add auth as query params (bypasses all proxy header limits)
+  if (tgData.initData) qp.__tg_initData = tgData.initData;
+  if (tgData.userId) qp.__tg_userId = tgData.userId;
+
+  const qs = new URLSearchParams(qp).toString();
+  if (qs) url += '?' + qs;
 
   const res = await fetch(url, {
     method: options.method || 'GET',
