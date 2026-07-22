@@ -54,13 +54,12 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
       }
     }
 
-    // === FALLBACK 3: query param __tg_userId ===
+    // === FALLBACK 3: query param __tg_userId — только для лога, НЕ используется для авторизации
+    // (передаётся для удобства, но isAdmin всегда через HMAC-подпись initData)
     if (!tgUserId) {
       const qUserId = (req.query as Record<string, string>)?.['__tg_userId'];
       if (qUserId) {
-        tgUserId = qUserId;
-        isAdmin = adminIds.some(id => id === qUserId);
-        if (isAdmin) console.log('[Auth] Admin detected via __tg_userId:', qUserId);
+        console.log('[Auth] __tg_userId present but no valid initData — not trusting userId for auth');
       }
     }
 
