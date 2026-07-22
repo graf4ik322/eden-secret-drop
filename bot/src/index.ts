@@ -6,6 +6,7 @@ const BOT_TOKEN = process.env.BOT_TOKEN!;
 const WEBHOOK_URL = process.env.WEBHOOK_URL;
 const DOMAIN = process.env.DOMAIN || '';
 const MINI_APP_URL = process.env.MINI_APP_URL || (DOMAIN ? `https://${DOMAIN}` : '');
+const BOT_USERNAME = process.env.BOT_USERNAME || 'secretdrop_appbot';
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 const PORT = parseInt(process.env.BOT_PORT || '3002', 10);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -18,12 +19,11 @@ if (!BOT_TOKEN) {
 const bot = new Bot(BOT_TOKEN);
 
 bot.command('debug', async (ctx) => {
-  const debugUrl = `${MINI_APP_URL}/debug.html`;
   await ctx.reply('🔍 *EDEN Diagnostics*', {
+    parse_mode: 'Markdown',
     reply_markup: {
       inline_keyboard: [
-        [{ text: '🔍 Run Diagnostics', web_app: { url: debugUrl } }],
-        [{ text: '🔐 Open Mini App', web_app: { url: MINI_APP_URL } }],
+        [{ text: '🔐 Open Mini App', url: `https://t.me/secretdrop_appbot?startapp` }],
       ],
     },
   });
@@ -64,14 +64,17 @@ bot.command('start', async (ctx) => {
     user.first_name,
   );
 
+  const fullscreenUrl = `https://t.me/${BOT_USERNAME.replace('@', '')}?startapp`;
   await ctx.reply(
     '✨ Welcome to *EDEN Secret Drop*!\n\n' +
     'You are now registered. You\'ll receive notifications about exclusive drops.\n\n' +
-    'Open the Mini App to browse:',
+    'Tap the button below to open the full-screen Mini App:',
     {
+      parse_mode: 'Markdown',
+      link_preview_options: { is_disabled: true },
       reply_markup: {
         inline_keyboard: [
-          [{ text: '🔐 Open EDEN', web_app: { url: MINI_APP_URL || 'https://eden-secret-drop.pages.dev' } }],
+          [{ text: '🔐 Open EDEN', url: fullscreenUrl }],
         ],
       },
     },
@@ -88,9 +91,10 @@ bot.command('admin', async (ctx) => {
   }
 
   await ctx.reply('🛠 *Drop Studio*\n\nManage your drops and categories:', {
+    parse_mode: 'Markdown',
     reply_markup: {
       inline_keyboard: [
-        [{ text: '📦 Open Drop Studio', web_app: { url: `${MINI_APP_URL}/studio` } }],
+        [{ text: '📦 Open Drop Studio', url: `https://t.me/${BOT_USERNAME.replace('@', '')}?startapp` }],
       ],
     },
   });

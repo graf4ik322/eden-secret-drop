@@ -62,6 +62,12 @@ function StartParamRouter({ children }: { children: React.ReactNode }) {
         setProcessed(true);
         return;
       }
+      // startapp=studio → navigate to Studio
+      if (sp === 'studio' || sp === 'admin') {
+        navigate('/studio', { replace: true });
+        setProcessed(true);
+        return;
+      }
     } catch { /* ignore */ }
 
     setProcessed(true);
