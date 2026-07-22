@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
@@ -120,6 +121,7 @@ function CategoryFormModal({ open, onClose, parentId: initialParentId, categorie
   categories: Record<string, unknown>[];
   onSaved: () => void;
 }) {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [icon, setIcon] = useState('');
   const [parentId, setParentId] = useState<number | null>(initialParentId);
@@ -149,7 +151,7 @@ function CategoryFormModal({ open, onClose, parentId: initialParentId, categorie
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={initialParentId ? 'Add Subcategory' : 'Add Category'}>
+    <Modal open={open} onClose={onClose} title={initialParentId ? t('studio.addSubcategory') : t('studio.addCategory')}>
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
         <div>
@@ -157,7 +159,7 @@ function CategoryFormModal({ open, onClose, parentId: initialParentId, categorie
           <input value={name} onChange={(e) => setName(e.target.value)}
             className="w-full h-11 px-4 rounded-[var(--radius-input)] text-sm outline-none"
             style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.06)' }}
-            placeholder="Category name" />
+            placeholder={t("studio.categoryName")} />
         </div>
         <div>
           <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-secondary)' }}>Icon (emoji)</label>

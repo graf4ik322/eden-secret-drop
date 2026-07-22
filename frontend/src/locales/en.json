@@ -100,6 +100,10 @@
     "mockup": "Mockup",
     "uploadImage": "Upload Image"
   },
+  "mockup": {
+    "add": "Add Mockup",
+    "edit": "Edit Mockup"
+  },
   "common": {
     "loading": "Loading...",
     "error": "An error occurred",

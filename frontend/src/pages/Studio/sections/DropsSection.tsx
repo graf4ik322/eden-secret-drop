@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Search, Edit3, Share2, Archive, Package, ChevronDown } from 'lucide-react';
@@ -227,6 +228,7 @@ function DropForm({ drop, categories, mockups: mockupList, onClose, onSaved }: {
 
 export function DropsSection() {
   const [activeFilter, setActiveFilter] = useState('All');
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [showDropModal, setShowDropModal] = useState(false);
   const [editingDrop, setEditingDrop] = useState<Record<string, unknown> | null>(null);
@@ -335,7 +337,7 @@ export function DropsSection() {
       <div className="mx-4 mt-4">
         <div className="flex items-center gap-3 px-4 h-12 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.06)' }}>
           <Search size={16} style={{ color: 'var(--muted)' }} />
-          <input type="text" placeholder="Search Drop..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+          <input type="text" placeholder={t("studio.searchPlaceholder")} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
             className="flex-1 bg-transparent text-sm outline-none" style={{ color: 'var(--text)' }} />
         </div>
       </div>
@@ -433,7 +435,7 @@ export function DropsSection() {
 
       {/* Drop Form Modal */}
       <Modal open={showDropModal} onClose={() => { setShowDropModal(false); setEditingDrop(null); }}
-        title={editingDrop ? 'Edit Drop' : 'New Drop'}>
+        title={editingDrop ? t('studio.editDrop') : t('studio.newDrop')}>
         <DropForm drop={editingDrop} categories={categories} mockups={mockups} onClose={() => { setShowDropModal(false); setEditingDrop(null); }} onSaved={refetch} />
       </Modal>
 

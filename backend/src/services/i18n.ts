@@ -12,6 +12,7 @@ export const i18nDefaults: Record<string, Record<string, unknown>> = {
     profile: { title: 'Profile', member: 'Member', admin: 'Admin', userId: 'User ID', username: 'Username', language: 'Language', memberSince: 'Member Since', memberSinceDate: 'July 2026', languages: { ru: 'Русский', en: 'English' }, selectLanguage: 'Select Language', notifications: 'Notifications', about: 'About' },
     studio: { title: 'Drop Studio', drops: 'Drops', categories: 'Categories', mockups: 'Mockups' },
     common: { loading: 'Loading...', error: 'An error occurred', close: 'Close', back: 'Back', save: 'Save', cancel: 'Cancel', delete: 'Delete', confirm: 'Confirm', select: 'Select', noCategory: 'No category' },
+    mockup: { add: 'Add Mockup', edit: 'Edit Mockup' },
     subscriber: { welcome: 'Welcome! You are now registered.', openApp: 'Open EDEN' },
   },
   ru: {
@@ -23,6 +24,7 @@ export const i18nDefaults: Record<string, Record<string, unknown>> = {
     profile: { title: 'Профиль', member: 'Участник', admin: 'Админ', userId: 'ID пользователя', username: 'Имя пользователя', language: 'Язык', memberSince: 'Участник с', memberSinceDate: 'July 2026', languages: { ru: 'Русский', en: 'English' }, selectLanguage: 'Выберите язык', notifications: 'Уведомления', about: 'О приложении' },
     studio: { title: 'Drop Studio', drops: 'Дропы', categories: 'Категории', mockups: 'Мокапы' },
     common: { loading: 'Загрузка...', error: 'Произошла ошибка', close: 'Закрыть', back: 'Назад', save: 'Сохранить', cancel: 'Отмена', delete: 'Удалить', confirm: 'Подтвердить', select: 'Выбрать', noCategory: 'Без категории' },
+    mockup: { add: 'Добавить мокап', edit: 'Редактировать мокап' },
     subscriber: { welcome: 'Добро пожаловать! Вы зарегистрированы.', openApp: 'Открыть EDEN' },
   },
 };

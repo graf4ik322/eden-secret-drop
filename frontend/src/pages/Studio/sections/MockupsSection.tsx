@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trash2, Pencil } from 'lucide-react';
@@ -90,6 +91,7 @@ function MockupFormModal({ open, onClose, mockup, onSaved }: {
   mockup: Record<string, unknown> | null;
   onSaved: () => void;
 }) {
+  const { t } = useTranslation();
   const [name, setName] = useState(String(mockup?.name || ''));
   const [imageUrl, setImageUrl] = useState(String(mockup?.imageUrl || ''));
   const [jpegUrl, setJpegUrl] = useState(String(mockup?.jpegUrl || ''));
@@ -119,7 +121,7 @@ function MockupFormModal({ open, onClose, mockup, onSaved }: {
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={isEdit ? 'Edit Mockup' : 'Add Mockup'}>
+    <Modal open={open} onClose={onClose} title={isEdit ? t('mockup.edit') : t('mockup.add')}>
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
         <div>
