@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useIsAdminBool, useIsAdmin } from '@/lib/useIsAdmin';
@@ -13,6 +13,8 @@ export function HomePage() {
   const navigate = useNavigate();
   const [debugInfo, setDebugInfo] = useState<string>('');
   const [tapCount, setTapCount] = useState(0);
+  const [copied, setCopied] = useState(false);
+  const fullDebugRef = useRef('');
 
   const handleLogoTap = async () => {
     const newCount = tapCount + 1;
@@ -26,24 +28,84 @@ export function HomePage() {
         const res = await fetch('/trpc/auth.debug');
         const json = await res.json();
         const d = Array.isArray(json) ? json[0]?.result?.data || json[0] || json : json?.result?.data || json;
-        debugExtra = `\nraw ADMIN_IDS: ${d.adminIdsRaw}\n` +
-          `receivedUserId: ${d.receivedUserId}\n` +
+        debugExtra =
+          `\n── Backend received ──\n` +
+          `receivedUserId: ${d.receivedUserId ?? 'null'}\n` +
           `receivedType: ${d.receivedType}\n` +
-          `ids types: ${JSON.stringify(d.adminIdsTypes)}\n` +
-          `match check: ${JSON.stringify(d.match)}\n` +
+          `match: ${JSON.stringify(d.match)}\n` +
+          `userData: ${JSON.stringify(d.userData ?? null)}\n` +
+          `isAdmin: ${d.isAdmin}\n` +
+          `\n── Backend echo headers ──\n` +
+          `authorization: ${d.headers?.authorization ?? '❗MISSING'}\n` +
+          `x-tg-user-id: ${d.headers?.['x-tg-user-id'] ?? '❗MISSING'}\n` +
+          `origin: ${d.headers?.origin ?? 'null'}\n` +
+          `referer: ${d.headers?.referer ?? 'null'}\n` +
+          `content-type: ${d.headers?.['content-type'] ?? 'null'}\n` +
+          `user-agent: ${d.headers?.['user-agent'] ?? 'null'}\n` +
+          `\n── Env ──\n` +
           `hasBotToken: ${d.hasBotToken}\n` +
-          `nodeEnv: ${d.nodeEnv}`;
+          `nodeEnv: ${d.nodeEnv}\n` +
+          `adminIdsRaw: ${d.adminIdsRaw}`;
       } catch (e) { debugExtra = '\n(auth.debug failed)'; }
-      setDebugInfo(
-        `🔐 Auth Debug\n` +
-        `build: ${__BUILD_SHA__}\n` +
-        `local userId: ${auth.userId || '❌'}\n` +
-        `local initData: ${auth.initData ? auth.initData.substring(0, 40) + '...' : '❌'}\n` +
-        `adminState: ${adminState.status}${adminState.status === 'checked' ? ` userId=${adminState.userId} isAdmin=${adminState.isAdmin}` : ''}\n` +
-        `isAdmin bool: ${isAdmin}\n` +
-        `hash: ${window.location.hash.substring(0, 60)}` +
-        debugExtra
-      );
+
+      // initData auth_date check
+      let initDataAge = '';
+      try {
+        const tg = (window as any).Telegram?.WebApp;
+        if (tg?.initDataUnsafe?.auth_date) {
+          const authDate = new Date(tg.initDataUnsafe.auth_date * 1000);
+          const ageHours = Math.round((Date.now() - authDate.getTime()) / 3600000);
+          initDataAge = `\ninitData age: ${ageHours}h (since ${authDate.toISOString()})`;
+          if (ageHours > 24) initDataAge += ' ⚠️ EXPIRED (>24h)';
+        }
+      } catch {}
+
+      // Telegram.WebApp info
+      let tgInfo = '';
+      try {
+        const tg = (window as any).Telegram?.WebApp;
+        if (tg) {
+          tgInfo =
+            `\n\n── Telegram.WebApp ──\n` +
+            `platform: ${tg.platform ?? '?'}\n` +
+            `version: ${tg.version ?? '?'}\n` +
+            `colorScheme: ${tg.colorScheme ?? '?'}\n` +
+            `viewportH: ${tg.viewportHeight ?? '?'}\n` +
+            `isExpanded: ${tg.isExpanded ?? '?'}\n` +
+            `headerColor: ${tg.headerColor ?? '?'}`;
+        }
+      } catch {}
+
+      const sentAuth = auth.initData ? `${auth.initData.substring(0, 24)}...(${auth.initData.length} chars)` : '❌';
+
+      const fullTextLines = [
+        `🔐 Auth Debug`,
+        `build: ${__BUILD_SHA__}`,
+        ``,
+        `── Frontend sent ──`,
+        `local userId: ${auth.userId || '❌'}`,
+        `Authorization: ${sentAuth}`,
+        `x-tg-user-id: ${auth.userId || '❌'}`,
+        `hash: ${window.location.hash.substring(0, 60)}`,
+        `adminState: ${adminState.status}${adminState.status === 'checked' ? ` id=${adminState.userId} admin=${adminState.isAdmin}` : ''}`,
+        `isAdmin bool: ${isAdmin}`,
+      ];
+      if (initDataAge) fullTextLines.push(initDataAge.trim());
+      if (tgInfo) fullTextLines.push(tgInfo.trim());
+      const fullText = fullTextLines.join('\n') + debugExtra;
+
+      fullDebugRef.current = fullText;
+      setDebugInfo(fullText);
+    }
+  };
+
+  const handleCopyDebug = async () => {
+    try {
+      await navigator.clipboard.writeText(fullDebugRef.current);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      prompt('Copy debug info:', fullDebugRef.current);
     }
   };
 
@@ -86,7 +148,12 @@ export function HomePage() {
       {debugInfo && (
         <section className="mx-4 mb-2 p-3 rounded-xl text-xs font-mono whitespace-pre-wrap" style={{ background: 'rgba(0,0,0,0.5)', color: 'var(--gold)', border: '1px solid rgba(212,175,116,0.3)' }}>
           {debugInfo}
-          <button onClick={() => setDebugInfo('')} className="mt-2 text-xs" style={{ color: 'var(--muted)' }}>✕ close</button>
+          <div className="flex gap-2 mt-2">
+            <button onClick={handleCopyDebug} className="text-xs px-2 py-1 rounded" style={{ background: 'rgba(255,255,255,0.1)', color: copied ? 'var(--success)' : 'var(--muted)' }}>
+              {copied ? '✓ Copied!' : '📋 Copy full'}
+            </button>
+            <button onClick={() => setDebugInfo('')} className="text-xs px-2 py-1 rounded" style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--muted)' }}>✕ close</button>
+          </div>
         </section>
       )}
 

@@ -539,16 +539,47 @@ export const authRouter = t.router({
       const raw = process.env.ADMIN_IDS || '(empty)';
       const adminIds = raw === '(empty)' ? [] : raw.split(',').map(id => id.trim()).filter(Boolean);
       const receivedId = ctx.tgUserId;
+
+      // Determine initData auth_date from context if available
+      let authDate: string | null = null;
+      let initDataAge: string | null = null;
+      let userPhotoUrl: string | null = null;
+      let userLanguage: string | null = null;
+      const user = ctx.userData;
+      if (user && 'id' in user) {
+        // Extra user info is stored in ctx for reference
+      }
+
       return {
         receivedUserId: receivedId,
         receivedType: typeof receivedId,
         isAdmin: ctx.isAdmin,
+        userData: ctx.userData ? {
+          id: ctx.userData.id,
+          firstName: ctx.userData.firstName,
+          username: ctx.userData.username || null,
+        } : null,
         adminIdsRaw: raw,
         adminIdsArray: adminIds,
         adminIdsTypes: adminIds.map(id => typeof id),
         match: receivedId ? adminIds.includes(receivedId) : 'no id to match',
         hasBotToken: !!process.env.BOT_TOKEN,
         nodeEnv: process.env.NODE_ENV,
+        // FR-03: echo received headers for CORS/header debugging
+        headers: {
+          authorization: ctx._rawHeaders?.authorization
+            ? `${(ctx._rawHeaders.authorization as string).substring(0, 20)}...(${(ctx._rawHeaders.authorization as string).length} chars)`
+            : null,
+          'x-tg-user-id': ctx._rawHeaders?.['x-tg-user-id'] || null,
+          'x-tg-first-name': ctx._rawHeaders?.['x-tg-first-name'] || null,
+          'x-tg-username': ctx._rawHeaders?.['x-tg-username'] || null,
+          origin: ctx._rawHeaders?.origin || null,
+          referer: ctx._rawHeaders?.referer || null,
+          'user-agent': ctx._rawHeaders?.['user-agent']
+            ? `${(ctx._rawHeaders['user-agent'] as string).split('(')[0].trim()}...`
+            : null,
+          'content-type': ctx._rawHeaders?.['content-type'] || null,
+        },
       };
     }),
 });

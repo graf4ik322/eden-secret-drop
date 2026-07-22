@@ -74,11 +74,11 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
       }
     }
 
-    return { db, isAdmin, tgUserId, userData };
+    return { db, isAdmin, tgUserId, userData, _rawHeaders: req.headers };
   } catch (err) {
     console.error('[Auth] createContext CRASHED:', err);
     // Never crash the request — return unauthed context
-    return { db, isAdmin: false, tgUserId: null, userData: null };
+    return { db, isAdmin: false, tgUserId: null, userData: null, _rawHeaders: req.headers };
   }
 }
 
