@@ -13,19 +13,25 @@ async function trpcCall(path: string, options: { method?: 'GET' | 'POST'; body?:
     headers['Content-Type'] = 'application/json';
   }
 
-  // Auth — только через URL query params (Authorization header срезается прокси при URL-encoded initData)
+  // Auth через Authorization header (основной способ)
+  if (tgData.userId) headers['x-tg-user-id'] = tgData.userId;
+  if (tgData.initData) headers['authorization'] = 'tma ' + tgData.initData;
+  if (tgData.firstName) headers['x-tg-first-name'] = tgData.firstName;
+  if (tgData.username) headers['x-tg-username'] = tgData.username;
+
   let url = `${BASE_URL}/trpc/${path}`;
 
+  // Query params via URLSearchParams
   const qp: Record<string, string> = {};
   if (options.method === 'GET' && options.body) {
     qp.input = JSON.stringify(options.body);
   }
-  // Always add auth as query params (bypasses all proxy header limits)
+  // Auth как query params — fallback если прокси срезает заголовки
   if (tgData.initData) qp.__tg_initData = tgData.initData;
   if (tgData.userId) qp.__tg_userId = tgData.userId;
 
   const qs = new URLSearchParams(qp).toString();
-  if (qs) url += '?' + qs;
+  if (qs) url += (url.includes('?') ? '&' : '?') + qs;
 
   const res = await fetch(url, {
     method: options.method || 'GET',
