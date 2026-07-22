@@ -50,7 +50,7 @@ export function CategoryPicker({ open, onClose, onSelect, selectedId, categories
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search category..."
+          placeholder={t("common.search")}
           className="flex-1 bg-transparent text-sm outline-none"
           style={{ color: 'var(--text)' }}
           autoFocus

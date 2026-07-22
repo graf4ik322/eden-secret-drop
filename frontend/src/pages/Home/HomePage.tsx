@@ -184,7 +184,7 @@ export function HomePage() {
           </p>
           <Button variant="primary" className="!h-14" style={{ borderRadius: '18px', padding: '0 32px' }}
             onClick={() => featuredDrop ? navigate(`/drop/${featuredDrop.displayId}`) : undefined}>
-            {featuredDrop ? `View ${String(featuredDrop.title || '')}` : 'Join Drop'}
+            {featuredDrop ? `${t('studio.view')} ${String(featuredDrop.title || '')}` : t('studio.joinDrop')}
           </Button>
         </div>
       </section>

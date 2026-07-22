@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Search, Languages, Check, Plus, ChevronDown } from 'lucide-react';
@@ -18,6 +19,7 @@ interface SectionGroup {
 
 export function TranslationsPage() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const [activeLocale, setActiveLocale] = useState('en');
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -94,7 +96,7 @@ export function TranslationsPage() {
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search keys..."
+          placeholder={t("common.search")}
           className="flex-1 bg-transparent text-sm outline-none border-none"
           style={{ color: 'var(--text)' }}
         />
