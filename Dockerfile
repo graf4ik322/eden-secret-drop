@@ -50,8 +50,10 @@ COPY --from=bot-builder /app/package.json /app/bot/package.json
 # Shared modules
 COPY shared/ /app/shared/
 
-# nginx config
+# nginx config + wrapper script
 COPY infra/nginx.conf /etc/nginx/conf.d/default.conf
+COPY infra/nginx-wrapper.sh /app/infra/nginx-wrapper.sh
+RUN chmod +x /app/infra/nginx-wrapper.sh
 
 # Supervisor config
 COPY infra/supervisord.conf /etc/supervisor.d/eden.ini
