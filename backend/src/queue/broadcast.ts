@@ -16,29 +16,62 @@ export interface BroadcastJob {
   title: string;
   price: string;
   miniAppUrl: string;
+  imageUrl?: string;
 }
 
 /**
- * Send a Telegram message via Bot API directly (no grammy dependency needed).
+ * Send a Telegram photo via Bot API with caption.
  */
-async function sendTelegramMessage(chatId: number, text: string, buttonUrl?: string): Promise<boolean> {
+async function sendTelegramPhoto(chatId: number, imageUrl: string | undefined, caption: string, buttonUrl?: string): Promise<boolean> {
   if (!BOT_TOKEN) {
     console.warn('[Broadcast] No BOT_TOKEN configured, skipping message');
     return false;
   }
 
+  // Build inline keyboard if button URL provided
+  const replyMarkup = buttonUrl ? {
+    inline_keyboard: [[{ text: '🔐 View Drop', url: buttonUrl }]],
+  } : undefined;
+
+  if (imageUrl) {
+    // Send photo with caption
+    const payload: Record<string, unknown> = {
+      chat_id: chatId,
+      photo: imageUrl,
+      caption,
+      parse_mode: 'HTML',
+      disable_web_page_preview: true,
+    };
+    if (replyMarkup) payload.reply_markup = replyMarkup;
+
+    try {
+      const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const err = await res.json() as Record<string, unknown>;
+        const errDesc = String(err?.description || '');
+        if (errDesc.includes('blocked') || errDesc.includes('Forbidden')) return false;
+        console.error(`[Broadcast] TG API error for ${chatId}:`, errDesc);
+        return true;
+      }
+      return true;
+    } catch (err) {
+      console.error(`[Broadcast] Network error for ${chatId}:`, err);
+      return true;
+    }
+  }
+
+  // Fallback: text-only message (no image available)
   const payload: Record<string, unknown> = {
     chat_id: chatId,
-    text,
+    text: caption,
     parse_mode: 'HTML',
     disable_web_page_preview: true,
   };
-
-  if (buttonUrl) {
-    payload.reply_markup = {
-      inline_keyboard: [[{ text: '🔐 View Drop', url: buttonUrl }]],
-    };
-  }
+  if (replyMarkup) payload.reply_markup = replyMarkup;
 
   try {
     const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -46,16 +79,12 @@ async function sendTelegramMessage(chatId: number, text: string, buttonUrl?: str
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-
     if (!res.ok) {
       const err = await res.json() as Record<string, unknown>;
-      // If user blocked the bot, mark as inactive
       const errDesc = String(err?.description || '');
-      if (errDesc.includes('blocked') || errDesc.includes('Forbidden')) {
-        return false; // Signal to deactivate
-      }
+      if (errDesc.includes('blocked') || errDesc.includes('Forbidden')) return false;
       console.error(`[Broadcast] TG API error for ${chatId}:`, errDesc);
-      return true; // Don't deactivate on transient errors
+      return true;
     }
     return true;
   } catch (err) {
@@ -68,7 +97,7 @@ export function startBroadcastWorker() {
   const worker = new Worker<BroadcastJob>(
     'broadcast',
     async (job) => {
-      const { displayId, title, price, miniAppUrl } = job.data;
+      const { displayId, title, price, miniAppUrl, imageUrl } = job.data;
       console.log(`[Broadcast] Sending drop ${displayId} - ${title} (€${price})`);
 
       // Fetch active subscribers from DB via direct query
@@ -93,7 +122,7 @@ export function startBroadcastWorker() {
         const chatId = parseInt(sub.tgUserId, 10);
         if (isNaN(chatId)) continue;
 
-        const success = await sendTelegramMessage(chatId, message, miniAppUrl);
+        const success = await sendTelegramPhoto(chatId, imageUrl, message, miniAppUrl);
         if (success) {
           sent++;
         } else {

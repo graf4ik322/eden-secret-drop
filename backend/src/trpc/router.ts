@@ -286,6 +286,7 @@ export const dropRouter = t.router({
           title: drop.title,
           price: drop.price || '0',
           miniAppUrl: deepLink,
+          imageUrl: drop.cutoutUrl || drop.imageUrl || undefined,
         });
       }
 
