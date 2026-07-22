@@ -262,12 +262,13 @@ export function DropsSection() {
   };
 
   const handlePublish = async (drop: Record<string, unknown>) => {
-    if (!confirm(`Publish ${String(drop.displayId || '')}?`)) return;
-    try {
-      await trpcMutate('drop.publish', { id: drop.id });
-      refetch();
-    } catch (err: any) { alert(err?.message || 'Failed'); }
-  };
+   const shouldNotify = Boolean(drop.notifySubscribers);
+   if (!confirm(`Publish ${String(drop.displayId || '')}${shouldNotify ? ' + notify' : ''}?`)) return;
+   try {
+     await trpcMutate('drop.publish', { id: drop.id, notifySubscribers: shouldNotify });
+     refetch();
+   } catch (err: any) { alert(err?.message || 'Failed'); }
+ };
 
   const handleMarkAsSold = async (drop: Record<string, unknown>) => {
     if (!confirm(`Mark ${String(drop.displayId || '')} as sold?`)) return;

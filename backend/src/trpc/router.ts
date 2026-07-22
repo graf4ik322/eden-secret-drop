@@ -249,7 +249,10 @@ export const dropRouter = t.router({
 
   /** Publish drop (draft→live / scheduled→live). Broadcast ONLY here. */
   publish: adminProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({
+      id: z.number(),
+      notifySubscribers: z.boolean().optional(),
+    }))
     .mutation(async ({ input }) => {
       const [drop] = await db
         .select()
@@ -273,8 +276,9 @@ export const dropRouter = t.router({
         .set({ count: sql`count + 1`, updatedAt: new Date() })
         .where(eq(dropCounter.id, 1));
 
-      // Broadcast ONLY if notify_subscribers was requested
-      if (drop.notifySubscribers) {
+      // Broadcast if notify requested (input overrides DB value)
+      const shouldNotify = input.notifySubscribers ?? drop.notifySubscribers;
+      if (shouldNotify) {
         const deepLink = dropDeepLink(drop.displayId);
         await enqueueBroadcast({
           dropId: drop.id,
