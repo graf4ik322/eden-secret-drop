@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { join } from 'path';
 import { mkdirSync, existsSync } from 'fs';
 import sharp from 'sharp';
+import multipart from '@fastify/multipart';
 
 const UPLOAD_DIR = '/app/uploads';
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
@@ -17,7 +18,7 @@ function ensureDir(type: string) {
 
 export async function uploadRoutes(app: FastifyInstance) {
   // Register multipart plugin
-  await app.register(require('@fastify/multipart'), {
+  await app.register(multipart, {
     limits: {
       fileSize: MAX_SIZE,
       files: 1,
