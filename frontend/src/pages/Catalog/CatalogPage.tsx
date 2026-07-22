@@ -105,7 +105,7 @@ export function CatalogPage() {
             onClick={() => navigate(`/drop/${drop.displayId}`)}>
             <div className="flex items-center gap-3 p-3">
               <div className="w-16 h-16 rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center" style={{ background: 'var(--surface)' }}>
-                {drop.cutoutUrl ? <img src={String(drop.cutoutUrl)} alt="" className="h-full w-auto object-contain" /> : <span className="text-xl opacity-20">✦</span>}
+                {String(drop.cutoutUrl || drop.mockupImageUrl) ? <img src={String(drop.cutoutUrl || drop.mockupImageUrl)} alt="" className="h-full w-auto object-contain" /> : <span className="text-xl opacity-20">✦</span>}
               </div>
               <div className="flex-1 min-w-0 flex flex-col gap-0.5">
                 <span className="text-xs font-semibold" style={{ color: 'var(--text)' }}>{String(drop.title || '')}</span>

@@ -1,7 +1,7 @@
 import { initTRPC } from '@trpc/server';
 import { z } from 'zod';
 import { db, drops, categories, dropStatus, archivedReasons, subscribers, dropCounter, mockups } from '../db';
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { eq, and, desc, sql, getTableColumns } from 'drizzle-orm';
 import type { Context } from './context';
 import { registerSubscriber, listActiveSubscribers, deactivateSubscriber } from '../services/subscriber';
 import { enqueueBroadcast } from '../queue/broadcast';
@@ -52,8 +52,12 @@ export const dropRouter = t.router({
       if (input.categoryId) conditions.push(eq(drops.categoryId, input.categoryId));
 
       return db
-        .select()
+        .select({
+          ...getTableColumns(drops),
+          mockupImageUrl: mockups.imageUrl,
+        })
         .from(drops)
+        .leftJoin(mockups, eq(drops.mockupId, mockups.id))
         .where(and(...conditions))
         .limit(input.limit)
         .offset(input.offset)
@@ -65,8 +69,12 @@ export const dropRouter = t.router({
     .input(z.object({ displayId: z.string() }))
     .query(async ({ input }) => {
       const result = await db
-        .select()
+        .select({
+          ...getTableColumns(drops),
+          mockupImageUrl: mockups.imageUrl,
+        })
         .from(drops)
+        .leftJoin(mockups, eq(drops.mockupId, mockups.id))
         .where(eq(drops.displayId, input.displayId))
         .limit(1);
       return result[0] || null;
@@ -77,8 +85,12 @@ export const dropRouter = t.router({
     .input(z.object({ limit: z.number().default(10) }))
     .query(async ({ input }) => {
       return db
-        .select()
+        .select({
+          ...getTableColumns(drops),
+          mockupImageUrl: mockups.imageUrl,
+        })
         .from(drops)
+        .leftJoin(mockups, eq(drops.mockupId, mockups.id))
         .where(eq(drops.status, 'live'))
         .orderBy(desc(drops.createdAt))
         .limit(input.limit);
@@ -87,8 +99,12 @@ export const dropRouter = t.router({
   /** Get next scheduled drop (for Home timer, TZ 2.3) */
   nextScheduled: publicProcedure.query(async () => {
     const result = await db
-      .select()
+      .select({
+        ...getTableColumns(drops),
+        mockupImageUrl: mockups.imageUrl,
+      })
       .from(drops)
+      .leftJoin(mockups, eq(drops.mockupId, mockups.id))
       .where(eq(drops.status, 'scheduled'))
       .orderBy(drops.scheduledAt)
       .limit(1);
@@ -303,8 +319,12 @@ export const dropRouter = t.router({
     .query(async ({ input }) => {
       const conditions = input.status ? [eq(drops.status, input.status)] : [];
       return db
-        .select()
+        .select({
+          ...getTableColumns(drops),
+          mockupImageUrl: mockups.imageUrl,
+        })
         .from(drops)
+        .leftJoin(mockups, eq(drops.mockupId, mockups.id))
         .where(and(...conditions))
         .orderBy(desc(drops.createdAt))
         .limit(input.limit)

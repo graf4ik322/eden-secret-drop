@@ -210,8 +210,8 @@ export function HomePage() {
           <div className="glass-card overflow-hidden cursor-pointer transition-all"
             onClick={() => navigate(`/drop/${featuredDrop.displayId}`)}>
             <div className="relative h-[200px] flex items-center justify-center overflow-hidden" style={{ background: 'var(--surface)' }}>
-              {featuredDrop.cutoutUrl ? (
-                <img src={String(featuredDrop.cutoutUrl)} alt={String(featuredDrop.title || '')} className="h-full w-auto object-contain drop-shadow-[0_0_24px_rgba(31,139,116,0.4)]" />
+              {featuredDrop.cutoutUrl || featuredDrop.mockupImageUrl ? (
+                <img src={String(featuredDrop.cutoutUrl || featuredDrop.mockupImageUrl)} alt={String(featuredDrop.title || '')} className="h-full w-auto object-contain drop-shadow-[0_0_24px_rgba(31,139,116,0.4)]" />
               ) : (
                 <span className="text-4xl opacity-20">✦</span>
               )}
@@ -248,7 +248,7 @@ export function HomePage() {
             onClick={() => navigate(`/drop/${drop.displayId}`)}>
             <div className="flex items-center gap-3 p-3">
               <div className="w-16 h-16 rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center" style={{ background: 'var(--surface)' }}>
-                {drop.cutoutUrl ? <img src={String(drop.cutoutUrl)} alt={String(drop.title || '')} className="h-full w-auto object-contain" /> : <span className="text-xl opacity-20">✦</span>}
+                {drop.cutoutUrl || drop.mockupImageUrl ? <img src={String(drop.cutoutUrl || drop.mockupImageUrl)} alt={String(drop.title || '')} className="h-full w-auto object-contain" /> : <span className="text-xl opacity-20">✦</span>}
               </div>
               <div className="flex-1 min-w-0 flex flex-col gap-0.5">
                 <span className="text-xs font-semibold" style={{ color: 'var(--text)' }}>{String(drop.title || '')}</span>

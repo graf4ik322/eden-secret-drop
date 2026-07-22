@@ -343,7 +343,7 @@ export function DropsSection() {
           <GlassCard key={String(drop.id)} className="mb-2">
             <div className="flex items-center gap-3 p-3 min-h-[88px]">
               <div className="w-[72px] h-[72px] rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center" style={{ background: 'var(--surface)' }}>
-                {drop.cutoutUrl ? <img src={String(drop.cutoutUrl)} alt="" className="h-full w-auto object-contain" /> : <Package size={24} style={{ color: 'var(--muted)' }} />}
+                {drop.cutoutUrl || drop.mockupImageUrl ? <img src={String(drop.cutoutUrl || drop.mockupImageUrl)} alt="" className="h-full w-auto object-contain" /> : <Package size={24} style={{ color: 'var(--muted)' }} />}
               </div>
               <div className="flex-1 min-w-0 flex flex-col gap-0.5">
                 <div className="flex items-center gap-2">

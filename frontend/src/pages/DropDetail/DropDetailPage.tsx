@@ -89,9 +89,10 @@ export function DropDetailPage() {
   const isSold = drop.status === 'sold';
   const remaining = Number(drop.remaining ?? 1);
 
-  // Gallery: collect primary image + photos array
+  // Gallery: mockup first, then cutout / imageUrl / photos
   const allImages: string[] = [];
-  if (drop.cutoutUrl) allImages.push(String(drop.cutoutUrl));
+  if (drop.mockupImageUrl) allImages.push(String(drop.mockupImageUrl));
+  if (drop.cutoutUrl && !allImages.includes(String(drop.cutoutUrl))) allImages.push(String(drop.cutoutUrl));
   if (drop.imageUrl && !allImages.includes(String(drop.imageUrl))) allImages.push(String(drop.imageUrl));
   try {
     const extra: string[] = drop.photos ? JSON.parse(String(drop.photos)) : [];
