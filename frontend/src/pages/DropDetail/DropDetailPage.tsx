@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Share2, ShieldCheck, Award, Verified, Truck, Clock, Eye, Package, MapPin } from 'lucide-react';
@@ -16,6 +16,19 @@ export function DropDetailPage() {
 
   const drop = dropRaw as Record<string, unknown> | null | undefined;
   const [galleryIdx, setGalleryIdx] = useState(0);
+  const touchStartX = useRef(0);
+  const SWIPE_THRESHOLD = 50;
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diff = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(diff) < SWIPE_THRESHOLD) return;
+    if (allImages.length <= 1) return;
+    if (diff < 0) {
+      setGalleryIdx(prev => Math.min(prev + 1, allImages.length - 1));
+    } else {
+      setGalleryIdx(prev => Math.max(prev - 1, 0));
+    }
+  };
 
   let specs: { key: string; value: string }[] = [];
   if (drop?.specifications) {
@@ -118,7 +131,9 @@ export function DropDetailPage() {
         </div>
       </header>
 
-      <section className="mx-4 mt-8 relative h-[340px] flex items-center justify-center overflow-hidden" style={{ background: 'var(--surface)', borderRadius: 'var(--radius-card)' }}>
+      <section className="mx-4 mt-8 relative h-[340px] flex items-center justify-center overflow-hidden" style={{ background: 'var(--surface)', borderRadius: 'var(--radius-card)' }}
+        onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+        onTouchEnd={handleTouchEnd}>
         {currentImage ? (
           <img src={currentImage} alt={String(drop.title || '')} className="h-full w-auto object-contain max-w-none" style={{ filter: 'drop-shadow(0 0 40px rgba(31,139,116,0.35))' }} />
         ) : (
