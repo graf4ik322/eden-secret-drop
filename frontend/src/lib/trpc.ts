@@ -13,25 +13,20 @@ async function trpcCall(path: string, options: { method?: 'GET' | 'POST'; body?:
     headers['Content-Type'] = 'application/json';
   }
 
-  // Auth через Authorization header (основной способ)
-  if (tgData.userId) headers['x-tg-user-id'] = tgData.userId;
-  if (tgData.initData) headers['authorization'] = 'tma ' + tgData.initData;
-  if (tgData.firstName) headers['x-tg-first-name'] = tgData.firstName;
-  if (tgData.username) headers['x-tg-username'] = tgData.username;
-
+  // Auth — через URL query params (прокси срезает/отбрасывает Authorization header)
+  // Безопасность: initData HMAC-подписан Telegram — подделать нельзя без bot token.
+  // initData в query params валидируется через validate()/parse() как и в заголовке.
   let url = `${BASE_URL}/trpc/${path}`;
 
-  // Query params via URLSearchParams
   const qp: Record<string, string> = {};
   if (options.method === 'GET' && options.body) {
     qp.input = JSON.stringify(options.body);
   }
-  // Auth как query params — fallback если прокси срезает заголовки
   if (tgData.initData) qp.__tg_initData = tgData.initData;
   if (tgData.userId) qp.__tg_userId = tgData.userId;
 
   const qs = new URLSearchParams(qp).toString();
-  if (qs) url += (url.includes('?') ? '&' : '?') + qs;
+  if (qs) url += '?' + qs;
 
   const res = await fetch(url, {
     method: options.method || 'GET',
