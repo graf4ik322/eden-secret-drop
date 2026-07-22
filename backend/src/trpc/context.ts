@@ -31,9 +31,9 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
       await extractUser(rawInitData, adminIds);
     }
 
-    // === FALLBACK 1: query params (__tg_initData bypasses proxy header stripping) ===
+    // === FALLBACK 1: query params __tg_initData или tg_initData (разные версии бандла) ===
     if (!tgUserId) {
-      const qInitData = (req.query as Record<string, string>)?.['__tg_initData'];
+      const qInitData = (req.query as Record<string, string>)?.['__tg_initData'] || (req.query as Record<string, string>)?.['tg_initData'];
       if (qInitData) {
         await extractUser(qInitData, adminIds);
       }
