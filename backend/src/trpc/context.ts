@@ -28,38 +28,18 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
     const authHeader = req.headers.authorization as string | undefined;
     if (authHeader?.startsWith('tma ')) {
       const rawInitData = authHeader.slice(4).trim();
+      await extractUser(rawInitData, adminIds);
+    }
 
-      // Валидация — только для лога, не блокирует запрос
-      if (botToken) {
-        try {
-          validate(rawInitData, botToken);
-        } catch (err) {
-          console.warn('[Auth] HMAC validation failed (non-blocking):', (err as Error).message);
-        }
-      }
-
-      // Парсим initData ВСЕГДА (с валидацией или без)
-      try {
-        const parsed = parse(rawInitData);
-        if (parsed.user) {
-          const vid = String(parsed.user.id);
-          tgUserId = vid;
-          isAdmin = adminIds.some(id => id === vid);
-          if (isAdmin) console.log('[Auth] Admin detected:', vid);
-          userData = {
-            id: parsed.user.id,
-            firstName: parsed.user.firstName || req.headers['x-tg-first-name'] as string || '',
-            username: parsed.user.username || req.headers['x-tg-username'] as string || '',
-          };
-        }
-      } catch (parseErr) {
-        console.warn('[Auth] Failed to parse initData:', (parseErr as Error).message);
+    // === FALLBACK 1: query params (__tg_initData bypasses proxy header stripping) ===
+    if (!tgUserId) {
+      const qInitData = (req.query as Record<string, string>)?.['__tg_initData'];
+      if (qInitData) {
+        await extractUser(qInitData, adminIds);
       }
     }
 
-    // === FALLBACK: x-tg-user-id header ===
-    // Работает ВСЕГДА, не только в dev — HMAC может не пройти
-    // если BOT_TOKEN не совпадает или не задан
+    // === FALLBACK 2: x-tg-user-id header ===
     if (!tgUserId) {
       const rawUserId = req.headers['x-tg-user-id'] as string | undefined;
       if (rawUserId) {
@@ -74,10 +54,44 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
       }
     }
 
+    // === FALLBACK 3: query param __tg_userId ===
+    if (!tgUserId) {
+      const qUserId = (req.query as Record<string, string>)?.['__tg_userId'];
+      if (qUserId) {
+        tgUserId = qUserId;
+        isAdmin = adminIds.some(id => id === qUserId);
+        if (isAdmin) console.log('[Auth] Admin detected via __tg_userId:', qUserId);
+      }
+    }
+
     return { db, isAdmin, tgUserId, userData, _rawHeaders: req.headers };
+
+    // Helper: parse initData and extract user
+    async function extractUser(rawInitData: string, adminIds: string[]) {
+      // Валидация — только для лога, не блокирует
+      if (botToken) {
+        try { validate(rawInitData, botToken); }
+        catch (err) { console.warn('[Auth] HMAC validation failed (non-blocking):', (err as Error).message); }
+      }
+      try {
+        const parsed = parse(rawInitData);
+        if (parsed.user) {
+          const vid = String(parsed.user.id);
+          tgUserId = vid;
+          isAdmin = adminIds.some(id => id === vid);
+          if (isAdmin) console.log('[Auth] Admin detected:', vid);
+          userData = {
+            id: parsed.user.id,
+            firstName: parsed.user.firstName || String(req.headers['x-tg-first-name'] || ''),
+            username: parsed.user.username || String(req.headers['x-tg-username'] || ''),
+          };
+        }
+      } catch (parseErr) {
+        console.warn('[Auth] Failed to parse initData:', (parseErr as Error).message);
+      }
+    }
   } catch (err) {
     console.error('[Auth] createContext CRASHED:', err);
-    // Never crash the request — return unauthed context
     return { db, isAdmin: false, tgUserId: null, userData: null, _rawHeaders: req.headers };
   }
 }

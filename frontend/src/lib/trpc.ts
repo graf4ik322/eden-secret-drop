@@ -29,6 +29,12 @@ async function trpcCall(path: string, options: { method?: 'GET' | 'POST'; body?:
   if (options.method === 'GET' && options.body) {
     const input = encodeURIComponent(JSON.stringify(options.body));
     url += '?input=' + input;
+    // Also pass auth as query params (bypasses proxy header stripping)
+    const qp = new URLSearchParams();
+    if (tgData.initData) qp.set('__tg_initData', tgData.initData);
+    if (tgData.userId) qp.set('__tg_userId', tgData.userId);
+    const qs = qp.toString();
+    if (qs) url += '&' + qs;
   }
 
   const res = await fetch(url, {
