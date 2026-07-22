@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 import { getTrpcQueryOptions, trpcMutate } from '@/lib/trpc';
@@ -127,23 +127,29 @@ function CategoryFormModal({ open, onClose, parentId: initialParentId, categorie
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  // Sync parentId when modal opens with a different initial value
+  useEffect(() => {
+    setParentId(initialParentId);
+  }, [initialParentId]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) { setError('Name required'); return; }
     setSaving(true);
     setError('');
     try {
-      await trpcMutate('category.create', { name: name.trim(), icon: icon || undefined, parentId: parentId || undefined });
+      await trpcMutate('category.create', { name: name.trim(), icon: icon || undefined, parentId: parentId ?? undefined });
       onSaved();
       onClose();
       setName('');
       setIcon('');
+      setParentId(null);
     } catch (err: any) { setError(err?.message || 'Failed'); }
     finally { setSaving(false); }
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={parentId ? 'Add Subcategory' : 'Add Category'}>
+    <Modal open={open} onClose={onClose} title={initialParentId ? 'Add Subcategory' : 'Add Category'}>
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
         <div>
@@ -160,11 +166,6 @@ function CategoryFormModal({ open, onClose, parentId: initialParentId, categorie
             style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.06)' }}
             placeholder="🔌" />
         </div>
-        {parentId && (
-          <p className="text-xs" style={{ color: 'var(--muted)' }}>
-            Parent: {String(categories.find(c => c.id === parentId)?.name || '')}
-          </p>
-        )}
         {parentId && (
           <p className="text-xs" style={{ color: 'var(--muted)' }}>
             Parent: {String(categories.find(c => c.id === parentId)?.name || '')}
