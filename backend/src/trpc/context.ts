@@ -1,14 +1,15 @@
 import { validate, parse } from '@tma.js/init-data-node';
 import { CreateFastifyContextOptions } from '@trpc/server/adapters/fastify';
 import { db } from '../db';
+import { verifyToken } from '../auth/jwt';
 
 /**
  * Единственный источник правды для авторизации.
  * 
- * 1. PRIMARY: Authorization: tma <initData> — HMAC-валидация через bot token
- *    (документация: https://core.telegram.org/bots/webapps#validating-data-received-via-the-web-app)
- * 2. FALLBACK: x-tg-user-id header — если HMAC не прошёл (нет/неверный bot token)
- * 3. isAdmin: adminIds.some(id => id === String(userId)) — явная нормализация типов
+ * 1. PRIMARY: Authorization: Bearer <JWT> — JWT access token (для всех API-вызовов после входа)
+ * 2. FALLBACK: Authorization: tma <initData> — HMAC-валидация через bot token (первый вход из Mini App)
+ * 3. FALLBACK 2: query params __tg_initData — когда nginx срезает заголовки
+ * 4. isAdmin: adminIds.some(id => id === String(userId)) — явная нормализация типов
  */
 export async function createContext({ req }: CreateFastifyContextOptions) {
   try {
@@ -24,18 +25,37 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
     let isAdmin = false;
     let userData: { id: number; firstName: string; username?: string } | null = null;
 
-    // === PRIMARY: Authorization: tma *** (HMAC-валидация, логируем ошибки) ===
     const authHeader = req.headers.authorization as string | undefined;
-    if (authHeader?.startsWith('tma ')) {
-      const rawInitData = authHeader.slice(4).trim();
-      await extractUser(rawInitData, adminIds);
+
+    // === PRIMARY: Authorization: Bearer <JWT> ===
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.slice(7).trim();
+      const payload = verifyToken(token);
+      if (payload) {
+        tgUserId = payload.telegram_id || payload.sub;
+        isAdmin = adminIds.some(id => id === tgUserId);
+        userData = {
+          id: Number(payload.sub),
+          firstName: '',
+          username: tgUserId,
+        };
+        if (payload.telegram_id && isAdmin) {
+          console.log('[Auth] Admin via JWT:', payload.telegram_id);
+        }
+      }
     }
 
-    // === FALLBACK 1: query params __tg_initData или tg_initData (разные версии бандла) ===
+    // === SECONDARY: Authorization: tma <initData> (HMAC) ===
+    if (!tgUserId && authHeader?.startsWith('tma ')) {
+      const rawInitData = authHeader.slice(4).trim();
+      tgUserId = await extractUser(rawInitData, adminIds);
+    }
+
+    // === FALLBACK: query params __tg_initData (когда прокси срезает заголовки) ===
     if (!tgUserId) {
       const qInitData = (req.query as Record<string, string>)?.['__tg_initData'] || (req.query as Record<string, string>)?.['tg_initData'];
       if (qInitData) {
-        await extractUser(qInitData, adminIds);
+        tgUserId = await extractUser(qInitData, adminIds);
       }
     }
 

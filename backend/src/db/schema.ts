@@ -70,10 +70,35 @@ export const subscribers = pgTable('subscribers', {
   tgUserId: varchar('tg_user_id', { length: 64 }).notNull().unique(),
   username: varchar('username', { length: 255 }),
   firstName: varchar('first_name', { length: 255 }),
+  // Email auth fields (nullable — only for email-registered users)
+  email: varchar('email', { length: 255 }).unique(),
+  passwordHash: varchar('password_hash', { length: 255 }),
+  emailVerified: boolean('email_verified').default(false),
+  // Telegram-linked account (nullable — only for Telegram users who add email)
+  linkedTgUserId: varchar('linked_tg_user_id', { length: 64 }),
   isActive: boolean('is_active').default(true),
   locale: varchar('locale', { length: 5 }).default('en'),
   subscribedAt: timestamp('subscribed_at').defaultNow(),
   lastNotifiedAt: timestamp('last_notified_at'),
+});
+
+/* ===== Email Verification Codes ===== */
+export const emailVerificationCodes = pgTable('email_verification_codes', {
+  id: serial('id').primaryKey(),
+  subscriberId: integer('subscriber_id').notNull().references(() => subscribers.id),
+  code: varchar('code', { length: 6 }).notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+/* ===== Refresh Tokens ===== */
+export const refreshTokens = pgTable('refresh_tokens', {
+  id: serial('id').primaryKey(),
+  subscriberId: integer('subscriber_id').notNull().references(() => subscribers.id),
+  tokenHash: varchar('token_hash', { length: 255 }).notNull(),
+  deviceInfo: varchar('device_info', { length: 255 }),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
 });
 
 /* ===== Admins (TZ 2.7) ===== */

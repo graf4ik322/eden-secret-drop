@@ -6,6 +6,7 @@ import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import { appRouter } from './trpc/router';
 import { createContext } from './trpc/context';
 import { uploadRoutes } from './routes/upload';
+import { authRoutes } from './routes/auth';
 import { startBroadcastWorker } from './queue/broadcast';
 import { db, drops, categories, subscribers, dropCounter } from './db';
 import { sql } from 'drizzle-orm';
@@ -51,6 +52,9 @@ async function main() {
 
   // Upload routes (FR-10/11)
   await server.register(uploadRoutes);
+
+  // Auth routes (JWT, Telegram, Email)
+  await server.register(authRoutes);
 
   // tRPC plugin
   await server.register(fastifyTRPCPlugin, {
