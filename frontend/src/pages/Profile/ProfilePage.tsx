@@ -37,17 +37,11 @@ export function ProfilePage() {
   const isAdmin = auth?.isAdmin ?? false;
 
   const localAuth = getTelegramAuth();
-  const displayName = firstName || localAuth.firstName || storeUser?.firstName || '';
+  const displayName = firstName || localAuth.firstName || storeUser?.firstName || 'Explorer';
   const displayUsername = tgUsername || localAuth.username || '';
   const avatarUrl = localAuth.photoUrl || '';
-
   const showAdminBadge = isAdmin;
   const showMemberBadge = !authLoading && !isAdmin && !!userId;
-
-  // Определяем тип пользователя
-  const isTelegramUser = !!localAuth.initData;
-  const isEmailUser = !!email && !isTelegramUser;
-  const userTypeLabel = isTelegramUser ? 'Telegram Explorer' : isEmailUser ? 'Email User' : 'Explorer';
 
   const handleLanguageChange = (code: string) => {
     i18n.changeLanguage(code);
@@ -90,9 +84,8 @@ export function ProfilePage() {
         </div>
 
         <h2 className="mt-3 text-lg font-semibold" style={{ color: 'var(--text)' }}>
-          {displayName || userTypeLabel}
+          {displayName}
         </h2>
-        <p className="text-sm" style={{ color: 'var(--muted)' }}>{userTypeLabel}</p>
 
         {displayUsername && (
           <p className="mt-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
