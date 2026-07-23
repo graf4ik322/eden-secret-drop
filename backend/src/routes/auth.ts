@@ -13,6 +13,7 @@ import { createHash } from 'node:crypto';
 import { createAccessToken, createRefreshToken, verifyToken } from '../auth/jwt';
 import { validateInitData as telegramValidate } from '../auth/telegram';
 import { generateVerificationCode, isValidCode, isValidEmail } from '../auth/email';
+import { sendVerificationCode } from '../services/email';
 
 const BOT_TOKEN = process.env.BOT_TOKEN || '';
 const SALT_ROUNDS = 12;
@@ -142,14 +143,12 @@ export async function authRoutes(app: FastifyInstance) {
       expiresAt,
     });
 
-    // В реальном приложении здесь отправка email
-    console.log(`[Email] Verification code for ${email}: ${code}`);
+    // Send code via email
+    await sendVerificationCode(email, code);
 
     return reply.send({
       message: 'Verification code sent to email',
       user_id: subscriber.id,
-      // TODO: В проде убрать — только для разработки
-      _debug_code: code,
     });
   });
 
