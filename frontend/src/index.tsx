@@ -19,8 +19,18 @@ const queryClient = new QueryClient({
   },
 });
 
-// Initialize Telegram Mini App
+// Initialize Telegram Mini App (no-op if not in Telegram WebView)
 init(false);
+
+// Register Service Worker for PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js').then(
+      (reg) => console.log('[PWA] SW registered:', reg.scope),
+      (err) => console.warn('[PWA] SW registration failed:', err),
+    );
+  });
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

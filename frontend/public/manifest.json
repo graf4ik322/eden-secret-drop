@@ -1,0 +1,40 @@
+{
+  "name": "EDEN Secret Drop",
+  "short_name": "EDEN",
+  "description": "Exclusive digital drops — EDEN Secret Drop",
+  "start_url": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "portrait",
+  "background_color": "#071A17",
+  "theme_color": "#071A17",
+  "scope": "/",
+  "id": "/",
+  "categories": ["lifestyle", "shopping"],
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "edge_side_panel": {},
+  "related_applications": []
+}
