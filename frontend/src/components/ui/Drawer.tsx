@@ -33,7 +33,7 @@ export function Drawer({ open, onClose, children }: DrawerProps) {
             style={{
               top: '0',
               bottom: '0',
-              paddingTop: `calc(var(--safe-top, 0px) + 16px)`,
+              paddingTop: `calc(var(--safe-top, 0px) + 24px)`,
               paddingBottom: `calc(var(--safe-bottom, 0px) + 16px)`,
             }}
           >
