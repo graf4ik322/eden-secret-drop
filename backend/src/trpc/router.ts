@@ -567,18 +567,14 @@ export const authRouter = t.router({
         nodeEnv: process.env.NODE_ENV,
         // FR-03: echo received headers for CORS/header debugging
         headers: {
-          authorization: ctx._rawHeaders?.authorization
-            ? `${(ctx._rawHeaders.authorization as string).substring(0, 20)}...(${(ctx._rawHeaders.authorization as string).length} chars)`
-            : null,
-          'x-tg-user-id': ctx._rawHeaders?.['x-tg-user-id'] || null,
-          'x-tg-first-name': ctx._rawHeaders?.['x-tg-first-name'] || null,
-          'x-tg-username': ctx._rawHeaders?.['x-tg-username'] || null,
-          origin: ctx._rawHeaders?.origin || null,
-          referer: ctx._rawHeaders?.referer || null,
-          'user-agent': ctx._rawHeaders?.['user-agent']
-            ? `${(ctx._rawHeaders['user-agent'] as string).split('(')[0].trim()}...`
-            : null,
-          'content-type': ctx._rawHeaders?.['content-type'] || null,
+          authorization: null,
+          'x-tg-user-id': ctx.tgUserId,
+          'x-tg-first-name': ctx.userData?.firstName || null,
+          'x-tg-username': ctx.userData?.username || null,
+          origin: null,
+          referer: null,
+          'user-agent': null,
+          'content-type': null,
         },
       };
     }),
