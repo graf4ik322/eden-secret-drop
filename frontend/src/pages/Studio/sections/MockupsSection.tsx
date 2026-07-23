@@ -10,6 +10,7 @@ export function MockupsSection() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Record<string, unknown> | null>(null);
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const mockupList = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
   const refetch = () => queryClient.invalidateQueries({ queryKey: ['mockup'] });

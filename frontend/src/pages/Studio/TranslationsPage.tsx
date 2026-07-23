@@ -128,7 +128,7 @@ export function TranslationsPage() {
   const handleReseed = useCallback(async () => {
     setReseedStatus('loading');
     try {
-      await trpcMutate('i18n.reseed');
+      await trpcMutate('i18n.reseed', {});
       setReseedStatus('done');
       queryClient.invalidateQueries({ queryKey: ['i18n'] });
       setTimeout(() => setReseedStatus('idle'), 3000);

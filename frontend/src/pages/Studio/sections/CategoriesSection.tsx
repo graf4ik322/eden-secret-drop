@@ -11,6 +11,7 @@ export function CategoriesSection() {
   const [showNewCat, setShowNewCat] = useState(false);
   const [showNewSub, setShowNewSub] = useState<number | null>(null);
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const categories = (Array.isArray(catsRaw) ? catsRaw : []) as Record<string, unknown>[];
   const rootCats = useMemo(() => categories.filter(c => !c.parentId), [categories]);

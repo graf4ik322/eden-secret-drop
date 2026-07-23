@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search, ArrowRight, Package, X, Home, User, Sparkles, SlidersHorizontal, ChevronDown, Tag } from 'lucide-react';

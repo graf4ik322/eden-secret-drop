@@ -185,7 +185,7 @@ export async function reseed(defaults: Record<string, Record<string, unknown>>) 
         });
       }
     }
-    defaultKeys.add(...Object.keys(flat));
+    Object.keys(flat).forEach(k => defaultKeys.add(k));
   }
 
   // Remove keys from DB that are NOT in defaults

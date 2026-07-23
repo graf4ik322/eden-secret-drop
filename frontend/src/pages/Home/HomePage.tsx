@@ -6,7 +6,7 @@ import { getTelegramAuth } from '@/lib/telegram-auth';
 import { ArrowRight, Home, Sparkles, User, Package } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 import { Button } from '@/components/ui';
-import { InstallPWABanner } from '@/components/InstallPWA';
+import { InstallPWABtn } from '@/components/InstallPWA';
 
 import { useTranslation } from 'react-i18next';
 
@@ -286,7 +286,7 @@ export function HomePage() {
 
       {/* PWA Install Banner */}
       <section className="mx-4 mt-4 mb-4">
-        <InstallPWABanner />
+        <InstallPWABtn />
       </section>
 
       <nav className="h-16 bottom-nav flex items-center justify-around px-2 z-50 fixed">
