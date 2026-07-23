@@ -10,33 +10,40 @@ import {
 
 /**
  * Initializes the Telegram Mini App SDK.
+ * Безопасно вызываеться вне Telegram WebView — ошибки SDK не ломают React.
  */
 export function init(debugMode: boolean): void {
-  // Set debug mode
-  setDebug(debugMode);
+  // Проверяем, запущено ли внутри Telegram WebView
+  const isTelegram = typeof window !== 'undefined'
+    && typeof (window as any).Telegram?.WebApp?.initData === 'string';
 
-  // Initialize SDK
-  sdkInit();
+  if (!isTelegram) {
+    console.log('[Init] Not in Telegram WebView — skipping SDK init');
+    return;
+  }
 
-  // Mount main components
-  backButton.mount();
-  miniApp.mount();
-  themeParams.mount();
-  initData.restore();
+  try {
+    setDebug(debugMode);
+    sdkInit();
+    backButton.mount();
+    miniApp.mount();
+    themeParams.mount();
+    initData.restore();
 
-  void viewport
-    .mount()
-    .then(() => {
-      viewport.bindCssVars();
-      miniApp.bindCssVars();
-      themeParams.bindCssVars();
-      // Lock orientation to portrait (native Telegram API)
-      try { (window as any).Telegram?.WebApp?.lockOrientation?.(); } catch {}
-    })
-    .catch((e) => {
-      console.error('Something went wrong mounting the viewport', e);
-    });
+    void viewport
+      .mount()
+      .then(() => {
+        viewport.bindCssVars();
+        miniApp.bindCssVars();
+        themeParams.bindCssVars();
+        try { (window as any).Telegram?.WebApp?.lockOrientation?.(); } catch {}
+      })
+      .catch((e) => {
+        console.error('Something went wrong mounting the viewport', e);
+      });
 
-  // Expand viewport to full height
-  viewport.expand();
+    viewport.expand();
+  } catch (err) {
+    console.warn('[Init] Telegram SDK init failed (non-critical):', err);
+  }
 }
