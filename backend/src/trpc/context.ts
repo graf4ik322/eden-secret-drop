@@ -65,7 +65,7 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
     async function extractUser(rawInitData: string, adminIds: string[]): Promise<string | null> {
       if (botToken) {
         try {
-          validate(rawInitData, botToken);
+          validate(rawInitData, botToken, { expiresIn: 0 });
         } catch (err) {
           console.warn('[Auth] HMAC validation FAILED — rejecting request');
           return null;
