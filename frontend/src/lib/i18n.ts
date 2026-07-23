@@ -19,6 +19,24 @@ function detectLanguage(): string {
   return 'en';
 }
 
+/** Convert flat dotted keys like { 'nav.home': 'Home' } to nested { nav: { home: 'Home' } } */
+function unflatten(obj: Record<string, string>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    const parts = key.split('.');
+    let current = result;
+    for (let i = 0; i < parts.length - 1; i++) {
+      const part = parts[i];
+      if (!current[part] || typeof current[part] !== 'object') {
+        current[part] = {};
+      }
+      current = current[part] as Record<string, unknown>;
+    }
+    current[parts[parts.length - 1]] = value;
+  }
+  return result;
+}
+
 const detectedLng = detectLanguage();
 
 i18n.use(initReactI18next).init({
@@ -29,15 +47,16 @@ i18n.use(initReactI18next).init({
   returnObjects: false,
 });
 
-// После инициализации — загружаем свежий словарь с бэкенда (FR-04/FR-20)
+// Load dictionary from backend (overrides bundled JSON with DB values)
 if (typeof window !== 'undefined') {
   const currLng = i18n.language || detectedLng;
   fetch(`/trpc/i18n.getDictionary?input=${encodeURIComponent(JSON.stringify({ locale: currLng }))}`)
     .then(r => r.json())
     .then((data) => {
-      const dict = data?.result?.data || data?.[0]?.result?.data || data;
-      if (dict && typeof dict === 'object' && Object.keys(dict).length > 0) {
-        i18n.addResourceBundle(currLng, 'translation', dict, true, true);
+      const flat = data?.result?.data || data?.[0]?.result?.data || data;
+      if (flat && typeof flat === 'object' && Object.keys(flat).length > 0) {
+        const nested = unflatten(flat);
+        i18n.addResourceBundle(currLng, 'translation', nested, true, true);
       }
     })
     .catch(() => { /* fallback to bundled JSON */ });
