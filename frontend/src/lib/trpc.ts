@@ -1,5 +1,15 @@
 import { getTelegramAuth } from './telegram-auth';
 import { useAuthStore } from '../store/auth';
+import { QueryClient } from '@tanstack/react-query';
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const BASE_URL = typeof window !== 'undefined' ? '' : 'http://localhost:3001';
 
@@ -118,7 +128,9 @@ export function trpcQuery(path: string, input?: Record<string, unknown>): Promis
 }
 
 export function trpcMutate(path: string, input: unknown): Promise<unknown> {
-  return trpcCall(path, { method: 'POST', body: input });
+  const promise = trpcCall(path, { method: 'POST', body: input });
+  promise.then(() => queryClient.invalidateQueries({ queryKey: [path.split('.')[0]] }));
+  return promise;
 }
 
 export function getTrpcQueryOptions(path: string, input?: Record<string, unknown>) {
