@@ -144,7 +144,10 @@ export async function authRoutes(app: FastifyInstance) {
     });
 
     // Send code via email
-    await sendVerificationCode(email, code);
+    const sent = await sendVerificationCode(email, code);
+    if (!sent) {
+      console.warn(`[Auth] Failed to send verification code to ${email} — check SMTP config`);
+    }
 
     return reply.send({
       message: 'Verification code sent to email',
@@ -391,8 +394,17 @@ export async function authRoutes(app: FastifyInstance) {
       .where(eq(subscribers.email, email))
       .then(r => r[0]);
 
-    if (!subscriber || !subscriber.emailVerified) {
+    if (!subscriber) {
       return reply.send({ message: 'If the email exists, a reset code has been sent' });
+    }
+
+    // Auto-verify email if not yet verified (пользователь не мог верифицироваться,
+    // если коды не доходили — forgot-password разблокирует этот круг)
+    if (!subscriber.emailVerified) {
+      await db
+        .update(subscribers)
+        .set({ emailVerified: true })
+        .where(eq(subscribers.id, subscriber.id));
     }
 
     // Clean up old codes
