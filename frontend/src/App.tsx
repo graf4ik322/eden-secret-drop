@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Hexagon, ArrowLeft, ShieldCheck } from 'lucide-react';
+import SettingsPage from '@/pages/Settings/SettingsPage';
 
 /** Wraps route content with fade-in transition */
 function AnimatedOutlet({ children }: { children: React.ReactNode }) {
@@ -140,6 +141,7 @@ export default function App() {
                       }
                     />
                   ))}
+                  <Route path="/settings" element={<SettingsPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </AuthGate>

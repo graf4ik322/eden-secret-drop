@@ -1,48 +1,62 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, User, MessageCircle, Calendar, Shield, Home, Sparkles, Package, Globe, ChevronRight } from 'lucide-react';
+import { ArrowLeft, User, Shield, Globe, ChevronRight, Settings, Mail } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 import { getTelegramAuth } from '@/lib/telegram-auth';
-import { GlassCard } from '@/components/ui';
+import { useAuthStore } from '@/store/auth';
 import { LanguagePicker } from '@/components/ui/LanguagePicker';
+import { InstallPWABtn } from '@/components/InstallPWA';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/lib/i18n';
+
+/** Получить инициалы из имени */
+function getInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .map(w => w[0])
+    .filter(Boolean)
+    .join('')
+    .toUpperCase()
+    .slice(0, 2) || '?';
+}
 
 export function ProfilePage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [langPickerOpen, setLangPickerOpen] = useState(false);
+  const { user: storeUser } = useAuthStore();
+
   const { data: authData, isLoading: authLoading } = useQuery(getTrpcQueryOptions('auth.checkAdmin'));
   const auth = authData as Record<string, unknown> | null | undefined;
-  
-  // User data from backend (populated via Telegram headers)
   const backendUser = auth?.user as Record<string, unknown> | null | undefined;
-  const userId = String(auth?.userId || backendUser?.id || '');
-  const firstName = String(backendUser?.firstName || '');
-  const tgUsername = String(backendUser?.username || '');
+  const userId = String(auth?.userId || backendUser?.id || storeUser?.id || '');
+  const firstName = String(backendUser?.firstName || storeUser?.firstName || '');
+  const tgUsername = String(backendUser?.username || storeUser?.username || '');
+  const email = storeUser?.email || '';
   const isAdmin = auth?.isAdmin ?? false;
 
-  // Fallback: данные из telegram-auth.ts (спарсены при загрузке страницы)
   const localAuth = getTelegramAuth();
-  const displayName = firstName || localAuth.firstName || 'Telegram Explorer';
+  const displayName = firstName || localAuth.firstName || storeUser?.firstName || '';
   const displayUsername = tgUsername || localAuth.username || '';
-  const displayUserId = userId || localAuth.userId;
-  const avatarUrl = localAuth.photoUrl;
+  const avatarUrl = localAuth.photoUrl || '';
 
-  // Пока проверка админа не завершена — не показываем статус Member (TZ 2.7)
   const showAdminBadge = isAdmin;
-  const showMemberBadge = !authLoading && !isAdmin && !!displayUserId;
+  const showMemberBadge = !authLoading && !isAdmin && !!userId;
+
+  // Определяем тип пользователя
+  const isTelegramUser = !!localAuth.initData;
+  const isEmailUser = !!email && !isTelegramUser;
+  const userTypeLabel = isTelegramUser ? 'Telegram Explorer' : isEmailUser ? 'Email User' : 'Explorer';
 
   const handleLanguageChange = (code: string) => {
     i18n.changeLanguage(code);
     localStorage.setItem('i18nextLng', code);
-    // Optionally save to backend (async)
-    if (displayUserId) {
+    if (userId) {
       fetch('/trpc/subscriber.setLocale', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tgUserId: displayUserId, locale: code }),
+        body: JSON.stringify({ tgUserId: userId, locale: code }),
       }).catch(() => {});
     }
   };
@@ -54,89 +68,94 @@ export function ProfilePage() {
           <ArrowLeft size={20} style={{ color: 'var(--text-secondary)' }} />
         </button>
         <h1 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>{t('profile.title')}</h1>
-        <div className="w-[44px]" />
+        <button onClick={() => navigate('/settings')} className="w-11 h-11 rounded-full glass-card flex items-center justify-center">
+          <Settings size={20} style={{ color: 'var(--gold)' }} />
+        </button>
       </header>
 
       <section className="mx-4 mt-2 glass-card p-6 text-center">
-        {/* Avatar — из telegram-auth если есть (photo_url из initData) */}
-        <div className="w-20 h-20 mx-auto rounded-full overflow-hidden" style={{ background: 'var(--surface)', border: '2px solid rgba(212,175,116,0.3)' }}>
+        {/* Avatar */}
+        <div className="relative mx-auto w-20 h-20 rounded-full overflow-hidden" style={{ background: 'var(--surface)', border: '2px solid rgba(212,175,116,0.3)' }}>
           {avatarUrl ? (
             <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+          ) : displayName ? (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-700 to-emerald-900">
+              <span className="text-2xl font-bold text-white">{getInitials(displayName)}</span>
+            </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <User size={36} style={{ color: 'var(--gold)' }} />
             </div>
           )}
         </div>
-        <h2 className="text-xl font-bold mt-4" style={{ color: 'var(--text)' }}>
-          {displayName}
+
+        <h2 className="mt-3 text-lg font-semibold" style={{ color: 'var(--text)' }}>
+          {displayName || userTypeLabel}
         </h2>
+        <p className="text-sm" style={{ color: 'var(--muted)' }}>{userTypeLabel}</p>
+
         {displayUsername && (
-          <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>@{displayUsername}</p>
+          <p className="mt-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+            @{displayUsername}
+          </p>
         )}
-        {showAdminBadge && (
-          <span className="inline-flex items-center gap-1 mt-3 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider"
-            style={{ background: 'rgba(212,175,116,0.15)', color: 'var(--gold)', border: '1px solid rgba(212,175,116,0.3)' }}>
-            <Shield size={12} /> Admin
-          </span>
+
+        {email && (
+          <p className="mt-1 flex items-center justify-center gap-1 text-xs" style={{ color: 'var(--muted)' }}>
+            <Mail size={12} /> {email}
+          </p>
         )}
-        {showMemberBadge && (
-          <span className="inline-flex items-center gap-1 mt-3 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider"
-            style={{ background: 'rgba(76,208,127,0.15)', color: 'var(--success)', border: '1px solid rgba(76,208,127,0.3)' }}>
-            Member
-          </span>
-        )}
+
+        {/* Badges */}
+        <div className="flex items-center justify-center gap-2 mt-3">
+          {showAdminBadge && (
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium"
+              style={{ background: 'rgba(212,175,116,0.12)', color: 'var(--gold)' }}>
+              <Shield size={12} /> Admin
+            </span>
+          )}
+          {showMemberBadge && (
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium"
+              style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--muted)' }}>
+              Member
+            </span>
+          )}
+        </div>
       </section>
 
-      <section className="mx-4 mt-5 space-y-3">
-        <GlassCard className="p-4">
+      {/* Settings link */}
+      <section className="mx-4 mt-4">
+        <button onClick={() => navigate('/settings')}
+          className="glass-card w-full p-4 flex items-center justify-between transition-all hover:scale-[1.02]">
           <div className="flex items-center gap-3">
-            <MessageCircle size={18} style={{ color: 'var(--gold)' }} />
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{t('profile.userId')}</p>
-              <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{displayUserId || '—'}</p>
-            </div>
+            <Settings size={20} style={{ color: 'var(--gold)' }} />
+            <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>Account Settings</span>
           </div>
-        </GlassCard>
-
-        {/* Language selector (FR-18) */}
-        <GlassCard className="p-4 cursor-pointer" onClick={() => setLangPickerOpen(true)}>
-          <div className="flex items-center gap-3">
-            <Globe size={18} style={{ color: 'var(--gold)' }} />
-            <div className="flex-1">
-              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{t('profile.language')}</p>
-              <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{t('profile.languages.' + (i18n.language || 'en'))}</p>
-            </div>
-            <ChevronRight size={16} style={{ color: 'var(--muted)' }} />
-          </div>
-        </GlassCard>
-
-        <GlassCard className="p-4">
-          <div className="flex items-center gap-3">
-            <Calendar size={18} style={{ color: 'var(--gold)' }} />
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{t('profile.memberSince')}</p>
-              <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{t('profile.memberSinceDate')}</p>
-            </div>
-          </div>
-        </GlassCard>
+          <ChevronRight size={18} style={{ color: 'var(--muted)' }} />
+        </button>
       </section>
 
-      <nav className="h-16 bottom-nav flex items-center justify-around px-2 z-50 fixed">
-        <button onClick={() => navigate('/')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Home size={22} /><span className="text-[10px] font-medium">{t('nav.home')}</span></button>
-        <button onClick={() => navigate('/catalog')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Package size={22} /><span className="text-[10px] font-medium">{t('nav.catalog')}</span></button>
-        <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}><User size={22} /><span className="text-[10px] font-medium">{t('nav.profile')}</span></button>
-        {showAdminBadge && (
-          <button onClick={() => navigate('/studio')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Sparkles size={22} /><span className="text-[10px] font-medium">{t('nav.studio')}</span></button>
-        )}
-      </nav>
+      {/* Language */}
+      <section className="mx-4 mt-2">
+        <button onClick={() => setLangPickerOpen(true)}
+          className="glass-card w-full p-4 flex items-center justify-between transition-all hover:scale-[1.02]">
+          <div className="flex items-center gap-3">
+            <Globe size={20} style={{ color: 'var(--text-secondary)' }} />
+            <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>{t('profile.language')}</span>
+          </div>
+          <ChevronRight size={18} style={{ color: 'var(--muted)' }} />
+        </button>
+      </section>
 
-      <LanguagePicker
-        open={langPickerOpen}
-        onClose={() => setLangPickerOpen(false)}
-        current={i18n.language || 'en'}
-        onSelect={handleLanguageChange}
-      />
+      {/* PWA Install */}
+      <section className="mx-4 mt-2">
+        <InstallPWABtn />
+      </section>
+
+      <LanguagePicker open={langPickerOpen} current={i18n.language} onClose={() => setLangPickerOpen(false)} onSelect={handleLanguageChange} />
+
+      {/* Bottom spacer */}
+      <div className="h-8" />
     </div>
   );
 }
