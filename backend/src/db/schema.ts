@@ -67,7 +67,7 @@ export const dropsRelations = relations(drops, ({ one }) => ({
 /* ===== Subscribers (TZ 2.5) ===== */
 export const subscribers = pgTable('subscribers', {
   id: serial('id').primaryKey(),
-  tgUserId: varchar('tg_user_id', { length: 64 }).notNull().unique(),
+  tgUserId: varchar('tg_user_id', { length: 64 }),
   username: varchar('username', { length: 255 }),
   firstName: varchar('first_name', { length: 255 }),
   // Email auth fields (nullable — only for email-registered users)

@@ -118,6 +118,7 @@ export function startBroadcastWorker() {
       let blocked = 0;
 
       for (const sub of activeSubs) {
+        if (!sub.tgUserId) continue;
         const chatId = parseInt(sub.tgUserId, 10);
         if (isNaN(chatId)) continue;
 

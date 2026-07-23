@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getTrpcQueryOptions } from '@/lib/trpc';
-import { getTelegramAuth } from '@/lib/telegram-auth';
+import { trpcQuery } from '@/lib/trpc';
 
 export type AdminState = 
   | { status: 'loading' }
@@ -9,20 +8,15 @@ export type AdminState =
 
 /**
  * Hook that checks if current Telegram user is admin.
- * Uses official Telegram initData in Authorization header (tma format).
- * Handles loading state properly — returns AdminState, not a plain boolean.
  */
 export function useIsAdmin(): AdminState {
   const { data, isLoading, error } = useQuery({
-    ...getTrpcQueryOptions('auth.checkAdmin'),
+    queryKey: ['auth.checkAdmin'],
+    queryFn: () => trpcQuery('auth.checkAdmin') as Promise<{ isAdmin: boolean; userId: string }>,
     retry: 3,
     staleTime: 60 * 1000,
     retryDelay: 1000,
   });
-
-  // Debug: log auth response
-  console.log('[useIsAdmin] checkAdmin response:', data);
-  console.log('[useIsAdmin] local userId:', getTelegramAuth().userId, 'isAdmin from backend:', (data as any)?.isAdmin);
 
   if (isLoading) {
     return { status: 'loading' };

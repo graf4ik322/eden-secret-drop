@@ -29,6 +29,20 @@
       "when": 1784764807911,
       "tag": "0003_purple_human_robot",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784766808636,
+      "tag": "0004_add-auth-tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1784766905841,
+      "tag": "0005_fix-tg-user-id-nullable",
+      "breakpoints": true
     }
   ]
 }
