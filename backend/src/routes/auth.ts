@@ -375,4 +375,107 @@ export async function authRoutes(app: FastifyInstance) {
     }
     return reply.send({ message: 'Logged out' });
   });
+
+  // ===== Forgot Password — отправка кода сброса на email =====
+  app.post('/api/auth/email/forgot-password', async (req, reply) => {
+    const { email } = req.body as { email: string };
+
+    if (!email || !isValidEmail(email)) {
+      return reply.status(400).send({ error: 'Invalid email' });
+    }
+
+    // Всегда возвращаем success (предотвращаем email enumeration)
+    const subscriber = await db
+      .select()
+      .from(subscribers)
+      .where(eq(subscribers.email, email))
+      .then(r => r[0]);
+
+    if (!subscriber || !subscriber.emailVerified) {
+      return reply.send({ message: 'If the email exists, a reset code has been sent' });
+    }
+
+    // Clean up old codes
+    await db.delete(emailVerificationCodes)
+      .where(and(
+        eq(emailVerificationCodes.subscriberId, subscriber.id),
+        eq(emailVerificationCodes.type, 'password_reset'),
+      ));
+
+    // Generate 6-digit reset code
+    const code = generateVerificationCode();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 min
+
+    await db.insert(emailVerificationCodes).values({
+      subscriberId: subscriber.id,
+      type: 'password_reset',
+      code,
+      expiresAt,
+    });
+
+    // Send via email
+    const { sendPasswordResetCode } = await import('../services/email');
+    await sendPasswordResetCode(email, code);
+
+    return reply.send({ message: 'If the email exists, a reset code has been sent' });
+  });
+
+  // ===== Reset Password — смена пароля по коду =====
+  app.post('/api/auth/email/reset-password', async (req, reply) => {
+    const { email, code, password } = req.body as { email: string; code: string; password: string };
+
+    if (!email || !code || !password) {
+      return reply.status(400).send({ error: 'Email, code, and password are required' });
+    }
+    if (!isValidCode(code)) {
+      return reply.status(400).send({ error: 'Invalid code format (6 digits required)' });
+    }
+    if (password.length < 6) {
+      return reply.status(400).send({ error: 'Password must be at least 6 characters' });
+    }
+
+    const subscriber = await db
+      .select()
+      .from(subscribers)
+      .where(eq(subscribers.email, email))
+      .then(r => r[0]);
+
+    if (!subscriber) {
+      return reply.status(404).send({ error: 'Subscriber not found' });
+    }
+
+    // Validate reset code
+    const verification = await db
+      .select()
+      .from(emailVerificationCodes)
+      .where(
+        and(
+          eq(emailVerificationCodes.subscriberId, subscriber.id),
+          eq(emailVerificationCodes.type, 'password_reset'),
+          eq(emailVerificationCodes.code, code),
+          sql`${emailVerificationCodes.expiresAt} > NOW()`,
+        ),
+      )
+      .then(r => r[0]);
+
+    if (!verification) {
+      return reply.status(400).send({ error: 'Invalid or expired reset code' });
+    }
+
+    // Update password
+    const passwordHash = await hash(password, SALT_ROUNDS);
+    await db
+      .update(subscribers)
+      .set({ passwordHash })
+      .where(eq(subscribers.id, subscriber.id));
+
+    // Clean up used codes
+    await db.delete(emailVerificationCodes)
+      .where(and(
+        eq(emailVerificationCodes.subscriberId, subscriber.id),
+        eq(emailVerificationCodes.type, 'password_reset'),
+      ));
+
+    return reply.send({ message: 'Password reset successfully' });
+  });
 }

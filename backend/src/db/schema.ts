@@ -86,6 +86,7 @@ export const subscribers = pgTable('subscribers', {
 export const emailVerificationCodes = pgTable('email_verification_codes', {
   id: serial('id').primaryKey(),
   subscriberId: integer('subscriber_id').notNull().references(() => subscribers.id),
+  type: varchar('type', { length: 20 }).notNull().default('email_verify'), // email_verify | password_reset
   code: varchar('code', { length: 6 }).notNull(),
   expiresAt: timestamp('expires_at').notNull(),
   createdAt: timestamp('created_at').defaultNow(),

@@ -112,6 +112,8 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/verify" element={<VerifyPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           {/* Protected routes (нужен JWT или initData) */}
           <Route
@@ -269,6 +271,10 @@ function LoginPage() {
         <TelegramLoginBtn />
 
         <p className="text-center text-sm" style={{ color: 'var(--muted)' }}>
+          <button onClick={() => navigate('/forgot-password')} className="underline underline-offset-2 transition-colors hover:text-emerald-400" style={{ color: 'var(--muted)' }}>
+            Forgot password?
+          </button>
+          &nbsp;·&nbsp;
           Don't have an account?{' '}
           <button onClick={() => navigate('/register')} className="font-medium underline underline-offset-2 transition-colors hover:text-emerald-400" style={{ color: 'var(--gold)' }}>
             Register
@@ -464,6 +470,219 @@ function VerifyPage() {
             Resend code
           </button>
         </div>
+
+        <p className="text-center text-sm" style={{ color: 'var(--muted)' }}>
+          <button onClick={() => navigate('/login')} className="underline underline-offset-2 transition-colors hover:text-emerald-400" style={{ color: 'var(--gold)' }}>
+            Back to Sign In
+          </button>
+        </p>
+      </GlassCard>
+    </div>
+  );
+}
+
+/* ===== Forgot Password ===== */
+
+function ForgotPasswordPage() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+  const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/email/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      if (res.ok) {
+        setSent(true);
+        setTimeout(() => navigate(`/reset-password?email=${encodeURIComponent(email)}`), 2000);
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Something went wrong');
+      }
+    } catch {
+      setError('Network error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-dark-950 px-4 safe-top">
+      <div className="mb-8">
+        <EdenLogo />
+      </div>
+
+      <GlassCard className="w-full max-w-sm p-6 space-y-5">
+        <div className="text-center">
+          <h2 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Forgot password</h2>
+          <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>
+            {sent ? 'Check your email for the reset code' : 'Enter your email to receive a reset code'}
+          </p>
+        </div>
+
+        {error && (
+          <div className="rounded-xl bg-red-500/10 px-4 py-3 text-center text-sm text-red-400">
+            {error}
+          </div>
+        )}
+
+        {!sent ? (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+            />
+            <Button type="submit" fullWidth disabled={loading}>
+              {loading ? 'Sending…' : 'Send Reset Code'}
+            </Button>
+          </form>
+        ) : (
+          <div className="rounded-xl bg-emerald-500/10 px-4 py-3 text-center text-sm text-emerald-400">
+            Code sent! Redirecting…
+          </div>
+        )}
+
+        <p className="text-center text-sm" style={{ color: 'var(--muted)' }}>
+          <button onClick={() => navigate('/login')} className="underline underline-offset-2 transition-colors hover:text-emerald-400" style={{ color: 'var(--gold)' }}>
+            Back to Sign In
+          </button>
+        </p>
+      </GlassCard>
+    </div>
+  );
+}
+
+/* ===== Reset Password ===== */
+
+function ResetPasswordPage() {
+  const navigate = useNavigate();
+  const searchParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
+  const emailFromUrl = searchParams.get('email') || '';
+  const [email, setEmail] = useState(emailFromUrl);
+  const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/email/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code, password }),
+      });
+      if (res.ok) {
+        setSuccess(true);
+        setTimeout(() => navigate('/login'), 2000);
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Reset failed');
+      }
+    } catch {
+      setError('Network error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-dark-950 px-4 safe-top">
+      <button onClick={() => navigate('/forgot-password')} className="mb-6 self-start flex items-center gap-2 text-sm" style={{ color: 'var(--muted)' }}>
+        <ArrowLeft size={18} />
+        Back
+      </button>
+
+      <div className="mb-8">
+        <EdenLogo />
+      </div>
+
+      <GlassCard className="w-full max-w-sm p-6 space-y-5">
+        <div className="text-center">
+          <h2 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>
+            {success ? 'Password reset!' : 'Reset password'}
+          </h2>
+          <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>
+            {success ? 'Redirecting to login…' : 'Enter the 6-digit code from your email'}
+          </p>
+        </div>
+
+        {error && (
+          <div className="rounded-xl bg-red-500/10 px-4 py-3 text-center text-sm text-red-400">
+            {error}
+          </div>
+        )}
+
+        {!success ? (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {!emailFromUrl && (
+              <Input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+              />
+            )}
+            <input
+              type="text"
+              placeholder="000000"
+              maxLength={6}
+              value={code}
+              onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              className="glass-card h-16 w-full rounded-2xl border border-white/10 text-center text-3xl tracking-[0.5em] outline-none transition-all duration-200 focus:border-gold focus:shadow-glow-gold"
+              style={{ color: 'var(--text)', background: 'var(--surface)' }}
+              required
+            />
+            <Input
+              type="password"
+              placeholder="New password (min 6 chars)"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+              minLength={6}
+            />
+            <Input
+              type="password"
+              placeholder="Confirm new password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              required
+            />
+            <Button type="submit" fullWidth disabled={loading}>
+              {loading ? 'Resetting…' : 'Reset Password'}
+            </Button>
+          </form>
+        ) : (
+          <div className="rounded-xl bg-emerald-500/10 px-4 py-3 text-center text-sm text-emerald-400">
+            Password changed successfully!
+          </div>
+        )}
 
         <p className="text-center text-sm" style={{ color: 'var(--muted)' }}>
           <button onClick={() => navigate('/login')} className="underline underline-offset-2 transition-colors hover:text-emerald-400" style={{ color: 'var(--gold)' }}>

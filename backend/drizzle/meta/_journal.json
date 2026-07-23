@@ -43,6 +43,13 @@
       "when": 1784766905841,
       "tag": "0005_fix-tg-user-id-nullable",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1784777146351,
+      "tag": "0006_add-reset-password",
+      "breakpoints": true
     }
   ]
 }

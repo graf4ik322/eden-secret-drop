@@ -113,3 +113,30 @@ export async function sendVerificationCode(email: string, code: string): Promise
     text: `Your EDEN Secret Drop verification code: ${code}\n\nThis code expires in 15 minutes.`,
   });
 }
+
+/**
+ * Send password reset email.
+ */
+export async function sendPasswordResetCode(email: string, code: string): Promise<boolean> {
+  return sendEmail({
+    to: email,
+    subject: 'Reset your EDEN Secret Drop password',
+    html: `
+      <div style="background:#071A17;color:#e2e8f0;font-family:-apple-system,sans-serif;padding:32px 16px;text-align:center">
+        <div style="max-width:400px;margin:0 auto;background:rgba(255,255,255,0.04);border-radius:20px;padding:32px;backdrop-filter:blur(20px)">
+          <div style="font-size:48px;margin-bottom:8px">⬡</div>
+          <h1 style="font-family:Georgia,serif;color:#D2B980;font-size:24px;font-weight:400;letter-spacing:4px;margin:0 0 8px">E.S.D</h1>
+          <p style="color:#94a3b8;font-size:14px;margin:0 0 24px">Password reset code</p>
+          <div style="font-size:40px;letter-spacing:12px;font-weight:700;color:#D2B980;margin:24px 0;padding:16px;background:rgba(210,185,128,0.08);border-radius:12px">
+            ${code}
+          </div>
+          <p style="color:#64748b;font-size:13px;margin:0">
+            This code expires in 15 minutes.<br/>
+            If you didn't request a password reset, ignore this email.
+          </p>
+        </div>
+      </div>
+    `,
+    text: `Reset your EDEN Secret Drop password\n\nYour reset code: ${code}\n\nThis code expires in 15 minutes.`,
+  });
+}

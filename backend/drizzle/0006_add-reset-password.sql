@@ -1,0 +1,1 @@
+ALTER TABLE "email_verification_codes" ADD COLUMN "type" varchar(20) DEFAULT 'email_verify' NOT NULL;
