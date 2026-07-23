@@ -39,36 +39,17 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
       }
     }
 
-    // === FALLBACK 2: x-tg-user-id header — только для userData, НЕ для isAdmin ===
-    if (!tgUserId) {
-      const rawUserId = req.headers['x-tg-user-id'] as string | undefined;
-      if (rawUserId) {
-        // Не используем для isAdmin — только для отображения в профиле
-        userData = {
-          id: parseInt(rawUserId, 10) || 0,
-          firstName: req.headers['x-tg-first-name'] as string || '',
-          username: req.headers['x-tg-username'] as string || '',
-        };
-      }
-    }
+    return { db, isAdmin, tgUserId, userData };
 
-    // === FALLBACK 3: query param __tg_userId — только для лога, НЕ используется для авторизации
-    // (передаётся для удобства, но isAdmin всегда через HMAC-подпись initData)
-    if (!tgUserId) {
-      const qUserId = (req.query as Record<string, string>)?.['__tg_userId'];
-      if (qUserId) {
-        console.log('[Auth] __tg_userId present but no valid initData — not trusting userId for auth');
-      }
-    }
-
-    return { db, isAdmin, tgUserId, userData, _rawHeaders: req.headers };
-
-    // Helper: parse initData and extract user
-    async function extractUser(rawInitData: string, adminIds: string[]) {
-      // Валидация — только для лога, не блокирует
+    // Helper: BLOCKING initData validation — invalid = no access
+    async function extractUser(rawInitData: string, adminIds: string[]): Promise<string | null> {
       if (botToken) {
-        try { validate(rawInitData, botToken); }
-        catch (err) { console.warn('[Auth] HMAC validation failed (non-blocking):', (err as Error).message); }
+        try {
+          validate(rawInitData, botToken);
+        } catch (err) {
+          console.warn('[Auth] HMAC validation FAILED — rejecting request');
+          return null;
+        }
       }
       try {
         const parsed = parse(rawInitData);
@@ -79,13 +60,15 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
           if (isAdmin) console.log('[Auth] Admin detected:', vid);
           userData = {
             id: parsed.user.id,
-            firstName: parsed.user.firstName || String(req.headers['x-tg-first-name'] || ''),
-            username: parsed.user.username || String(req.headers['x-tg-username'] || ''),
+            firstName: parsed.user.firstName || '',
+            username: parsed.user.username || '',
           };
+          return vid;
         }
       } catch (parseErr) {
         console.warn('[Auth] Failed to parse initData:', (parseErr as Error).message);
       }
+      return null;
     }
   } catch (err) {
     console.error('[Auth] createContext CRASHED:', err);
