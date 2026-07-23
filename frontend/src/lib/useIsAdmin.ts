@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { trpcQuery } from '@/lib/trpc';
+import { getTrpcQueryOptions } from '@/lib/trpc';
 
 export type AdminState = 
   | { status: 'loading' }
@@ -11,8 +11,7 @@ export type AdminState =
  */
 export function useIsAdmin(): AdminState {
   const { data, isLoading, error } = useQuery({
-    queryKey: ['auth.checkAdmin'],
-    queryFn: () => trpcQuery('auth.checkAdmin') as Promise<{ isAdmin: boolean; userId: string }>,
+    ...getTrpcQueryOptions('auth.checkAdmin'),
     retry: 3,
     staleTime: 60 * 1000,
     retryDelay: 1000,

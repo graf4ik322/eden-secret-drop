@@ -134,8 +134,9 @@ export function trpcMutate(path: string, input: unknown): Promise<unknown> {
 }
 
 export function getTrpcQueryOptions(path: string, input?: Record<string, unknown>) {
+  const section = path.split('.')[0];
   return {
-    queryKey: [path, input],
+    queryKey: [section, path, input],
     queryFn: () => trpcCall(path, { method: 'GET', body: input }) as Promise<unknown>,
     retry: 2,
     staleTime: 30_000,
