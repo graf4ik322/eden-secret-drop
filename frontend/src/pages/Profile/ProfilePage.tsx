@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { User, Shield, Globe, ChevronRight, Settings, Mail, Home, Sparkles, Package } from 'lucide-react';
+import { User, Shield, Globe, ChevronRight, Settings, Mail, Home, Sparkles, Package, Calendar } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 import { getTelegramAuth } from '@/lib/telegram-auth';
 import { useAuthStore } from '@/store/auth';
@@ -35,6 +35,14 @@ export function ProfilePage() {
   const firstName = String(backendUser?.firstName || storeUser?.firstName || '');
   const tgUsername = String(backendUser?.username || storeUser?.username || '');
   const email = storeUser?.email || '';
+  const { data: subData } = useQuery(getTrpcQueryOptions('subscriber.me'));
+  const sub = subData as { subscribedAt?: string } | null | undefined;
+  const memberSince = sub?.subscribedAt
+    ? new Date(sub.subscribedAt).toLocaleDateString(
+        typeof i18n !== 'undefined' && i18n.language === 'ru' ? 'ru-RU' : 'en-US',
+        { year: 'numeric', month: 'long' },
+      )
+    : '';
 
   const localAuth = getTelegramAuth();
   const displayName = firstName || localAuth.firstName || storeUser?.firstName || storeUser?.email || 'Explorer';
@@ -122,6 +130,17 @@ export function ProfilePage() {
           </div>
           <ChevronRight size={18} style={{ color: 'var(--muted)' }} />
         </button>
+      </section>
+
+      {/* Member Since */}
+      <section className="mx-4 mt-3">
+        <div className="glass-card p-4 flex items-center gap-3">
+          <Calendar size={20} style={{ color: 'var(--gold)' }} />
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{t('profile.memberSince')}</p>
+            <p className="text-sm font-semibold mt-0.5" style={{ color: 'var(--text)' }}>{memberSince || ''}</p>
+          </div>
+        </div>
       </section>
 
       {/* PWA Install */}

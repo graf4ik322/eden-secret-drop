@@ -516,6 +516,16 @@ export const subscriberRouter = t.router({
   list: adminProcedure.query(async () => {
     return listActiveSubscribers();
   }),
+  me: publicProcedure
+    .query(async ({ ctx }) => {
+      if (!ctx.tgUserId) return null;
+      const row = await db
+        .select({ subscribedAt: subscribers.subscribedAt })
+        .from(subscribers)
+        .where(eq(subscribers.tgUserId, ctx.tgUserId))
+        .then(r => r[0]);
+      return row || null;
+    }),
   deactivate: adminProcedure
     .input(z.object({ tgUserId: z.string() }))
     .mutation(async ({ input }) => {
