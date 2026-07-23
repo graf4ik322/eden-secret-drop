@@ -294,10 +294,10 @@ export function DropsSection() {
   };
 
   const refetch = () => {
-    queryClient.invalidateQueries({ queryKey: ['trpc', 'drop.listAll'] });
-    queryClient.invalidateQueries({ queryKey: ['trpc', 'drop.listActive'] });
-    queryClient.invalidateQueries({ queryKey: ['trpc', 'drop.latest'] });
-    queryClient.invalidateQueries({ queryKey: ['trpc', 'drop.getByDisplayId'] });
+    queryClient.invalidateQueries({ queryKey: ['drop'] });
+    queryClient.invalidateQueries({ queryKey: ['category'] });
+    queryClient.invalidateQueries({ queryKey: ['mockup'] });
+    queryClient.invalidateQueries({ queryKey: ['i18n'] });
   };
 
   return (

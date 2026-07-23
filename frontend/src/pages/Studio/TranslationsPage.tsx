@@ -49,7 +49,7 @@ export function TranslationsPage() {
       await trpcMutate('i18n.updateValue', { key, locale, value });
       // Update the live i18n bundle immediately (so t() reflects the change)
       i18n.addResource(locale, 'translation', key, value);
-      queryClient.invalidateQueries({ queryKey: ['trpc', 'i18n.listKeys'] });
+      queryClient.invalidateQueries({ queryKey: ['i18n'] });
     } catch (e) {
       console.error('Failed to save translation:', e);
     }

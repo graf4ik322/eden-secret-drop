@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, User, Shield, Globe, ChevronRight, Settings, Mail, Home, Sparkles, Package } from 'lucide-react';
+import { User, Shield, Globe, ChevronRight, Settings, Mail, Home, Sparkles, Package } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 import { getTelegramAuth } from '@/lib/telegram-auth';
 import { useAuthStore } from '@/store/auth';
@@ -58,9 +58,7 @@ export function ProfilePage() {
   return (
     <div className="min-h-dvh safe-top scroll-safe">
       <header className="app-header flex items-center justify-between px-4">
-        <button onClick={() => window.location.hash = '#/'} className="back-btn w-11 h-11 rounded-full glass-card flex items-center justify-center">
-          <ArrowLeft size={20} style={{ color: 'var(--text-secondary)' }} />
-        </button>
+        <div className="w-[44px]" />
         <h1 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>{t('profile.title')}</h1>
         <button onClick={() => window.location.hash = '#/settings'} className="w-11 h-11 rounded-full glass-card flex items-center justify-center">
           <Settings size={20} style={{ color: 'var(--gold)' }} />

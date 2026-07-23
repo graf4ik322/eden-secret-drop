@@ -12,7 +12,7 @@ export function MockupsSection() {
   const queryClient = useQueryClient();
 
   const mockupList = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-  const refetch = () => queryClient.invalidateQueries({ queryKey: ['trpc', 'mockup.list'] });
+  const refetch = () => queryClient.invalidateQueries({ queryKey: ['mockup'] });
 
   const handleDelete = async (id: number, name: string) => {
     if (!confirm(`Delete mockup "${name}"?`)) return;

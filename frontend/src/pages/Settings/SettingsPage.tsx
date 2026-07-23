@@ -71,7 +71,7 @@ export default function SettingsPage() {
   return (
     <div className="min-h-dvh safe-top scroll-safe">
       <header className="app-header flex items-center justify-between px-4">
-        <button onClick={() => window.location.hash = '#/'} className="back-btn w-11 h-11 rounded-full glass-card flex items-center justify-center">
+        <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.hash = '#/'} className="back-btn w-11 h-11 rounded-full glass-card flex items-center justify-center">
           <ArrowLeft size={20} style={{ color: 'var(--text-secondary)' }} />
         </button>
         <h1 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Settings</h1>

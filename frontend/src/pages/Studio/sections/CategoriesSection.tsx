@@ -23,7 +23,7 @@ export function CategoriesSection() {
     });
   };
 
-  const refetch = () => queryClient.invalidateQueries({ queryKey: ['trpc', 'category.list'] });
+  const refetch = () => queryClient.invalidateQueries({ queryKey: ['category'] });
 
   const handleDelete = async (id: number, name: string) => {
     if (!confirm(`Delete category "${name}"?`)) return;

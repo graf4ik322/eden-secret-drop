@@ -92,11 +92,11 @@ export function CatalogPage() {
     <div className="min-h-dvh safe-top scroll-safe">
       {/* Header */}
       <header className="app-header flex items-center justify-between px-4">
-        <button onClick={() => navigate(-1)} className="back-btn w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all">
-          <ArrowRight size={20} style={{ color: 'var(--text-secondary)', transform: 'rotate(180deg)' }} />
+        <div className="w-[44px]" />
+        <h1 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>{t('catalog.title')}</h1>
+        <button onClick={() => setShowFilters(!showFilters)} className="w-11 h-11 rounded-full glass-card flex items-center justify-center">
+          <SlidersHorizontal size={18} style={{ color: 'var(--text-secondary)' }} />
         </button>
-        <h1 className="text-base font-semibold" style={{ color: 'var(--text)' }}>{t('catalog.title')}</h1>
-        <div className="w-11" />
       </header>
 
       {/* Search */}
