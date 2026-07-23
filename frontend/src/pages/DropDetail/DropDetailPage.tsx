@@ -156,7 +156,13 @@ export function DropDetailPage() {
   return (
     <div className="min-h-dvh safe-top scroll-safe">
       <header className="app-header flex items-center justify-between px-4">
-        <button onClick={() => navigate(-1)} className="back-btn w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all">
+        <button onClick={() => {
+          if (window.history.length > 1) {
+            navigate(-1);
+          } else {
+            navigate('/');
+          }
+        }} className="back-btn w-11 h-11 rounded-full glass-card flex items-center justify-center transition-all">
           <ArrowLeft size={20} style={{ color: 'var(--text-secondary)' }} />
         </button>
         <div className="flex-1" />
