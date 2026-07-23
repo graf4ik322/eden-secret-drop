@@ -4,7 +4,7 @@ import { db, drops, categories, dropStatus, archivedReasons, subscribers, dropCo
 import { eq, and, or, inArray, desc, asc, sql, getTableColumns } from 'drizzle-orm';
 import type { Context } from './context';
 import { registerSubscriber, setSubscriberLocale, listActiveSubscribers, deactivateSubscriber } from '../services/subscriber';
-import { getDictionary, listKeys, updateValue, seedTranslations } from '../services/i18n';
+import { getDictionary, listKeys, updateValue, deleteKey, reseed, seedTranslations } from '../services/i18n';
 import { enqueueBroadcast } from '../queue/broadcast';
 
 const t = initTRPC.context<Context>().create();
@@ -618,6 +618,18 @@ const i18nRouter = t.router({
     .input(z.object({ key: z.string(), locale: z.string(), value: z.string() }))
     .mutation(async ({ input }) => {
       await updateValue(input.key, input.locale, input.value);
+      return { success: true };
+    }),
+  deleteKey: adminProcedure
+    .input(z.object({ key: z.string() }))
+    .mutation(async ({ input }) => {
+      await deleteKey(input.key);
+      return { success: true };
+    }),
+  reseed: adminProcedure
+    .mutation(async () => {
+      const { i18nDefaults } = await import('../services/i18n');
+      await reseed(i18nDefaults);
       return { success: true };
     }),
 });

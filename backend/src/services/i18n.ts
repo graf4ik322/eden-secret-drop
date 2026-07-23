@@ -6,26 +6,26 @@ export const i18nDefaults: Record<string, Record<string, unknown>> = {
   en: {
     app: { name: 'EDEN Secret Drop' },
     nav: { home: 'Home', catalog: 'Catalog', studio: 'Studio', profile: 'Profile' },
-    home: { featured: 'Featured Drop', latest: 'Latest Drops', noDrops: 'No drops yet', noDropsAvailable: 'No drops available yet', allTime: 'All Time', active: 'Active', nextDrop: 'Next drop', settings: 'Settings' },
-    catalog: { title: 'Catalog', search: 'Search drops...', filters: 'Filters', noResults: 'No drops found', sort: { newest: 'Newest', oldest: 'Oldest', priceLow: 'Price: Low to High', priceHigh: 'Price: High to Low' }, categories: 'Categories', all: 'All' },
-    drop: { live: 'LIVE', sold: 'SOLD', limited: 'LIMITED', priceOnRequest: 'Price on request', description: 'Description', specifications: 'Specifications', brand: 'Brand', category: 'Category', views: 'views', published: 'Published {{hours}} hours ago', publishedLessThanHour: 'Published less than an hour ago', publishedHour: 'Published 1 hour ago', trust: { original: 'Original', warranty: 'Warranty', verified: 'Verified', fastDelivery: 'Fast Delivery' }, shareText: '🔥 {{title}} \u2014 \u20ac{{price}}' },
-    profile: { title: 'Profile', member: 'Member', admin: 'Admin', userId: 'User ID', username: 'Username', language: 'Language', memberSince: 'Member Since', memberSinceDate: 'July 2026', languages: { ru: 'Русский', en: 'English' }, selectLanguage: 'Select Language', notifications: 'Notifications', about: 'About' },
-    studio: { title: 'Drop Studio', drops: 'Drops', categories: 'Categories', mockups: 'Mockups' },
-    common: { loading: 'Loading...', error: 'An error occurred', close: 'Close', back: 'Back', save: 'Save', cancel: 'Cancel', delete: 'Delete', confirm: 'Confirm', select: 'Select', noCategory: 'No category' },
+    home: { featured: 'Featured Drop', latest: 'Latest Drops', allTime: 'All Time', active: 'Active', nextDrop: 'Next drop', tagline: 'Only the Best Deals —', taglineSub: 'Selected electronics for members only', featuredSubtitle: 'From Eden', featuredDesc: 'Every item is handpicked and verified. Your satisfaction is guaranteed — we stand behind every drop with our authenticity promise.', noDropsAvailable: 'No drops available yet' },
+    catalog: { title: 'Catalog', search: 'Search drops...', filters: 'Filters', noResults: 'No drops found', categories: 'Category', sortBy: 'Sort by', sort: { newest: 'Newest', oldest: 'Oldest', priceLow: 'Price: Low to High', priceHigh: 'Price: High to Low' }, all: 'All' },
+    drop: { live: 'LIVE', sold: 'SOLD', limited: 'LIMITED', na: 'N/A', notFound: 'Drop not found', published: 'Published {{hours}} hours ago', publishedLessThanHour: 'Published less than an hour ago', publishedHour: 'Published 1 hour ago', views: 'views', viewed: 'Viewed {{count}} times', remaining: '{{count}} remaining', inStock: 'In Stock ({{count}})', soldOut: 'Sold Out', info: 'Drop Information', estimatedDelivery: 'Estimated Delivery', deliveryText: '3-5 business days via DHL Express', buyNow: 'Buy Now', trust: { original: 'Original', warranty: 'Warranty', verified: 'Verified', fastDelivery: 'Fast Delivery' } },
+    profile: { title: 'Profile', member: 'Member', admin: 'Admin', language: 'Language', memberSince: 'Member Since', selectLanguage: 'Select Language' },
+    studio: { title: 'Drop Studio', drops: 'Drops', categories: 'Categories', mockups: 'Mockups', translations: 'Translations', newDrop: 'New Drop', editDrop: 'Edit Drop', joinDrop: 'Join Drop', view: 'View', addCategory: 'Add Category', addSubcategory: 'Add Subcategory', categoryName: 'Category Name', selectCategory: 'Select Category', searchPlaceholder: 'Search...', tapToUpload: 'Tap to upload', scheduledAt: 'Scheduled at', notifySubscribers: 'Notify subscribers', noMockup: 'No mockup', noDrops: 'No drops found', noCategories: 'No categories yet', parentCategory: 'Parent category', noMockups: 'No mockups yet', filterDraft: 'Draft', filterActive: 'Active', filterArchived: 'Archived', filterScheduled: 'Scheduled', status: 'Status', description: 'Description', mockup: 'Mockup' },
     mockup: { add: 'Add Mockup', edit: 'Edit Mockup' },
-    subscriber: { welcome: 'Welcome! You are now registered.', openApp: 'Open EDEN' },
+    common: { loading: 'Loading...', error: 'An error occurred', search: 'Search', noTranslations: 'No translations found' },
+    pwa: { installApp: 'Install App', installEden: 'Install EDEN', iosInstructions: 'Add this app to your home screen for the best experience', iosStep1: 'Tap Share', iosStep2: 'Scroll down and tap Add to Home Screen', iosStep3: 'Tap Add' },
   },
   ru: {
     app: { name: 'EDEN Secret Drop' },
-    nav: { home: 'Home', catalog: 'Catalog', studio: 'Studio', profile: 'Profile' },
-    home: { featured: 'Избранный дроп', latest: 'Последние дропы', noDrops: 'Ещё нет дропов', noDropsAvailable: 'Пока нет доступных дропов', allTime: 'За всё время', active: 'Активных', nextDrop: 'Следующий дроп', settings: 'Настройки' },
-    catalog: { title: 'Каталог', search: 'Поиск дропов...', filters: 'Фильтры', noResults: 'Дропы не найдены', sort: { newest: 'Сначала новые', oldest: 'Сначала старые', priceLow: 'Цена: по возрастанию', priceHigh: 'Цена: по убыванию' }, categories: 'Категории', all: 'Все' },
-    drop: { live: 'LIVE', sold: 'SOLD', limited: 'LIMITED', priceOnRequest: 'Цена по запросу', description: 'Описание', specifications: 'Характеристики', brand: 'Бренд', category: 'Категория', views: 'просмотров', published: 'Опубликовано {{hours}} ч. назад', publishedLessThanHour: 'Опубликовано менее часа назад', publishedHour: 'Опубликовано 1 час назад', trust: { original: 'Original', warranty: 'Warranty', verified: 'Verified', fastDelivery: 'Fast Delivery' }, shareText: '🔥 {{title}} \\u2014 \\u20ac{{price}}' },
-    profile: { title: 'Профиль', member: 'Участник', admin: 'Админ', userId: 'ID пользователя', username: 'Имя пользователя', language: 'Язык', memberSince: 'Участник с', memberSinceDate: 'July 2026', languages: { ru: 'Русский', en: 'English' }, selectLanguage: 'Выберите язык', notifications: 'Уведомления', about: 'О приложении' },
-    studio: { title: 'Drop Studio', drops: 'Дропы', categories: 'Категории', mockups: 'Мокапы' },
-    common: { loading: 'Загрузка...', error: 'Произошла ошибка', close: 'Закрыть', back: 'Назад', save: 'Сохранить', cancel: 'Отмена', delete: 'Удалить', confirm: 'Подтвердить', select: 'Выбрать', noCategory: 'Без категории' },
+    nav: { home: 'Главная', catalog: 'Каталог', studio: 'Студия', profile: 'Профиль' },
+    home: { featured: 'Избранный дроп', latest: 'Последние дропы', allTime: 'Всего дропов за всё время', active: 'Активных', nextDrop: 'Следующий дроп', tagline: 'Лучшие предложения —', taglineSub: 'Избранная электроника только для участников', featuredSubtitle: 'От Eden', featuredDesc: 'Каждый товар отобран вручную и верифицирован. Мы гарантируем подлинность каждого дропа.', noDropsAvailable: 'Пока нет доступных дропов' },
+    catalog: { title: 'Каталог', search: 'Поиск дропов...', filters: 'Фильтры', noResults: 'Дропы не найдены', categories: 'Категория', sortBy: 'Сортировать', sort: { newest: 'Сначала новые', oldest: 'Сначала старые', priceLow: 'Цена: по возрастанию', priceHigh: 'Цена: по убыванию' }, all: 'Все' },
+    drop: { live: 'LIVE', sold: 'SOLD', limited: 'LIMITED', na: 'Н/Д', notFound: 'Дроп не найден', published: 'Опубликовано {{hours}} ч. назад', publishedLessThanHour: 'Опубликовано менее часа назад', publishedHour: 'Опубликовано 1 час назад', views: 'просмотров', viewed: 'Просмотрено {{count}} раз', remaining: 'Осталось {{count}}', inStock: 'В наличии ({{count}})', soldOut: 'Распродано', info: 'Информация о дропе', estimatedDelivery: 'Ожидаемая доставка', deliveryText: '3-5 рабочих дней через DHL Express', buyNow: 'Купить сейчас', trust: { original: 'Оригинал', warranty: 'Гарантия', verified: 'Верифицировано', fastDelivery: 'Быстрая доставка' } },
+    profile: { title: 'Профиль', member: 'Участник', admin: 'Администратор', language: 'Язык', memberSince: 'В сообществе с', selectLanguage: 'Выберите язык' },
+    studio: { title: 'Drop Studio', drops: 'Дропы', categories: 'Категории', mockups: 'Мокапы', translations: 'Переводы', newDrop: 'Новый дроп', editDrop: 'Редактировать дроп', joinDrop: 'Присоединиться', view: 'Просмотр', addCategory: 'Добавить категорию', addSubcategory: 'Добавить подкатегорию', categoryName: 'Название категории', selectCategory: 'Выберите категорию', searchPlaceholder: 'Поиск...', tapToUpload: 'Нажмите для загрузки', scheduledAt: 'Запланировано на', notifySubscribers: 'Уведомить подписчиков', noMockup: 'Без мокапа', noDrops: 'Дропы не найдены', noCategories: 'Категорий пока нет', parentCategory: 'Родительская категория', noMockups: 'Мокапов пока нет', filterDraft: 'Черновик', filterActive: 'Активен', filterArchived: 'Архивирован', filterScheduled: 'Запланирован', status: 'Статус', description: 'Описание', mockup: 'Мокап' },
     mockup: { add: 'Добавить мокап', edit: 'Редактировать мокап' },
-    subscriber: { welcome: 'Добро пожаловать! Вы зарегистрированы.', openApp: 'Открыть EDEN' },
+    common: { loading: 'Загрузка...', error: 'Произошла ошибка', search: 'Поиск', noTranslations: 'Переводы не найдены' },
+    pwa: { installApp: 'Установить приложение', installEden: 'Установить EDEN', iosInstructions: 'Добавьте это приложение на главный экран для лучшего опыта', iosStep1: 'Нажмите Share', iosStep2: 'Пролистайте вниз и нажмите Add to Home Screen', iosStep3: 'Нажмите Add' },
   },
 };
 
@@ -153,5 +153,50 @@ export async function updateValue(key: string, locale: string, value: string) {
       value,
       section: sectionFromKey(key),
     });
+  }
+}
+
+/** Delete all translations for a key across all locales */
+export async function deleteKey(key: string) {
+  await db
+    .delete(translations)
+    .where(eq(translations.key, key));
+}
+
+/** Reseed: sync DB with defaults — remove keys not in defaults, add missing ones */
+export async function reseed(defaults: Record<string, Record<string, unknown>>) {
+  // Collect all flat keys from defaults
+  const defaultKeys = new Set<string>();
+  for (const [locale, dict] of Object.entries(defaults)) {
+    const flat = flatten(dict as Record<string, unknown>);
+    for (const key of Object.keys(flat)) {
+      // If key missing in DB for this locale, insert it
+      const existing = await db
+        .select({ id: translations.id })
+        .from(translations)
+        .where(and(eq(translations.key, key), eq(translations.locale, locale)))
+        .limit(1);
+      if (existing.length === 0) {
+        await db.insert(translations).values({
+          key,
+          locale,
+          value: String(flat[key] || ''),
+          section: sectionFromKey(key),
+        });
+      }
+    }
+    defaultKeys.add(...Object.keys(flat));
+  }
+
+  // Remove keys from DB that are NOT in defaults
+  const allDbRows = await db
+    .select({ key: translations.key })
+    .from(translations)
+    .groupBy(translations.key);
+
+  for (const row of allDbRows) {
+    if (!defaultKeys.has(row.key)) {
+      await db.delete(translations).where(eq(translations.key, row.key));
+    }
   }
 }

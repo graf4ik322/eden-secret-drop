@@ -1,21 +1,15 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search, ArrowRight, Package, X, Home, User, Sparkles, SlidersHorizontal, ChevronDown, Tag } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 import { useIsAdminBool } from '@/lib/useIsAdmin';
 import { Modal } from '@/components/ui/Modal';
-
-const SORT_OPTIONS = [
-  { value: 'newest', label: 'Newest' },
-  { value: 'oldest', label: 'Oldest' },
-  { value: 'price_asc', label: 'Price ↑' },
-  { value: 'price_desc', label: 'Price ↓' },
-] as const;
-
-type SortBy = (typeof SORT_OPTIONS)[number]['value'];
-
 import { useTranslation } from 'react-i18next';
+
+const SORT_VALUES = ['newest', 'oldest', 'price_asc', 'price_desc'] as const;
+
+type SortBy = (typeof SORT_VALUES)[number];
 
 export function CatalogPage() {
   const { t } = useTranslation();
@@ -86,7 +80,12 @@ export function CatalogPage() {
     return `€${num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
   };
 
-  const SORT_LABELS: Record<string, string> = { newest: 'Newest', oldest: 'Oldest', price_asc: 'Price ↑', price_desc: 'Price ↓' };
+  const SORT_LABELS: Record<string, string> = {
+    newest: t('catalog.sort.newest'),
+    oldest: t('catalog.sort.oldest'),
+    price_asc: t('catalog.sort.priceLow'),
+    price_desc: t('catalog.sort.priceHigh'),
+  };
 
   return (
     <div className="min-h-dvh safe-top scroll-safe">
@@ -145,7 +144,7 @@ export function CatalogPage() {
       <section className="mx-4 mt-5 space-y-2">
         {filteredDrops.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-sm" style={{ color: 'var(--muted)' }}>No drops found</p>
+            <p className="text-sm" style={{ color: 'var(--muted)' }}>{t('catalog.noResults')}</p>
           </div>
         )}
         {filteredDrops.map((drop: Record<string, unknown>) => (
@@ -173,22 +172,29 @@ export function CatalogPage() {
       {/* Filters Modal */}
       <Modal open={showFilters} onClose={() => setShowFilters(false)} title={t('catalog.filters')}>
         {/* Sort */}
-        <h3 className="text-xs font-semibold mb-2 mt-1" style={{ color: 'var(--muted)' }}>Sort by</h3>
+        <h3 className="text-xs font-semibold mb-2 mt-1" style={{ color: 'var(--muted)' }}>{t('catalog.sortBy')}</h3>
         <div className="flex flex-wrap gap-2 mb-4">
-          {SORT_OPTIONS.map(opt => (
-            <button key={opt.value} onClick={() => setSortBy(opt.value)}
+          {SORT_VALUES.map(val => {
+            const labelMap: Record<string, string> = {
+              newest: t('catalog.sort.newest'),
+              oldest: t('catalog.sort.oldest'),
+              price_asc: t('catalog.sort.priceLow'),
+              price_desc: t('catalog.sort.priceHigh'),
+            };
+            return (
+            <button key={val} onClick={() => setSortBy(val)}
               className={`px-4 h-[34px] rounded-full text-xs font-medium transition-all ${
-                sortBy === opt.value
+                sortBy === val
                   ? 'bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)] text-[#071A17] font-semibold'
                   : 'glass-card text-[var(--text-secondary)]'
               }`}>
-              {opt.label}
+              {labelMap[val]}
             </button>
-          ))}
+          )})}
         </div>
 
         {/* Categories */}
-        <h3 className="text-xs font-semibold mb-2" style={{ color: 'var(--muted)' }}>Category</h3>
+        <h3 className="text-xs font-semibold mb-2" style={{ color: 'var(--muted)' }}>{t('catalog.categories') || 'Category'}</h3>
         <div className="space-y-0.5 max-h-[40dvh] overflow-y-auto">
           <button onClick={() => handleCategoryClick(undefined)}
             className={`w-full flex items-center gap-3 px-4 h-11 rounded-xl text-sm transition-all ${
@@ -196,7 +202,7 @@ export function CatalogPage() {
                 ? 'bg-gradient-to-r from-[var(--gold)]/10 to-transparent text-[var(--gold)]'
                 : 'hover:bg-[var(--surface)] text-[var(--text)]'
             }`}>
-            <span className="flex-1 text-left font-medium">All categories</span>
+            <span className="flex-1 text-left font-medium">{t('catalog.all')}</span>
           </button>
           {categories.map((root: Record<string, unknown>) => {
             const subs = (root.subcategories as Record<string, unknown>[] || []);

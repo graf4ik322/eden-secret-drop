@@ -29,7 +29,7 @@ export function MockupsSection() {
 
         {mockupList.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-sm" style={{ color: 'var(--muted)' }}>No mockups yet</p>
+            <p className="text-sm" style={{ color: 'var(--muted)' }}>{t('studio.noMockups')}</p>
             <button onClick={() => { setEditing(null); setShowForm(true); }}
               className="mt-4 px-5 h-10 rounded-xl text-sm font-semibold"
               style={{ background: 'linear-gradient(135deg, var(--gold), var(--gold-light))', color: '#071A17' }}>

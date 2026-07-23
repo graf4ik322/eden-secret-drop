@@ -42,7 +42,7 @@ export function CategoriesSection() {
 
         {rootCats.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-sm" style={{ color: 'var(--muted)' }}>No categories yet</p>
+            <p className="text-sm" style={{ color: 'var(--muted)' }}>{t('studio.noCategories')}</p>
           </div>
         )}
 
@@ -174,7 +174,7 @@ function CategoryFormModal({ open, onClose, parentId: initialParentId, categorie
           </p>
         )}
         <div>
-          <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-secondary)' }}>Parent category</label>
+          <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-secondary)' }}>{t('studio.parentCategory')}</label>
           <button type="button" onClick={() => setShowPicker(true)}
             className="w-full flex items-center justify-between h-11 px-4 rounded-[var(--radius-input)] text-sm outline-none"
             style={{ background: 'var(--surface)', color: parentId ? 'var(--text)' : 'var(--muted)', border: '1px solid rgba(255,255,255,0.06)' }}>

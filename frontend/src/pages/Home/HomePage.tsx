@@ -211,7 +211,7 @@ export function HomePage() {
               const mins = Math.floor((diff % 3600000) / 60000);
               return (
                 <div className="flex items-center justify-between mt-2 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                  <span className="text-sm font-medium" style={{ color: 'var(--muted)' }}>Next update</span>
+                  <span className="text-sm font-medium" style={{ color: 'var(--muted)' }}>{t('home.nextDrop')}</span>
                   <span className="text-sm font-bold" style={{ color: 'var(--gold)' }}>{hours}h {mins}m</span>
                 </div>
               );
@@ -260,7 +260,7 @@ export function HomePage() {
           </div>
         ))}
         {!latestLoading && drops.length === 0 && (
-          <p className="text-center py-8 text-sm" style={{ color: 'var(--muted)' }}>No drops available yet</p>
+          <p className="text-center py-8 text-sm" style={{ color: 'var(--muted)' }}>{t('home.noDropsAvailable')}</p>
         )}
         {drops.map((drop: Record<string, unknown>) => (
           <div key={String(drop.id)} className="glass-card mb-2 cursor-pointer transition-all"

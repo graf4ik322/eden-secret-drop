@@ -27,6 +27,7 @@ function DropForm({ drop, categories, mockups: mockupList, onClose, onSaved }: {
   onSaved: () => void;
 }) {
   const isEdit = !!drop;
+  const { t } = useTranslation();
   const [title, setTitle] = useState(String(drop?.title || ''));
   const [categoryId, setCategoryId] = useState(Number(drop?.categoryId || 0));
   const [price, setPrice] = useState(String(drop?.price || '').replace('.', ','));
@@ -116,18 +117,25 @@ function DropForm({ drop, categories, mockups: mockupList, onClose, onSaved }: {
             placeholder="2,499" />
         </div>
         <div>
-          <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-secondary)' }}>Status</label>
+          <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-secondary)' }}>{t('studio.status') || 'Status'}</label>
           <select value={status} onChange={(e) => setStatus(e.target.value)}
             className="w-full h-11 px-4 rounded-[var(--radius-input)] text-sm outline-none appearance-none"
             style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.06)' }}>
-            {['draft', 'scheduled', 'live', 'archived'].map((s) => (
-              <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
-            ))}
+            {['draft', 'scheduled', 'live', 'archived'].map((s) => {
+              const STATUS_MAP: Record<string, string> = {
+                draft: t('studio.filterDraft'),
+                scheduled: t('studio.filterScheduled'),
+                live: t('studio.filterActive'),
+                archived: t('studio.filterArchived'),
+              };
+              return (
+              <option key={s} value={s}>{STATUS_MAP[s] || s.charAt(0).toUpperCase() + s.slice(1)}</option>
+            )})}
           </select>
         </div>
       </div>
       <div>
-        <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-secondary)' }}>Description</label>
+        <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-secondary)' }}>{t('studio.description') || 'Description'}</label>
         <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
           className="w-full px-4 py-3 rounded-[var(--radius-input)] text-sm outline-none resize-none"
           style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.06)' }} />
@@ -147,7 +155,7 @@ function DropForm({ drop, categories, mockups: mockupList, onClose, onSaved }: {
         </div>
       </div>
       <div>
-        <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-secondary)' }}>Scheduled at</label>
+        <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-secondary)' }}>{t('studio.scheduledAt')}</label>
         <input type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)}
           className="w-full h-11 px-4 rounded-[var(--radius-input)] text-sm outline-none"
           style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.06)' }} />
@@ -156,18 +164,18 @@ function DropForm({ drop, categories, mockups: mockupList, onClose, onSaved }: {
         <label className="flex items-center gap-3 p-3 rounded-xl cursor-pointer" style={{ background: 'rgba(255,255,255,0.03)' }}>
           <input type="checkbox" checked={notifySubscribers} onChange={(e) => setNotifySubscribers(e.target.checked)}
             className="w-4 h-4 rounded" style={{ accentColor: 'var(--gold)' }} />
-          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>Notify subscribers</span>
+          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{t('studio.notifySubscribers')}</span>
         </label>
       )}
       
       {/* Mockup selector */}
       {mockupList.length > 0 && (
         <div>
-          <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-secondary)' }}>Mockup</label>
+          <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-secondary)' }}>{t('studio.mockup')}</label>
           <select value={mockupId} onChange={(e) => setMockupId(Number(e.target.value))}
             className="w-full h-11 px-4 rounded-[var(--radius-input)] text-sm outline-none appearance-none"
             style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.06)' }}>
-            <option value={0}>No mockup</option>
+            <option value={0}>{t('studio.noMockup')}</option>
             {mockupList.map((m: Record<string, unknown>) => (
               <option key={String(m.id)} value={Number(m.id)}>{String(m.name || '')}</option>
             ))}
@@ -360,7 +368,7 @@ export function DropsSection() {
       {/* Drops list */}
       <section className="mx-4 mt-4">
         {filteredDrops.length === 0 && (
-          <div className="text-center py-10"><p className="text-sm" style={{ color: 'var(--muted)' }}>No drops found</p></div>
+          <div className="text-center py-10"><p className="text-sm" style={{ color: 'var(--muted)' }}>{t('studio.noDrops')}</p></div>
         )}
         {filteredDrops.map((drop: Record<string, unknown>) => (
           <GlassCard key={String(drop.id)} className="mb-2">

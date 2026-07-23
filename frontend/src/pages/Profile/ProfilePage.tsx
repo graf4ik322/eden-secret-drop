@@ -108,13 +108,13 @@ export function ProfilePage() {
           {showAdminBadge && (
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium"
               style={{ background: 'rgba(212,175,116,0.12)', color: 'var(--gold)' }}>
-              <Shield size={12} /> Admin
+              <Shield size={12} /> {t('profile.admin')}
             </span>
           )}
           {showMemberBadge && (
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium"
               style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--muted)' }}>
-              Member
+              {t('profile.member')}
             </span>
           )}
         </div>

@@ -7,15 +7,17 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { usePWAInstall } from '@/lib/usePWAInstall';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { X, Smartphone, Download, Share2, Plus } from 'lucide-react';
+import { X, Smartphone, Download } from 'lucide-react';
 
 /**
  * Использовать внутри страницы — компактная кнопка установки.
  */
 export function InstallPWABtn() {
+  const { t } = useTranslation();
   const { canInstall, isInstalled, isIOS, install } = usePWAInstall();
   const [showIOSHelp, setShowIOSHelp] = useState(false);
 
@@ -31,7 +33,7 @@ export function InstallPWABtn() {
           className="mt-4"
         >
           <Smartphone size={18} className="mr-2" />
-          Install App
+          {t('pwa.installApp')}
         </Button>
 
         {showIOSHelp && (
@@ -46,22 +48,29 @@ export function InstallPWABtn() {
 
               <div className="text-center">
                 <h3 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>
-                  Install EDEN
+                  {t('pwa.installEden')}
                 </h3>
                 <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>
-                  Add to your home screen for the best experience
+                  {t('pwa.iosInstructions')}
                 </p>
               </div>
-
-              <div className="space-y-3">
-                <Step num={1} icon={<Share2 size={18} />} text="Tap Share" />
-                <Step num={2} icon={<Plus size={18} />} text="Scroll down and tap Add to Home Screen" />
-                <Step num={3} icon={<Download size={18} />} text="Tap Add in the top right" />
-              </div>
-
-              <Button variant="secondary" fullWidth onClick={() => setShowIOSHelp(false)}>
-                Got it
-              </Button>
+              <ol className="space-y-3 text-sm" style={{ color: 'var(--text)' }}>
+                <li className="flex items-start gap-3">
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shrink-0" 
+                    style={{ background: 'var(--gold)', color: 'var(--bg)' }}>1</span>
+                  <span>{t('pwa.iosStep1')}</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shrink-0" 
+                    style={{ background: 'var(--gold)', color: 'var(--bg)' }}>2</span>
+                  <span>{t('pwa.iosStep2')}</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shrink-0" 
+                    style={{ background: 'var(--gold)', color: 'var(--bg)' }}>3</span>
+                  <span>{t('pwa.iosStep3')}</span>
+                </li>
+              </ol>
             </GlassCard>
           </div>
         )}
@@ -69,93 +78,15 @@ export function InstallPWABtn() {
     );
   }
 
-  // Android / другие
   return (
     <Button
-      variant="secondary"
+      variant="primary"
       fullWidth
       onClick={install}
+      className="mt-4"
     >
       <Download size={18} className="mr-2" />
-      Install App
+      {t('pwa.installApp')}
     </Button>
-  );
-}
-
-/**
- * Баннер для установки — показывать на главном экране.
- */
-export function InstallPWABanner() {
-  const { canInstall, install, dismiss, isIOS } = usePWAInstall();
-  const [showIOSHelp, setShowIOSHelp] = useState(false);
-
-  if (!canInstall) return null;
-
-  if (isIOS) {
-    return (
-      <GlassCard className="relative p-4 mb-4 space-y-3">
-        <button onClick={dismiss} className="absolute right-3 top-3 text-gray-400 hover:text-white">
-          <X size={16} />
-        </button>
-        <div className="flex items-start gap-3">
-          <Smartphone size={24} className="mt-0.5 shrink-0" style={{ color: 'var(--gold)' }} />
-          <div>
-            <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>
-              Install EDEN Secret Drop
-            </p>
-            <p className="mt-0.5 text-xs" style={{ color: 'var(--muted)' }}>
-              Add to home screen for quick access
-            </p>
-          </div>
-        </div>
-        <Button variant="ghost" fullWidth onClick={() => setShowIOSHelp(true)}>
-          Show Instructions
-        </Button>
-        {showIOSHelp && (
-          <div className="space-y-2 rounded-xl bg-white/5 p-3 text-xs" style={{ color: 'var(--muted)' }}>
-            <p>1. Tap <strong>Share</strong> <Share2 size={14} className="inline" /></p>
-            <p>2. Scroll down — tap <strong>Add to Home Screen</strong></p>
-            <p>3. Tap <strong>Add</strong></p>
-          </div>
-        )}
-      </GlassCard>
-    );
-  }
-
-  return (
-    <GlassCard className="relative p-4 mb-4 space-y-3">
-      <button onClick={dismiss} className="absolute right-3 top-3 text-gray-400 hover:text-white">
-        <X size={16} />
-      </button>
-      <div className="flex items-start gap-3">
-        <Download size={24} className="mt-0.5 shrink-0" style={{ color: 'var(--emerald)' }} />
-        <div>
-          <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>
-            Install EDEN Secret Drop
-          </p>
-          <p className="mt-0.5 text-xs" style={{ color: 'var(--muted)' }}>
-            Install as app for faster access
-          </p>
-        </div>
-      </div>
-      <Button variant="primary" fullWidth onClick={install}>
-        Install
-      </Button>
-    </GlassCard>
-  );
-}
-
-/* ===== Step indicator ===== */
-function Step({ num, icon, text }: { num: number; icon: React.ReactNode; text: string }) {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold" style={{ background: 'rgba(210,185,128,0.12)', color: 'var(--gold)' }}>
-        {num}
-      </div>
-      <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-        {icon}
-        <span>{text}</span>
-      </div>
-    </div>
   );
 }
