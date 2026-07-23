@@ -20,7 +20,7 @@ const queryClient = new QueryClient({
 });
 
 // Initialize Telegram Mini App (no-op if not in Telegram WebView)
-init(false);
+init();
 
 // Register Service Worker for PWA
 if ('serviceWorker' in navigator) {
