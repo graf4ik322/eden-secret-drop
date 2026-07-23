@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, User, Shield, Globe, ChevronRight, Settings, Mail } from 'lucide-react';
+import { ArrowLeft, User, Shield, Globe, ChevronRight, Settings, Mail, Home, Sparkles, Package } from 'lucide-react';
 import { getTrpcQueryOptions } from '@/lib/trpc';
 import { getTelegramAuth } from '@/lib/telegram-auth';
 import { useAuthStore } from '@/store/auth';
+import { useIsAdminBool } from '@/lib/useIsAdmin';
 import { LanguagePicker } from '@/components/ui/LanguagePicker';
 import { InstallPWABtn } from '@/components/InstallPWA';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/lib/i18n';
 
-/** Получить инициалы из имени */
 function getInitials(name: string): string {
   return name
     .split(/\s+/)
@@ -26,6 +26,7 @@ export function ProfilePage() {
   const { t } = useTranslation();
   const [langPickerOpen, setLangPickerOpen] = useState(false);
   const { user: storeUser } = useAuthStore();
+  const isAdmin = useIsAdminBool();
 
   const { data: authData, isLoading: authLoading } = useQuery(getTrpcQueryOptions('auth.checkAdmin'));
   const auth = authData as Record<string, unknown> | null | undefined;
@@ -34,13 +35,12 @@ export function ProfilePage() {
   const firstName = String(backendUser?.firstName || storeUser?.firstName || '');
   const tgUsername = String(backendUser?.username || storeUser?.username || '');
   const email = storeUser?.email || '';
-  const isAdmin = auth?.isAdmin ?? false;
 
   const localAuth = getTelegramAuth();
   const displayName = firstName || localAuth.firstName || storeUser?.firstName || storeUser?.email || 'Explorer';
   const displayUsername = tgUsername || localAuth.username || '';
   const avatarUrl = localAuth.photoUrl || '';
-  const showAdminBadge = isAdmin;
+  const showAdminBadge = isAdmin && !!userId;
   const showMemberBadge = !authLoading && !isAdmin && !!userId;
 
   const handleLanguageChange = (code: string) => {
@@ -58,17 +58,16 @@ export function ProfilePage() {
   return (
     <div className="min-h-dvh safe-top scroll-safe">
       <header className="app-header flex items-center justify-between px-4">
-        <button onClick={() => navigate(-1)} className="back-btn w-11 h-11 rounded-full glass-card flex items-center justify-center">
+        <button onClick={() => window.location.hash = '#/'} className="back-btn w-11 h-11 rounded-full glass-card flex items-center justify-center">
           <ArrowLeft size={20} style={{ color: 'var(--text-secondary)' }} />
         </button>
         <h1 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>{t('profile.title')}</h1>
-        <button onClick={() => navigate('/settings')} className="w-11 h-11 rounded-full glass-card flex items-center justify-center">
+        <button onClick={() => window.location.hash = '#/settings'} className="w-11 h-11 rounded-full glass-card flex items-center justify-center">
           <Settings size={20} style={{ color: 'var(--gold)' }} />
         </button>
       </header>
 
       <section className="mx-4 mt-2 glass-card p-6 text-center">
-        {/* Avatar */}
         <div className="relative mx-auto w-20 h-20 rounded-full overflow-hidden" style={{ background: 'var(--surface)', border: '2px solid rgba(212,175,116,0.3)' }}>
           {avatarUrl ? (
             <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
@@ -88,7 +87,7 @@ export function ProfilePage() {
         </h2>
 
         {displayUsername && (
-          <p className="mt-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
             @{displayUsername}
           </p>
         )}
@@ -99,7 +98,6 @@ export function ProfilePage() {
           </p>
         )}
 
-        {/* Badges */}
         <div className="flex items-center justify-center gap-2 mt-3">
           {showAdminBadge && (
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium"
@@ -116,20 +114,8 @@ export function ProfilePage() {
         </div>
       </section>
 
-      {/* Settings link */}
-      <section className="mx-4 mt-4">
-        <button onClick={() => navigate('/settings')}
-          className="glass-card w-full p-4 flex items-center justify-between transition-all hover:scale-[1.02]">
-          <div className="flex items-center gap-3">
-            <Settings size={20} style={{ color: 'var(--gold)' }} />
-            <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>Account Settings</span>
-          </div>
-          <ChevronRight size={18} style={{ color: 'var(--muted)' }} />
-        </button>
-      </section>
-
       {/* Language */}
-      <section className="mx-4 mt-2">
+      <section className="mx-4 mt-3">
         <button onClick={() => setLangPickerOpen(true)}
           className="glass-card w-full p-4 flex items-center justify-between transition-all hover:scale-[1.02]">
           <div className="flex items-center gap-3">
@@ -141,14 +127,24 @@ export function ProfilePage() {
       </section>
 
       {/* PWA Install */}
-      <section className="mx-4 mt-2">
+      <section className="mx-4 mt-3">
         <InstallPWABtn />
       </section>
 
       <LanguagePicker open={langPickerOpen} current={i18n.language} onClose={() => setLangPickerOpen(false)} onSelect={handleLanguageChange} />
 
-      {/* Bottom spacer */}
-      <div className="h-8" />
+      {/* Bottom navigation */}
+      <nav className="h-16 bottom-nav flex items-center justify-around px-2 z-50 fixed">
+        <button onClick={() => navigate('/')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Home size={22} /><span className="text-[10px] font-medium">{t('nav.home')}</span></button>
+        <button onClick={() => navigate('/catalog')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}><Package size={22} /><span className="text-[10px] font-medium">{t('nav.catalog')}</span></button>
+        <button className="flex flex-col items-center gap-0.5" style={{ color: 'var(--gold)' }}><User size={22} /><span className="text-[10px] font-medium">{t('nav.profile')}</span></button>
+        {isAdmin && (
+          <button onClick={() => navigate('/studio')} className="flex flex-col items-center gap-0.5" style={{ color: 'var(--muted)' }}>
+            <Sparkles size={22} />
+            <span className="text-[10px] font-medium">{t('nav.studio')}</span>
+          </button>
+        )}
+      </nav>
     </div>
   );
 }

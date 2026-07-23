@@ -4,7 +4,6 @@
  */
 
 import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Check, Link2, Upload, Mail, Smartphone, Loader2 } from 'lucide-react';
 import { getTelegramAuth } from '@/lib/telegram-auth';
 import { useAuthStore } from '@/store/auth';
@@ -12,7 +11,6 @@ import { Button } from '@/components/ui';
 import { Input } from '@/components/ui/Input';
 
 export default function SettingsPage() {
-  const navigate = useNavigate();
   const { user: storeUser } = useAuthStore();
   const tgData = getTelegramAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -73,7 +71,7 @@ export default function SettingsPage() {
   return (
     <div className="min-h-dvh safe-top scroll-safe">
       <header className="app-header flex items-center justify-between px-4">
-        <button onClick={() => navigate('/profile')} className="back-btn w-11 h-11 rounded-full glass-card flex items-center justify-center">
+        <button onClick={() => window.location.hash = '#/'} className="back-btn w-11 h-11 rounded-full glass-card flex items-center justify-center">
           <ArrowLeft size={20} style={{ color: 'var(--text-secondary)' }} />
         </button>
         <h1 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Settings</h1>
