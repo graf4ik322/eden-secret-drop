@@ -53,11 +53,9 @@ async function trpcCall(path: string, options: { method?: 'GET' | 'POST'; body?:
     qp.input = JSON.stringify(options.body);
   }
 
-  // __tg_initData fallback — только если нет JWT
-  if (!useAuthStore.getState().accessToken) {
-    const initDataQp = getInitDataQuery();
-    Object.assign(qp, initDataQp);
-  }
+  // __tg_initData fallback — всегда, страховочная сетка для аутентификации
+  const initDataQp = getInitDataQuery();
+  Object.assign(qp, initDataQp);
 
   const qs = new URLSearchParams(qp).toString();
   if (qs) url += '?' + qs;
