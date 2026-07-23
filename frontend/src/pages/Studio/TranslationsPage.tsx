@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Search, Languages, Check, Plus, ChevronDown } from 'lucide-react';
 import { getTrpcQueryOptions, trpcMutate } from '@/lib/trpc';
+import i18n from '@/lib/i18n';
 
 interface TranslationKey {
   id: number;
@@ -46,6 +47,8 @@ export function TranslationsPage() {
   const handleSave = useCallback(async (key: string, locale: string, value: string) => {
     try {
       await trpcMutate('i18n.updateValue', { key, locale, value });
+      // Update the live i18n bundle immediately (so t() reflects the change)
+      i18n.addResource(locale, 'translation', key, value);
       queryClient.invalidateQueries({ queryKey: ['trpc', 'i18n.listKeys'] });
     } catch (e) {
       console.error('Failed to save translation:', e);
