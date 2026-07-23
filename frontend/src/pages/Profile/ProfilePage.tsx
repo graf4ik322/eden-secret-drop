@@ -37,7 +37,7 @@ export function ProfilePage() {
   const isAdmin = auth?.isAdmin ?? false;
 
   const localAuth = getTelegramAuth();
-  const displayName = firstName || localAuth.firstName || storeUser?.firstName || 'Explorer';
+  const displayName = firstName || localAuth.firstName || storeUser?.firstName || storeUser?.email || 'Explorer';
   const displayUsername = tgUsername || localAuth.username || '';
   const avatarUrl = localAuth.photoUrl || '';
   const showAdminBadge = isAdmin;
