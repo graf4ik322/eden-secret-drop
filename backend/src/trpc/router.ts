@@ -712,11 +712,16 @@ export const pushRouter = t.router({
       if (!ctx.tgUserId) throw new Error('Unauthorized');
       if (!isPushConfigured()) throw new Error('Push notifications not configured');
 
-      // Find subscriber by their user ID
+      // Find subscriber — by tgUserId (Telegram) or by id (email/PWA)
       const sub = await db
         .select()
         .from(subscribers)
-        .where(eq(subscribers.tgUserId, ctx.tgUserId))
+        .where(
+          or(
+            eq(subscribers.tgUserId, ctx.tgUserId),
+            eq(subscribers.id, Number(ctx.tgUserId)),
+          ),
+        )
         .limit(1)
         .then(r => r[0]);
 
@@ -745,7 +750,12 @@ export const pushRouter = t.router({
       const sub = await db
         .select()
         .from(subscribers)
-        .where(eq(subscribers.tgUserId, ctx.tgUserId))
+        .where(
+          or(
+            eq(subscribers.tgUserId, ctx.tgUserId),
+            eq(subscribers.id, Number(ctx.tgUserId)),
+          ),
+        )
         .limit(1)
         .then(r => r[0]);
 
@@ -775,7 +785,12 @@ export const pushRouter = t.router({
           tgUserId: subscribers.tgUserId,
         })
         .from(subscribers)
-        .where(eq(subscribers.tgUserId, ctx.tgUserId))
+        .where(
+          or(
+            eq(subscribers.tgUserId, ctx.tgUserId),
+            eq(subscribers.id, Number(ctx.tgUserId)),
+          ),
+        )
         .limit(1)
         .then(r => r[0]);
 

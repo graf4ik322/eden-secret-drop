@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { User, Shield, Globe, ChevronRight, Settings, Mail, Home, Sparkles, Package, Calendar } from 'lucide-react';
-import { getTrpcQueryOptions } from '@/lib/trpc';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { User, Shield, Globe, ChevronRight, Settings, Mail, Home, Sparkles, Package, Calendar, Bell } from 'lucide-react';
+import { getTrpcQueryOptions, trpcMutate, trpcQuery } from '@/lib/trpc';
+import { Toggle } from '@/components/ui/Toggle';
 import { getTelegramAuth } from '@/lib/telegram-auth';
 import { useAuthStore } from '@/store/auth';
 import { useIsAdminBool } from '@/lib/useIsAdmin';
@@ -27,6 +28,7 @@ export function ProfilePage() {
   const [langPickerOpen, setLangPickerOpen] = useState(false);
   const { user: storeUser } = useAuthStore();
   const isAdmin = useIsAdminBool();
+  const queryClient = useQueryClient();
 
   const { data: authData, isLoading: authLoading } = useQuery(getTrpcQueryOptions('auth.checkAdmin'));
   const auth = authData as Record<string, unknown> | null | undefined;
@@ -61,6 +63,44 @@ export function ProfilePage() {
         body: JSON.stringify({ tgUserId: userId, locale: code }),
       }).catch(() => {});
     }
+  };
+
+  // Push notification state
+  const { data: pushStatus } = useQuery(getTrpcQueryOptions('push.status'));
+  const isPushSubscribed = !!(pushStatus as { subscribed?: boolean } | undefined)?.subscribed;
+
+  const handlePushToggle = async (checked: boolean) => {
+    if (checked) {
+      // Request permission
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') return;
+
+      // Get VAPID key
+      const vapidRes = await trpcQuery('push.vapidKey') as { publicKey?: string } | undefined;
+      if (!vapidRes?.publicKey) return;
+
+      // Subscribe via Push API
+      const registration = await navigator.serviceWorker.ready;
+      const sub = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: vapidRes.publicKey,
+      });
+
+      // Send to backend
+      await trpcMutate('push.subscribe', {
+        endpoint: sub.endpoint,
+        expirationTime: sub.expirationTime,
+        keys: {
+          p256dh: btoa(String.fromCharCode(...new Uint8Array(sub.getKey('p256dh')!))),
+          auth: btoa(String.fromCharCode(...new Uint8Array(sub.getKey('auth')!))),
+        },
+      });
+    } else {
+      await trpcMutate('push.unsubscribe', {});
+    }
+
+    // Invalidate to refresh status
+    queryClient.invalidateQueries({ queryKey: ['push'] });
   };
 
   return (
@@ -147,6 +187,28 @@ export function ProfilePage() {
       <section className="mx-4 mt-3">
         <InstallPWABtn />
       </section>
+
+      {/* Push Notifications */}
+      {'Notification' in window && (
+        <section className="mx-4 mt-3">
+          <div className="glass-card p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Bell size={20} style={{ color: 'var(--gold)' }} />
+              <div>
+                <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>Push Notifications</p>
+                <p className="text-xs" style={{ color: 'var(--muted)' }}>
+                  {Notification.permission === 'denied' ? 'Blocked in browser settings' : 'Get notified about new drops'}
+                </p>
+              </div>
+            </div>
+            <Toggle
+              checked={isPushSubscribed}
+              onChange={handlePushToggle}
+              disabled={Notification.permission === 'denied'}
+            />
+          </div>
+        </section>
+      )}
 
       <LanguagePicker open={langPickerOpen} current={i18n.language} onClose={() => setLangPickerOpen(false)} onSelect={handleLanguageChange} />
 
