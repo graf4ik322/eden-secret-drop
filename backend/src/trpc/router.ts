@@ -1,11 +1,13 @@
 import { initTRPC } from '@trpc/server';
 import { z } from 'zod';
 import { db, drops, categories, dropStatus, archivedReasons, subscribers, dropCounter, mockups } from '../db';
-import { eq, and, or, inArray, desc, asc, sql, getTableColumns } from 'drizzle-orm';
+import { eq, and, or, inArray, desc, asc, sql, getTableColumns, isNotNull } from 'drizzle-orm';
 import type { Context } from './context';
 import { registerSubscriber, setSubscriberLocale, listActiveSubscribers, deactivateSubscriber } from '../services/subscriber';
 import { getDictionary, listKeys, updateValue, deleteKey, reseed, seedTranslations } from '../services/i18n';
 import { enqueueBroadcast } from '../queue/broadcast';
+import { sendPushNotification, getVapidPublicKey, isPushConfigured } from '../services/webPush';
+import type { PushSubscription } from '../services/webPush';
 
 const t = initTRPC.context<Context>().create();
 
@@ -319,6 +321,61 @@ export const dropRouter = t.router({
           miniAppUrl: deepLink,
           imageUrl: broadcastImage,
         });
+
+        // === Web Push notifications for PWA users ===
+        if (isPushConfigured()) {
+          try {
+            const pushSubs = await db
+              .select({
+                pushEndpoint: subscribers.pushEndpoint,
+                pushP256dh: subscribers.pushP256dh,
+                pushAuth: subscribers.pushAuth,
+              })
+              .from(subscribers)
+              .where(and(
+                isNotNull(subscribers.pushEndpoint),
+                eq(subscribers.isActive, true),
+              ));
+
+            if (pushSubs.length > 0) {
+              const pushTitle = drop.title;
+              const pushBody = `🔥 New drop: ${drop.title}${drop.price ? ` — €${drop.price}` : ''}`;
+
+              for (const ps of pushSubs) {
+                if (!ps.pushEndpoint || !ps.pushP256dh || !ps.pushAuth) continue;
+                try {
+                  await sendPushNotification(
+                    {
+                      endpoint: ps.pushEndpoint,
+                      expirationTime: null,
+                      keys: { p256dh: ps.pushP256dh, auth: ps.pushAuth },
+                    },
+                    {
+                      title: pushTitle,
+                      body: pushBody,
+                      url: deepLink,
+                      icon: broadcastImage || '/icon-192x192.png',
+                      tag: `eden-drop-${drop.displayId}`,
+                    },
+                  );
+                } catch (pushErr: any) {
+                  // 404/410 = subscription expired — clean up
+                  if (pushErr.statusCode === 404 || pushErr.statusCode === 410) {
+                    console.log(`[WebPush] Subscription expired, cleaning up: ${ps.pushEndpoint.slice(0, 50)}...`);
+                    await db
+                      .update(subscribers)
+                      .set({ pushEndpoint: null, pushP256dh: null, pushAuth: null })
+                      .where(eq(subscribers.pushEndpoint, ps.pushEndpoint));
+                  } else {
+                    console.error('[WebPush] Send failed:', pushErr.message);
+                  }
+                }
+              }
+            }
+          } catch (pushErr) {
+            console.error('[WebPush] Failed to send push notifications:', pushErr);
+          }
+        }
       }
 
       return updated;
@@ -634,6 +691,104 @@ const i18nRouter = t.router({
     }),
 });
 
+/* ===== Push Router (PWA Web Push notifications) ===== */
+export const pushRouter = t.router({
+  /** Get the VAPID public key for client-side push subscription */
+  vapidKey: publicProcedure.query(() => ({
+    publicKey: getVapidPublicKey(),
+    configured: isPushConfigured(),
+  })),
+
+  /** Subscribe to push notifications (save/update subscription) */
+  subscribe: publicProcedure
+    .input(z.object({
+      endpoint: z.string(),
+      expirationTime: z.number().nullable(),
+      keys: z.object({
+        p256dh: z.string(),
+        auth: z.string(),
+      }),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (!ctx.tgUserId) throw new Error('Unauthorized');
+      if (!isPushConfigured()) throw new Error('Push notifications not configured');
+
+      // Find subscriber by their user ID
+      const sub = await db
+        .select()
+        .from(subscribers)
+        .where(eq(subscribers.tgUserId, ctx.tgUserId))
+        .limit(1)
+        .then(r => r[0]);
+
+      if (!sub) throw new Error('Subscriber not found');
+
+      // Only email/PWA users should have push subscriptions
+      // (tgUserId in context could be either telegram ID or subscriber ID)
+      // We allow any subscriber without a tgUserId (email-only users)
+      await db
+        .update(subscribers)
+        .set({
+          pushEndpoint: input.endpoint,
+          pushP256dh: input.keys.p256dh,
+          pushAuth: input.keys.auth,
+        })
+        .where(eq(subscribers.id, sub.id));
+
+      return { success: true };
+    }),
+
+  /** Unsubscribe from push notifications */
+  unsubscribe: publicProcedure
+    .mutation(async ({ ctx }) => {
+      if (!ctx.tgUserId) throw new Error('Unauthorized');
+
+      const sub = await db
+        .select()
+        .from(subscribers)
+        .where(eq(subscribers.tgUserId, ctx.tgUserId))
+        .limit(1)
+        .then(r => r[0]);
+
+      if (!sub) throw new Error('Subscriber not found');
+
+      await db
+        .update(subscribers)
+        .set({
+          pushEndpoint: null,
+          pushP256dh: null,
+          pushAuth: null,
+        })
+        .where(eq(subscribers.id, sub.id));
+
+      return { success: true };
+    }),
+
+  /** Get current push subscription status */
+  status: publicProcedure
+    .query(async ({ ctx }) => {
+      if (!ctx.tgUserId) return { subscribed: false };
+
+      const sub = await db
+        .select({
+          pushEndpoint: subscribers.pushEndpoint,
+          email: subscribers.email,
+          tgUserId: subscribers.tgUserId,
+        })
+        .from(subscribers)
+        .where(eq(subscribers.tgUserId, ctx.tgUserId))
+        .limit(1)
+        .then(r => r[0]);
+
+      if (!sub) return { subscribed: false };
+
+      return {
+        subscribed: !!sub.pushEndpoint,
+        isPwaUser: !sub.tgUserId || !!sub.email,
+      };
+    }),
+});
+
 /* ===== App Router ===== */
 export const appRouter = t.router({
   drop: dropRouter,
@@ -642,6 +797,7 @@ export const appRouter = t.router({
   subscriber: subscriberRouter,
   auth: authRouter,
   i18n: i18nRouter,
+  push: pushRouter,
   health: publicProcedure.query(() => ({ status: 'ok', timestamp: new Date().toISOString() })),
 });
 

@@ -80,6 +80,10 @@ export const subscribers = pgTable('subscribers', {
   locale: varchar('locale', { length: 5 }).default('en'),
   subscribedAt: timestamp('subscribed_at').defaultNow(),
   lastNotifiedAt: timestamp('last_notified_at'),
+  // PWA Push subscription (nullable — only for email/PWA users)
+  pushEndpoint: varchar('push_endpoint', { length: 512 }),
+  pushP256dh: varchar('push_p256dh', { length: 128 }),
+  pushAuth: varchar('push_auth', { length: 64 }),
 });
 
 /* ===== Email Verification Codes ===== */

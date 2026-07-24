@@ -3,12 +3,13 @@
  * Привязка Telegram к email, аватар, информация.
  */
 
-import { useState, useRef } from 'react';
-import { ArrowLeft, User, Check, Link2, Upload, Mail, Smartphone, Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { ArrowLeft, User, Check, Link2, Upload, Mail, Smartphone, Loader2, Bell, BellOff } from 'lucide-react';
 import { getTelegramAuth } from '@/lib/telegram-auth';
 import { useAuthStore } from '@/store/auth';
 import { Button } from '@/components/ui';
 import { Input } from '@/components/ui/Input';
+import { canUsePushNotifications, requestAndSubscribe, unsubscribe, getPushStatus } from '@/lib/pushNotifications';
 
 export default function SettingsPage() {
   const { user: storeUser } = useAuthStore();
@@ -23,6 +24,32 @@ export default function SettingsPage() {
   const [linkStatus, setLinkStatus] = useState<'idle' | 'linking' | 'success' | 'error'>('idle');
   const [linkError, setLinkError] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [pushSubscribed, setPushSubscribed] = useState(false);
+  const [pushToggling, setPushToggling] = useState(false);
+  const canPush = canUsePushNotifications();
+
+  // Проверяем статус push-подписки при монтировании
+  useEffect(() => {
+    if (canPush) {
+      getPushStatus().then(status => setPushSubscribed(status.subscribed));
+    }
+  }, [canPush]);
+
+  /** Включить / выключить push-уведомления */
+  const handlePushToggle = async () => {
+    setPushToggling(true);
+    try {
+      if (pushSubscribed) {
+        await unsubscribe();
+        setPushSubscribed(false);
+      } else {
+        const ok = await requestAndSubscribe();
+        setPushSubscribed(ok);
+      }
+    } finally {
+      setPushToggling(false);
+    }
+  };
 
   /** Привязать Telegram к email */
   const handleLinkTelegram = async () => {
@@ -220,6 +247,46 @@ export default function SettingsPage() {
               <Mail size={12} /> Email
             </span>
           </div>
+        </section>
+      )}
+
+      {/* Push Notifications section (только для PWA/email users) */}
+      {canPush && (
+        <section className="mx-4 mt-3 glass-card p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {pushSubscribed ? (
+                <Bell size={18} style={{ color: 'var(--gold)' }} />
+              ) : (
+                <BellOff size={18} style={{ color: 'var(--muted)' }} />
+              )}
+              <h2 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Push Notifications</h2>
+            </div>
+            <button
+              onClick={handlePushToggle}
+              disabled={pushToggling}
+              className={`relative w-11 h-6 rounded-full transition-all duration-200 ${
+                pushSubscribed
+                  ? 'bg-emerald-500/40'
+                  : 'bg-white/10'
+              }`}
+            >
+              {pushToggling ? (
+                <Loader2 size={14} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin" style={{ color: 'var(--gold)' }} />
+              ) : (
+                <div
+                  className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-200 ${
+                    pushSubscribed ? 'translate-x-[22px]' : 'translate-x-0.5'
+                  }`}
+                />
+              )}
+            </button>
+          </div>
+          <p className="text-xs" style={{ color: 'var(--muted)' }}>
+            {pushSubscribed
+              ? 'You will receive notifications about new drops.'
+              : 'Enable to get notified when new drops are released.'}
+          </p>
         </section>
       )}
 

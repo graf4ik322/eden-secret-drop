@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, HashRouter, useNavigate, useLocation } from 'r
 import { routes } from '@/navigation/routes';
 import { useAuthStore } from '@/store/auth';
 import { loginWithTelegram } from '@/lib/auth-api';
+import { canUsePushNotifications, requestAndSubscribe } from '@/lib/pushNotifications';
 import { getTelegramAuth } from '@/lib/telegram-auth';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -88,6 +89,16 @@ function AuthGate({ children }: { children: React.ReactNode }) {
       setState('redirect-login');
     }
   }, []);
+
+  // Авто-подписка на push для PWA пользователей (email, не Telegram WebView)
+  useEffect(() => {
+    if (state !== 'ready') return;
+    const store = useAuthStore.getState();
+    // Подписываем только PWA пользователей: есть email, нет Telegram WebView
+    if (store.user?.email && canUsePushNotifications()) {
+      requestAndSubscribe();
+    }
+  }, [state]);
 
   if (state === 'loading') {
     return (

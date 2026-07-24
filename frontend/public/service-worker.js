@@ -109,3 +109,75 @@ async function staleWhileRevalidate(request, cacheName) {
   }).catch(() => cached);
   return cached || fetchPromise;
 }
+
+/* ===== Push Notifications ===== */
+
+/**
+ * Find a matching window client or open a new one.
+ */
+async function matchClient(urlToOpen) {
+  const windowClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+  return windowClients.find((windowClient) => windowClient.url.startsWith(urlToOpen));
+}
+
+/**
+ * Focus on an existing window or open a new one.
+ */
+async function focusOrOpenWindow(url) {
+  const urlToOpen = url || self.location.origin;
+  const matchingClient = await matchClient(urlToOpen);
+  return matchingClient
+    ? matchingClient.focus()
+    : clients.openWindow(urlToOpen);
+}
+
+/**
+ * Handle incoming push event from the server.
+ */
+self.addEventListener('push', (event) => {
+  if (!event.data) {
+    console.log('[SW Push] Empty push event');
+    return;
+  }
+
+  try {
+    const pushData = event.data.json();
+
+    const title = pushData.title || 'EDEN Secret Drop';
+    const options = {
+      body: pushData.body || '',
+      icon: pushData.icon || '/icon-192x192.png',
+      badge: pushData.badge || '/icon-144x144.png',
+      tag: pushData.tag || 'eden-drop',
+      data: pushData.data || {},
+      vibrate: [200, 100, 200],
+    };
+
+    event.waitUntil(
+      self.registration.showNotification(title, options),
+    );
+  } catch (err) {
+    console.error('[SW Push] Failed to parse push data:', err);
+  }
+});
+
+/**
+ * Handle notification click — open the app and navigate to the drop.
+ */
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const urlToOpen = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    focusOrOpenWindow(urlToOpen).then((windowClient) => {
+      // Post a message to the client so it can react to the notification click
+      if (windowClient && windowClient.postMessage) {
+        windowClient.postMessage({
+          type: 'notification-clicked',
+          url: urlToOpen,
+        });
+      }
+    }),
+  );
+});

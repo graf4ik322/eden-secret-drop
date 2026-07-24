@@ -43,7 +43,7 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   return headers;
 }
 
-async function trpcCall(path: string, options: { method?: 'GET' | 'POST'; body?: unknown } = {}): Promise<unknown> {
+export async function trpcCall(path: string, options: { method?: 'GET' | 'POST'; body?: unknown } = {}): Promise<unknown> {
   const headers: Record<string, string> = {};
 
   // Content-Type для POST
