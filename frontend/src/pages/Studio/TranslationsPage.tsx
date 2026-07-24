@@ -89,7 +89,19 @@ export function TranslationsPage() {
     try {
       await trpcMutate('i18n.updateValue', { key, locale, value });
       i18n.addResource(locale, 'translation', key, value);
-      queryClient.invalidateQueries({ queryKey: ['i18n'] });
+      // Оптимистично обновляем кэш, чтобы UI показал новое значение мгновенно
+      queryClient.setQueryData(['i18n', 'i18n.listKeys', undefined], (old: SectionGroup[] | undefined) => {
+        if (!old) return old;
+        return old.map(group => ({
+          ...group,
+          keys: group.keys.map(item => {
+            if (item.key === key) {
+              return { ...item, values: { ...item.values, [locale]: value } };
+            }
+            return item;
+          }),
+        }));
+      });
     } catch (e) {
       console.error('Failed to save translation:', e);
     }

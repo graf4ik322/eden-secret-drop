@@ -70,8 +70,6 @@ export function CatalogPage() {
     return list;
   }, [drops, searchQuery, activeFilterIds]);
 
-  const activeFilterCount = (selectedCategory ? 1 : 0) + (sortBy !== 'newest' ? 1 : 0);
-
   const activeLabel = selectedCatObj ? String(selectedCatObj.name || '') : '';
 
   const formatPrice = (price: unknown) => {
@@ -110,20 +108,8 @@ export function CatalogPage() {
         </div>
       </section>
 
-      {/* Filters button + active chips */}
+      {/* Active filter chips */}
       <section className="mx-4 mt-3 flex items-center gap-2">
-        <button onClick={() => setShowFilters(true)}
-          className="h-[34px] px-4 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all flex-shrink-0"
-          style={{ background: activeFilterCount > 0 ? 'var(--gold)' : 'var(--surface)', color: activeFilterCount > 0 ? '#071A17' : 'var(--text-secondary)' }}>
-          <SlidersHorizontal size={14} />
-          Filters
-          {activeFilterCount > 0 && (
-            <span className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: 'rgba(0,0,0,0.2)', color: '#071A17' }}>
-              {activeFilterCount}
-            </span>
-          )}
-        </button>
-
         {activeLabel && (
           <span className="h-[34px] px-3 rounded-full text-xs font-medium flex items-center gap-1.5"
             style={{ background: 'var(--surface)', color: 'var(--text-secondary)' }}>
