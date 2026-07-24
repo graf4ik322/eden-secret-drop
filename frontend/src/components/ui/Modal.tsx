@@ -38,7 +38,7 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
         className={cn(
           'relative z-10 w-full max-w-lg rounded-t-[var(--radius-card)] sm:rounded-[var(--radius-card)]',
           'border-b-0 sm:border',
-          'max-h-[90dvh] overflow-y-auto p-6 animate-fade-up',
+          'max-h-[90dvh] overflow-y-auto p-6 pb-[calc(env(safe-area-inset-bottom)+64px)] animate-fade-up',
           className,
         )}
         style={{ background: 'var(--bg)', border: '1px solid rgba(255,255,255,0.06)' }}

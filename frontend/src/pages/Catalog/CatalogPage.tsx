@@ -50,9 +50,14 @@ export function CatalogPage() {
   }, [categories]);
 
   const activeFilterIds = useMemo(() => {
-    const ids = selectedCategory !== undefined ? (categoryIdMap.get(selectedCategory) || [selectedCategory]) : [];
-    if (selectedSubcategory !== undefined) ids.push(selectedSubcategory);
-    return ids;
+    // Если выбрана подкатегория — фильтруем ТОЛЬКО по ней
+    if (selectedSubcategory !== undefined) {
+      return [selectedSubcategory];
+    }
+    if (selectedCategory !== undefined) {
+      return categoryIdMap.get(selectedCategory) || [selectedCategory];
+    }
+    return [];
   }, [categoryIdMap, selectedCategory, selectedSubcategory]);
 
   // Client-side filter
@@ -181,7 +186,7 @@ export function CatalogPage() {
 
         {/* Categories */}
         <h3 className="text-xs font-semibold mb-2" style={{ color: 'var(--muted)' }}>{t('catalog.categories') || 'Category'}</h3>
-        <div className="space-y-0.5 max-h-[40dvh] overflow-y-auto">
+        <div className="space-y-0.5 max-h-[40dvh] overflow-y-auto pb-safe" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 64px)' }}>
           <button onClick={() => handleCategoryClick(undefined)}
             className={`w-full flex items-center gap-3 px-4 h-11 rounded-xl text-sm transition-all ${
               selectedCategory === undefined

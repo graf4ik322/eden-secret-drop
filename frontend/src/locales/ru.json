@@ -66,7 +66,11 @@
     "admin": "Администратор",
     "language": "Язык",
     "memberSince": "В сообществе с",
-    "selectLanguage": "Выберите язык"
+    "selectLanguage": "Выберите язык",
+    "languages": {
+      "ru": "Русский",
+      "en": "English"
+    }
   },
   "studio": {
     "title": "Drop Studio",
