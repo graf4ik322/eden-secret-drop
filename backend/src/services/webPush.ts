@@ -14,12 +14,10 @@ const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || '';
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || '';
 const VAPID_EMAIL = process.env.VAPID_EMAIL || 'mailto:eden@secret-drop.app';
 
-if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
-  console.warn('[WebPush] VAPID keys not configured — push notifications disabled');
+// Configure web-push with VAPID details (only if keys are set)
+if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
+  webPush.setVapidDetails(VAPID_EMAIL, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 }
-
-// Configure web-push with VAPID details
-webPush.setVapidDetails(VAPID_EMAIL, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
 export interface PushPayload {
   title: string;
@@ -49,6 +47,11 @@ export async function sendPushNotification(
   subscription: PushSubscription,
   payload: PushPayload,
 ): Promise<void> {
+  if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
+    console.warn('[WebPush] VAPID keys not configured — skipping notification');
+    return;
+  }
+
   const notificationPayload = {
     title: payload.title,
     body: payload.body,
