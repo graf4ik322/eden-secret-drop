@@ -4,10 +4,9 @@ import { db, drops, categories, dropStatus, archivedReasons, subscribers, dropCo
 import { eq, and, or, inArray, desc, asc, sql, getTableColumns, isNotNull } from 'drizzle-orm';
 import type { Context } from './context';
 import { registerSubscriber, setSubscriberLocale, listActiveSubscribers, deactivateSubscriber } from '../services/subscriber';
-import { sendPushNotification } from '../services/webPush';
+import { sendPushNotification, getVapidPublicKey, isPushConfigured } from '../services/webPush';
 import { getDictionary, listKeys, updateValue, deleteKey, reseed, seedTranslations } from '../services/i18n';
 import { enqueueBroadcast } from '../queue/broadcast';
-import type { PushSubscription } from '../services/webPush';
 
 const t = initTRPC.context<Context>().create();
 
